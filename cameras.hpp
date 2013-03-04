@@ -45,6 +45,8 @@ class FirstPersonCamera : public ICamera, public IPlayerMoveListener, public IPl
 private:
   Attitude m_attitude;
   glm::vec4 m_pos;
+  glm::vec3 m_lookVector;
+  glm::vec3 m_upVector;
 
 public:
   FirstPersonCamera()
@@ -62,6 +64,11 @@ public:
 public:
   Attitude getAttitude() const { return m_attitude; }
   glm::vec4 getPos() const { return m_pos; }
+  glm::vec3 getLookVector() const { return m_lookVector; }
+  glm::vec3 getUpVector() const { return m_upVector; }
+  GLfloat getFOV() const { return 45.f; }
+  GLfloat getNearClippingPlaneDist() const { return 1.f; }
+  GLfloat getFarClippingPlaneDist() const { return 10000.f; }
   void setPos(glm::vec4 &v) { m_pos = v; }
   void setPos(GLfloat x, GLfloat y, GLfloat z)
   {

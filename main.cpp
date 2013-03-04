@@ -107,6 +107,39 @@ protected:
    
     //TODO: Implement when left-button pressed
     //the_player.mouseRoll(oldX, oldY, xw, yw);
+    
+    //Calculate the "picking ray", always from the center
+    //of the viewing window
+    glm::ivec2 ws = getWindowSize();
+    GLfloat fw = (GLfloat)ws.x, fh = (GLfloat)ws.y;
+    GLfloat x = fw / 2.f, y = fh / 2.f;
+    
+    glm::vec3 view = m_camera.getLookVector() - glm::vec3(m_camera.getPos());
+    view = glm::normalize(view);
+    
+    glm::vec3 h = glm::cross(view, m_camera.getUpVector());
+    h = glm::normalize(h);
+    
+    glm::vec3 v = glm::cross(h, view);
+    v = glm::normalize(v);
+    
+    GLfloat rad = DEG_TO_RAD(m_camera.getFOV());
+    GLfloat vlen = tan(rad / 2) * m_camera.getNearClippingPlaneDist();
+    GLfloat hlen = vlen * (fw / fh);
+    
+    v = v * vlen;
+    h = h * hlen;
+    
+    x -= fw / 2;
+    y -= fh / 2;
+    y /= (fh / 2);
+    x /= (fw / 2);
+    
+    glm::vec3 pos = glm::vec3(m_camera.getPos()) + view * m_camera.getNearClippingPlaneDist() + h * x + v * y;
+    glm::vec3 dir = pos - glm::vec3(m_camera.getPos());
+    
+    //Test for intersection here?
+    
   }
   
   virtual void onKeyDown(char key)
@@ -163,6 +196,16 @@ protected:
         mv.scaleZ(.1f);
         shaders.prepareDefault(env, GL::YELLOW);
         glutSolidSphere(1.f, 20, 20);
+      }
+      mv.popMatrix();
+      
+      //Draw a solid ground plane
+      mv.pushMatrix();
+      {
+        mv.translateY(-1.f);
+        mv.scale(2000.f, 1.f, 2000.f);
+        shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
+        GL::drawBox(GL_TRIANGLES);
       }
       mv.popMatrix();
       

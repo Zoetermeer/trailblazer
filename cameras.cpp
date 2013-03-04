@@ -45,11 +45,17 @@ void FirstPersonCamera::init(const Player &player)
 void FirstPersonCamera::draw(int winWidth, int winHeight, MatrixStack &proj)
 {
   proj.loadIdentity();
-  proj.perspective(45.f, (GLfloat)winWidth / (GLfloat)winHeight, 1.f, 10000.f);
+  proj.perspective(getFOV(),
+                   (GLfloat)winWidth / (GLfloat)winHeight,
+                   getNearClippingPlaneDist(),
+                   getFarClippingPlaneDist());
   proj.rotateZ(m_attitude.roll);
   proj.rotateX(-m_attitude.pitch);
   proj.rotateY(-m_attitude.yaw);
   proj.translate(-m_pos.x, m_pos.y, -m_pos.z);
+  
+  m_lookVector = glm::vec3(proj.getCurrent() * glm::vec4(0.f, 0.f, -1.f, 1.f));
+  m_upVector = glm::vec3(proj.getCurrent() * glm::vec4(0.f, 1.f, 0.f, 1.f));
   
   //Update the GL stack, for now (will need until switch completely to
   //shader-based rendering)

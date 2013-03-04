@@ -73,26 +73,32 @@ void Player::onKeyDown(int key, bool special)
   Direction dir;
   switch (key)
   {
-    case 'w': /* Up */
+    case 'w':
+    case 'W':/* Up */
       m_moveDir = m_moveDir | Direction::Forward;
       //m_rightArm.swimForward();
       //m_leftArm.swimForward();
       break;
-    case 's': /* Down */
+    case 's':
+    case 'S': /* Down */
       m_moveDir = m_moveDir | Direction::Backward;
       break;
-    case 'a': /* Left */
+    case 'a':
+    case 'A': /* Left */
       m_moveDir = m_moveDir | Direction::Left;
       //m_rightArm.swimForward();
       break;
-    case 'd': /* Right */
+    case 'd':
+    case 'D': /* Right */
       m_moveDir = m_moveDir | Direction::Right;
       //m_leftArm.swimForward();
       break;
     case 'q':
+    case 'Q':
       m_attitude.yaw = nextAngle(m_attitude.yaw, -5.0);
       break;
     case 'e':
+    case 'E':
       m_attitude.yaw = nextAngle(m_attitude.yaw, 5.0);
       break;
   }
@@ -103,15 +109,19 @@ void Player::onKeyUp(int key, bool special)
   switch (key)
   {
     case 'w':
+    case 'W':
       m_moveDir = m_moveDir ^ Direction::Forward;
       break;
     case 's':
+    case 'S':
       m_moveDir = m_moveDir ^ Direction::Backward;
       break;
     case 'a':
+    case 'A':
       m_moveDir = m_moveDir ^ Direction::Left;
       break;
     case 'd':
+    case 'D':
       m_moveDir = m_moveDir ^ Direction::Right;
       break;
   }
