@@ -14,12 +14,12 @@ void Player::mouseRoll(int oldX, int oldY, int newX, int newY)
 void Player::mouseLook(int oldX, int oldY, int newX, int newY)
 {
   int xdelt = oldX - newX, ydelt = oldY - newY;
-  GLfloat new_pitch = nextAngle(m_attitude.pitch, ydelt);
+  GLfloat new_pitch = nextAngle(m_attitude.pitch, ydelt * .1f);
   /* Bounds on the pitch of the player's head */
   if (new_pitch <= 70.0 || new_pitch >= 290.0)
     m_attitude.pitch = new_pitch;
   
-  m_attitude.yaw = nextAngle(m_attitude.yaw, xdelt);  
+  m_attitude.yaw = nextAngle(m_attitude.yaw, xdelt * .1f);
   Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw });
 }
 
