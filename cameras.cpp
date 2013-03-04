@@ -4,9 +4,9 @@
 
 #define HEAD_Y 3.0
 
-void IsometricCamera::init(const player_t &player)
+void IsometricCamera::init(const Player &player)
 {
-  m_pos = player.offset;
+  m_pos = player.getOffset();
 }
 
 void IsometricCamera::draw(int winWidth, int winHeight, MatrixStack &proj)
@@ -34,11 +34,11 @@ void IsometricCamera::onPlayerLook(const Attitude &att)
   
 }
 
-void FirstPersonCamera::init(const player_t &player)
+void FirstPersonCamera::init(const Player &player)
 {
-  m_pos.x = player.offset.x;
-  m_pos.y = player.offset.y - HEAD_Y;
-  m_pos.z = player.offset.z;
+  m_pos.x = player.getOffset().x;
+  m_pos.y = player.getOffset().y - HEAD_Y;
+  m_pos.z = player.getOffset().z;
 }
 #include <iostream>
 
@@ -47,9 +47,9 @@ void FirstPersonCamera::draw(int winWidth, int winHeight, MatrixStack &proj)
   proj.loadIdentity();
   proj.perspective(45.f, (GLfloat)winWidth / (GLfloat)winHeight, 1.f, 10000.f);
   proj.rotateZ(m_attitude.roll);
-  proj.rotateX(m_attitude.pitch);
-  proj.rotateY(m_attitude.yaw);
-  proj.translate(m_pos.x, m_pos.y, m_pos.z);
+  proj.rotateX(-m_attitude.pitch);
+  proj.rotateY(-m_attitude.yaw);
+  proj.translate(-m_pos.x, m_pos.y, -m_pos.z);
   
   //Update the GL stack, for now (will need until switch completely to
   //shader-based rendering)

@@ -89,6 +89,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
   CHECK_OPENGL_ERROR;
   
   MatrixStack &mv = env.getMV();
+  mv.loadIdentity();
   ShaderSet &shaders = env.getShaders();
   
   //Label axes

@@ -137,7 +137,7 @@ public:
   
   void perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
   {
-    m_cur = glm::perspective(fovy, aspect, zNear, zFar);
+    m_cur = glm::perspective(fovy, aspect, zNear, zFar) * m_cur;
   }
 };
 

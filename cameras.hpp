@@ -35,7 +35,7 @@ public:
   }
   
 public:
-  void init(const player_t &player);
+  void init(const Player &player);
   void draw(int winWidth, int winHeight, MatrixStack &proj);
   void onPlayerMove(const glm::vec4 &oldPos, const glm::vec4 &newPos);
   void onPlayerLook(const Attitude &att);
@@ -71,7 +71,7 @@ public:
   }
 
 public:
-  void init(const player_t &player);
+  void init(const Player &player);
   void draw(int winWidth, int winHeight, MatrixStack &proj);
   void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
   void onPlayerLook(const Attitude &att);

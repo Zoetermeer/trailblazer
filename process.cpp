@@ -55,20 +55,6 @@ void ProcessList::advanceAll(int delta)
   }
 }
 
-void PlayerMoveProcess::advance(int delta)
-{
-  Process::advance(delta);
-  
-  glm::vec4 old = m_player->offset;
-  m_dist -= m_interval;
-  move(m_player, m_interval, m_direction);
-}
-
-bool PlayerMoveProcess::isDone()
-{
-  return m_dist <= 0.0;
-}
-
 void PlayerJumpProcess::advance(int delta)
 {
   Process::advance(delta);

@@ -8,7 +8,7 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <string>
 
-#undef PRINT_PLAYER_LOCATION
+#define DEFAULT_UPDATE_INTERVAL (1000 / 60)
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a > b ? a : b)

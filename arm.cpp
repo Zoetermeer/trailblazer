@@ -36,11 +36,13 @@ void Arm::draw(Env &env)
   ShaderSet &shaders = env.getShaders();
   mv.pushMatrix();
   {
-    //mv.translate(-m_pos.x, m_pos.y, -m_pos.z);
-    //mv.rotateY(-m_playerAttitude.yaw);
-    //mv.rotateX(-m_playerAttitude.pitch);
-    //mv.translateZ(-BODY_OFFSET);
-    mv.current() = m_world;
+    mv.translate(m_pos.x, m_pos.y, m_pos.z);
+    mv.rotateZ(m_playerAttitude.roll);
+    mv.rotateX(m_playerAttitude.pitch);
+    mv.rotateY(m_playerAttitude.yaw);
+    
+    mv.translateZ(-BODY_OFFSET);
+    //mv.current() = m_world;
     mv.translateX(m_type == ArmType::Right ? BODY_OFFSET : -BODY_OFFSET);
     
     //Draw the upper arm
@@ -63,10 +65,11 @@ void Arm::draw(Env &env)
     mv.pushMatrix();
     {
       mv.scaleZ(m_forearmLength);
-      shaders.preparePhong(env,
-                           glm::vec4(0.329412, 0.223529, 0.027451, 1.0),
-                           glm::vec4(0.780392, 0.568627, 0.113725, 1.0),
-                           glm::vec4(0.992157, 0.941176, 0.807843, 1.0));
+      //shaders.preparePhong(env,
+      //                     glm::vec4(0.329412, 0.223529, 0.027451, 1.0),
+      //                     glm::vec4(0.780392, 0.568627, 0.113725, 1.0),
+      //                     glm::vec4(0.992157, 0.941176, 0.807843, 1.0));
+      shaders.prepareHemisphere(env, glm::vec3(0.f, 0.f, 0.f), GL::WHITE, GL::BLACK);
       m_foreVerts->draw(GL_TRIANGLES);
     }
     mv.popMatrix();

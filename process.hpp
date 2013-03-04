@@ -84,23 +84,6 @@ public:
   }
 };
 
-class PlayerMoveProcess : public Process {
-private:
-  Direction m_direction;
-  player_t *m_player;
-  GLfloat m_dist;
-  GLfloat m_interval;
-
-public:
-  PlayerMoveProcess(player_t *player, Direction dir, GLfloat dist, GLfloat interval)
-  : Process(1000), m_dist(dist), m_interval(interval), m_player(player), m_direction(dir)
-  {
-  }
-
-  void advance(int delta);
-  bool isDone();
-};
-
 class PlayerJumpProcess : public Process {
   private: 
     player_t *m_player;

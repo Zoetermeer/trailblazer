@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iostream>
 #include <vector>
+#include <GL/glfw.h>
 #include "common.hpp"
 #include "matrix-stack.hpp"
 #include "player.hpp"
@@ -16,6 +17,7 @@
 #include "arm.hpp"
 #include "exception.hpp"
 #include "env.hpp"
+#include "opengl-app.hpp"
 
 #if defined(TEST)
 #include <cppunit/CompilerOutputter.h>
@@ -23,127 +25,236 @@
 #include <cppunit/ui/text/TestRunner.h>
 #endif
 
-const int DEFAULT_WINSIZE = 1000;
-const int UPDATE_EVERY_MS = 1000 / 60;
+const int DEFAULT_WIDTH = 1600;
+const int DEFAULT_HEIGHT = 1000;
 
-void init();
-void drawBox(GLenum mode);
-void draw();
-void update(int arg);
-void onWindowResize(int width, int height);
-void onKeyPress(unsigned char key, int x, int y);
-void onSpecialKeyPress(int key, int x, int y);
-void onKeyUp(unsigned char key, int x, int y);
-void onMouseClick(int buttonId, int upDown, int xw, int yw);
-void onMouseMove(int xw, int yw);
-void onPassiveMouseMove(int xw, int yw);
-
-#define MOVE_DIST 1.0
-#define MOVE_INTERVAL 0.5
-
-enum class ViewportMode {
-  PerspectiveOnly,
-  QuadWithPerspective,
-  QuadWithOrtho
-};
-
-typedef struct ui_state {
-  vec2_t<int> mouse;
-  vec2_t<int> button_down_mouse;
-  vec2_t<int> window;
-  ViewportMode viewport_mode;
-} ui_state_t;
-
-SolarSystem *ssys = NULL;
-std::vector<Ship*> ships;
-player_t the_player;
-ui_state_t ui;
-ShaderSet *shaders;
-FirstPersonCamera fpsCam;
-
-DefaultAmbientLighting lighting;
-
-Arm right_arm(ArmType::Right, 5.0, 5.0, 2.0);
-Arm left_arm(ArmType::Left, 5.0, 5.0, 2.0);
-
-class ShipListener : public IShipLaunchListener, public IShipLandListener {
+class WorldSandboxApp : public OpenGLApp {
+private:
+  SolarSystem *m_ssys = NULL;
+  std::vector<Ship*> m_ships;
+  Player m_player;
+  Direction m_moveDir;
+  FirstPersonCamera m_camera;
+  
+  Arm m_rightArm;
+  Arm m_leftArm;
+  
 public:
-  void onShipLaunch(Ship *ship)
+  WorldSandboxApp()
+  : m_rightArm(ArmType::Right, 5.0, 5.0, 2.0),
+    m_leftArm(ArmType::Left, 5.0, 5.0, 2.0),
+    m_moveDir(Direction::Idle)
   {
-    ships.push_back(ship);
+    
   }
   
-  void onShipLand(Ship *ship)
+private:
+  void initShaders(Env &env)
   {
-    std::vector<Ship*>::iterator it;
-    for (it = ships.begin(); it != ships.end(); ++it) {
-      if (*it == ship)
+    ShaderSet &shaders = env.getShaders();
+    try {
+      shaders.add(ShaderType::Default, "shaders/default.vert", "shaders/default.frag");
+      shaders.add(ShaderType::Phong, "shaders/phong.vert", "shaders/phong.frag");
+      shaders.add(ShaderType::Ship, "shaders/ship.vert", "shaders/ship.frag");
+      shaders.add(ShaderType::Distortion, "shaders/distortion.vert", "shaders/phong.frag");
+      shaders.add(ShaderType::Hemisphere, "shaders/hemisphere.vert", "shaders/default.frag");
+      CHECK_OPENGL_ERROR;
+    } catch (std::exception *ex) {
+      std::cout << ex->what() << std::endl;
+      delete ex;
+      exit(1);
+      return;
+    }
+  }
+  
+  void displayInstructions()
+  {
+    std::cout << "INSTRUCTIONS:" << std::endl;
+    std::cout << "w - forward" << std::endl;
+    std::cout << "s - backward" << std::endl;
+    std::cout << "d - right" << std::endl;
+    std::cout << "a - left" << std::endl;
+  }
+  
+protected:
+  virtual void init(Env &env)
+  {
+    OpenGLApp::init(env);
+    this->initShaders(env);
+    
+    glEnable(GL_DEPTH_TEST);
+    
+    //Set up the player
+    glm::vec4 startPos(0.f, -2.f, 50.f, 1.f);
+    m_player.setOffset(startPos);
+    Events::playerMoveEvent(startPos, startPos);
+    
+    //Camera
+    m_camera.init(m_player);
+    
+    //Generate the solar system
+    generator_params_t params = { 5000, 10 };
+    m_ssys = SolarSystem::generate(params);
+    std::cout << m_ssys->getName() << " system\n";
+    m_ssys->animate();
+    
+    //Generate the arm geometry
+    m_rightArm.generateGeometry();
+    m_leftArm.generateGeometry();
+    
+    displayInstructions();
+  }
+  
+  virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
+  {
+    m_player.mouseLook(oldPos.x, oldPos.y, newPos.x, newPos.y);
+   
+    //TODO: Implement when left-button pressed
+    //the_player.mouseRoll(oldX, oldY, xw, yw);
+  }
+  
+  virtual void onKeyDown(char key)
+  {
+    bool move = false;
+    Direction dir;
+    switch (key)
+    {
+      case 'w': /* Up */
+        m_moveDir = m_moveDir | Direction::Forward;
+        m_rightArm.swimForward();
+        m_leftArm.swimForward();
+        break;
+      case 's': /* Down */
+        m_moveDir = m_moveDir | Direction::Backward;
+        break;
+      case 'a': /* Left */
+        m_moveDir = m_moveDir | Direction::Left;
+        m_rightArm.swimForward();
+        break;
+      case 'd': /* Right */
+        m_moveDir = m_moveDir | Direction::Right;
+        m_leftArm.swimForward();
+        break;
+      case 'q':
+        m_player.getAttitude().yaw = nextAngle(m_player.getAttitude().yaw, -5.0);
+        break;
+      case 'e':
+        m_player.getAttitude().yaw = nextAngle(m_player.getAttitude().yaw, 5.0);
         break;
     }
+  }
+  
+  virtual void onKeyUp(char key)
+  {
+    switch (key)
+    {
+      case 'w':
+        m_moveDir = m_moveDir ^ Direction::Forward;
+        break;
+      case 's':
+        m_moveDir = m_moveDir ^ Direction::Backward;
+        break;
+      case 'a':
+        m_moveDir = m_moveDir ^ Direction::Left;
+        break;
+      case 'd':
+        m_moveDir = m_moveDir ^ Direction::Right;
+        break;
+    }
+  }
+  
+  virtual void update(int deltaMs)
+  {
+    ProcessList::advanceAll(deltaMs);
+    glm::vec4 old_pos = m_player.getOffset();
+    bool moved = false;
+    const int MOVE_INTERVAL = 1.f;
     
-    ships.erase(it);
+    //Move...
+    if ((m_moveDir & Direction::Forward) > Direction::Idle) {
+      m_player.move(MOVE_INTERVAL, Direction::Forward);
+      moved = true;
+    }
+    if ((m_moveDir & Direction::Backward) > Direction::Idle) {
+      m_player.move(MOVE_INTERVAL, Direction::Backward);
+      moved = true;
+    }
+    if ((m_moveDir & Direction::Right) > Direction::Idle) {
+      m_player.move(MOVE_INTERVAL, Direction::Right);
+      moved = true;
+    }
+    if ((m_moveDir & Direction::Left) > Direction::Idle) {
+      m_player.move(MOVE_INTERVAL, Direction::Left);
+      moved = true;
+    }
+    if (m_moveDir == Direction::Idle) {
+      m_rightArm.lower();
+      m_leftArm.lower();
+    }
+    
+    if (moved)
+      Events::playerMoveEvent(old_pos, m_player.getOffset());
+  }
+  
+  virtual void draw(Env &env)
+  {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::ivec2 winSz = this->getWindowSize();
+    glViewport(0, 0, winSz.x, winSz.y);
+    try {
+      MatrixStack &mv = env.getMV();
+      ShaderSet &shaders = env.getShaders();
+      MatrixStack &proj = env.getProj();
+      
+      mv.loadIdentity();
+      proj.loadIdentity();
+      
+      m_camera.draw(winSz.x, winSz.y, proj);
+      CHECK_OPENGL_ERROR;
+      
+      //Initialize the GL stack with the identity matrix
+      //(in case any drawing code is still not using shaders)
+      mv.syncToGlStack(GL_MODELVIEW);
+      
+      shaders.prepareDefault(env, GL::GRAY);
+      GL::drawPlane();
+      shaders.current().uniform(Uniform::COLOR) = GL::RED;
+      GL::drawAxes(env);
+      
+      //Draw a yellow sphere at player's position for testing
+      mv.pushMatrix();
+      {
+        glm::vec4 poff = m_player.getOffset();
+        mv.translate(poff.x, poff.y, poff.z);
+        Attitude &att = m_player.getAttitude();
+        mv.rotateY(att.yaw);
+        mv.rotateZ(att.roll);
+        mv.rotateX(att.pitch);
+        mv.translate(0.f, 3.f, -20.f);
+        
+        mv.scaleZ(.1f);
+        shaders.prepareDefault(env, GL::YELLOW);
+        glutSolidSphere(1.f, 20, 20);
+      }
+      mv.popMatrix();
+      
+      m_ssys->draw(env);
+      m_rightArm.draw(env);
+      m_leftArm.draw(env);
+      
+      //Draw ships
+      for (Ship *ship : m_ships) {
+        ship->draw(env);
+      }
+    } catch (OpenGLException *ex) {
+      std::cout << "OpenGL Exception: " << ex->what() << std::endl;
+      delete ex;
+      exit(1);
+    }
+    
+    this->swapBuffers();
   }
 };
-
-Ship *sh;
-
-void displayInstructions()
-{
-  std::cout << "INSTRUCTIONS:" << std::endl;
-  std::cout << "w - forward" << std::endl;
-  std::cout << "s - backward" << std::endl;
-  std::cout << "d - right" << std::endl;
-  std::cout << "a - left" << std::endl;
-}
-
-void init()
-{
-  //Build shaders
-  shaders = new ShaderSet();
-  try {
-    shaders->add(ShaderType::Default, "shaders/default.vert", "shaders/default.frag");
-    shaders->add(ShaderType::Phong, "shaders/phong.vert", "shaders/phong.frag");
-    shaders->add(ShaderType::Ship, "shaders/ship.vert", "shaders/ship.frag");
-    shaders->add(ShaderType::Distortion, "shaders/distortion.vert", "shaders/phong.frag");
-    shaders->add(ShaderType::Hemisphere, "shaders/hemisphere.vert", "shaders/default.frag");
-    CHECK_OPENGL_ERROR;
-  } catch (ShaderCompileException *e) {
-    std::cout << e->what() << std::endl;
-    delete e;
-    exit(1);
-    return;
-  } catch (OpenGLException* oex) {
-    std::cout << oex->what() << std::endl;
-    delete oex;
-    exit(1);
-    return;
-  } catch (FileNotFoundException *fx) {
-    std::cout << fx->what() << std::endl;
-    delete fx;
-    exit(1);
-    return;
-  }
-  
-  glEnable(GL_DEPTH_TEST);
-  ui.viewport_mode = ViewportMode::PerspectiveOnly;
-  fpsCam.init(the_player);
-
-  ShipListener *listener = new ShipListener();
-  Events::addListener((IShipLaunchListener*)listener);
-  Events::addListener((IShipLandListener*)listener);
-  
-  //Generate the solar system
-  generator_params_t params = { 5000, 10 };
-  ssys = SolarSystem::generate(params);
-  std::cout << ssys->getName() << " system\n";
-  ssys->animate();
-  
-  //Generate the arm geometry
-  right_arm.generateGeometry();
-  left_arm.generateGeometry();
-  
-  sh = new Ship(50.0);
-}
 
 int main(int argc, char **argv)
 {
@@ -160,255 +271,10 @@ int main(int argc, char **argv)
   return success ? 0 : 1;
   
 #else 
-  glutInit(&argc, argv);
   
-  //It appears that although most (all?) macs running at least Lion
-  //should have hardware supporting 3.2, but GLUT doesn't enable it by default.
-  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize(DEFAULT_WINSIZE, DEFAULT_WINSIZE);
-  ui.window.x = DEFAULT_WINSIZE;
-  ui.window.y = DEFAULT_WINSIZE;
+  WorldSandboxApp app;
+  app.setConfineMouseCursor(true);
+  app.run(DEFAULT_WIDTH, DEFAULT_HEIGHT, "World Sandbox");
 
-  glutCreateWindow("Space Explorer");
-  
-  memset(&the_player, 0, sizeof(player_t));
-  the_player.offset.y = -2.0;
-  the_player.offset.x = 50;
-  Events::playerMoveEvent(the_player.offset, the_player.offset);
-  
-  glutDisplayFunc(draw);
-  glutReshapeFunc(onWindowResize);
-  glutKeyboardFunc(onKeyPress);
-  glutSpecialFunc(onSpecialKeyPress);
-  glutKeyboardUpFunc(onKeyUp);
-  glutMouseFunc(onMouseClick);
-  glutMotionFunc(onMouseMove);
-  glutPassiveMotionFunc(onPassiveMouseMove);
-
-  init();
-  displayInstructions();
-
-  update(0);
-  glutMainLoop();
 #endif
-}
-
-void onWindowResize(int width, int height)
-{
-  ui.window.x = width;
-  ui.window.y = height;
-}
-
-int move_dir = DirectionIdle;
-
-void update(int arg)
-{
-  ProcessList::advanceAll(UPDATE_EVERY_MS);
-  glm::vec4 old_pos = the_player.offset;
-  bool moved = false;
-  
-  //Move...
-  if (move_dir & DirectionForward) {
-    move(&the_player, MOVE_INTERVAL, DirectionForward);
-    moved = true;
-  }
-  if (move_dir & DirectionBackward) {
-    move(&the_player, MOVE_INTERVAL, DirectionBackward);
-    moved = true;
-  }
-  if (move_dir & DirectionRight) {
-    move(&the_player, MOVE_INTERVAL, DirectionRight);
-    moved = true;
-  }
-  if (move_dir & DirectionLeft) {
-    move(&the_player, MOVE_INTERVAL, DirectionLeft);
-    moved = true;
-  }
-  if (move_dir == DirectionIdle) {
-    right_arm.lower();
-    left_arm.lower();
-  }
-  
-  if (moved)
-    Events::playerMoveEvent(old_pos, the_player.offset);
-
-  glutPostRedisplay();
-  glutTimerFunc(UPDATE_EVERY_MS, update, 0);
-}
-
-void onSpecialKeyPress(int key, int x, int y)
-{
-  switch (key)
-  {
-    case GLUT_KEY_UP:
-      sh->position.y = sh->position.y.getValue() + 1.f;
-      break;
-    case GLUT_KEY_DOWN:
-      sh->position.y = sh->position.y.getValue() - 1.f;
-      break;
-  }
-}
-
-void onKeyPress(unsigned char key, int x, int y)
-{
-  Process *proc = NULL;
-  bool move = false;
-  Direction dir;
-  switch (key)
-  {
-    case 'w': /* Up */
-      move_dir |= DirectionForward;
-      right_arm.swimForward();
-      left_arm.swimForward();
-      break;
-    case 's': /* Down */
-      move_dir |= DirectionBackward;
-      break;
-    case 'a': /* Left */
-      move_dir |= DirectionLeft;
-      right_arm.swimForward();
-      break;
-    case 'd': /* Right */
-      move_dir |= DirectionRight;
-      left_arm.swimForward();
-      break;
-    case 'q':
-      the_player.yaw = nextAngle(the_player.yaw, -5.0);
-      break;
-    case 'e':
-      the_player.yaw = nextAngle(the_player.yaw, 5.0);
-      break;
-    case ' ': /* Jump */
-      ui.viewport_mode = ui.viewport_mode == ViewportMode::PerspectiveOnly ?
-                                              ViewportMode::QuadWithPerspective :
-                                              ViewportMode::PerspectiveOnly;
-      break;
-    case 'o':
-      if (ui.viewport_mode == ViewportMode::PerspectiveOnly)
-        break;
-      ui.viewport_mode = ui.viewport_mode == ViewportMode::QuadWithPerspective ?
-      ViewportMode::QuadWithOrtho : ViewportMode::QuadWithPerspective;
-      break;
-  }
-  
-  if (proc)
-    ProcessList::add(proc);
-}
-
-void onKeyUp(unsigned char key, int x, int y)
-{
-  switch (key)
-  {
-    case 'w':
-      move_dir ^= DirectionForward;
-      break;
-    case 's':
-      move_dir ^= DirectionBackward;
-      break;
-    case 'a':
-      move_dir ^= DirectionLeft;
-      break;
-    case 'd':
-      move_dir ^= DirectionRight;
-      break;
-  }
-}
-
-void onMouseClick(int buttonId, int upDown, int xw, int yw)
-{
-  
-}
-
-void onMouseMove(int xw, int yw)
-{
-  int xdelt = xw - ui.button_down_mouse.x;
-  the_player.roll = nextAngle(the_player.roll, xdelt);
-  
-  ui.button_down_mouse.x = xw;
-  ui.button_down_mouse.y = yw;
-  
-  /* Update regular x/y coords for the mouse, so regular 
-     move events don't have skewed deltas */
-  ui.mouse.x = xw;
-  ui.mouse.y = yw;
-  
-  Events::playerLookEvent({ the_player.roll, the_player.pitch, the_player.yaw });
-}
-
-void onPassiveMouseMove(int xw, int yw)
-{
-  int xdelt = xw - ui.mouse.x, ydelt = yw - ui.mouse.y;
-  if (xw >= ui.window.x || yw >= ui.window.y) {
-    /* Mark, but don't handle */
-    ui.mouse.x = xw;
-    ui.mouse.y = yw;
-    return;
-  }
-  
-  GLfloat new_pitch = nextAngle(the_player.pitch, ydelt);
-  /* Bounds on the pitch of the player's head */
-  if (new_pitch <= 70.0 || new_pitch >= 290.0)
-    the_player.pitch = new_pitch;
-  
-  the_player.yaw = nextAngle(the_player.yaw, xdelt);
-  ui.mouse.x = xw;
-  ui.mouse.y = yw;
-  
-  /* Update the 'mouse down' coordinates as well, 
-     so the deltas for the first mouse down+drag event 
-     aren't wildly skewed */
-  ui.button_down_mouse.x = xw;
-  ui.button_down_mouse.y = yw;
-  
-  Events::playerLookEvent({ the_player.roll, the_player.pitch, the_player.yaw });
-}
-
-void drawScene(ICamera &camera, bool drawArms)
-{
-  try {
-    MatrixStack mv, proj;
-    Env env(mv, proj, *shaders);
-    camera.draw(ui.window.x, ui.window.y, proj);
-    CHECK_OPENGL_ERROR;
-    
-    //Initialize the GL stack with the identity matrix
-    //(in case any drawing code is still not using shaders)
-    mv.syncToGlStack(GL_MODELVIEW);
-
-    shaders->prepareDefault(env, GL::GRAY);
-    GL::drawPlane();
-    shaders->current().uniform(Uniform::COLOR) = GL::RED;
-    GL::drawAxes(env);
-
-    ssys->draw(env);
-    if (drawArms) {
-      right_arm.draw(env);
-      left_arm.draw(env);
-    }
-    
-    //Draw ships
-    
-    //sh.position.x = 20.f;
-    //sh.position.y = -20.f;
-    //sh.position.z = 20.f;
-    //shaders->prepareShip(env, glm::vec4(0.2, 0.2, 0.2, 1.0), GL::GRAY, GL::WHITE);
-    //sh->draw(env);
-    
-    for (Ship *ship : ships) {
-      ship->draw(env);
-    }
-  } catch (OpenGLException *ex) {
-    std::cout << "OpenGL Exception: " << ex->what() << std::endl;
-    delete ex;
-    exit(1);
-  }
-}
-
-void draw()
-{
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, ui.window.x, ui.window.y);
-  drawScene(fpsCam, true);
-  
-  glutSwapBuffers();
 }

@@ -22,8 +22,8 @@ void Ship::draw(Env &env)
     m_world = mv.getCurrent();
     
     mv.scale(m_scale, m_scale, m_scale);
-    //shaders.prepareShip(env, glm::vec4(0.2, 0.2, 0.2, 1.0), GL::GRAY, GL::WHITE);
-    shaders.prepareHemisphere(env, glm::vec3(0.f, 0.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.2f, 0.2f, 0.2f, 1.f));
+    shaders.prepareShip(env, glm::vec4(0.2, 0.2, 0.2, 1.0), GL::GRAY, GL::WHITE);
+    //shaders.prepareHemisphere(env, glm::vec3(0.f, 0.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.2f, 0.2f, 0.2f, 1.f));
     m_verts->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
