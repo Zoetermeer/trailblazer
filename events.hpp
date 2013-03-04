@@ -31,6 +31,16 @@ public:
   virtual void onShipLand(Ship *ship) = 0;
 };
 
+class IKeyDownListener {
+public:
+  virtual void onKeyDown(int key, bool special) = 0;
+};
+
+class IKeyUpListener {
+public:
+  virtual void onKeyUp(int key, bool special) = 0;
+};
+
 class Events {
 private:
   Events() { }
@@ -41,18 +51,24 @@ private:
   static std::vector<IPlayerLookListener*> m_plListeners;
   static std::vector<IShipLaunchListener*> m_launchListeners;
   static std::vector<IShipLandListener*> m_landListeners;
+  static std::vector<IKeyDownListener*> m_keyDownListeners;
+  static std::vector<IKeyUpListener*> m_keyUpListeners;
 
 public:
   static void addListener(IPlayerMoveListener *listener);
   static void addListener(IPlayerLookListener *listener);
   static void addListener(IShipLaunchListener *listener);
   static void addListener(IShipLandListener *listener);
+  static void addListener(IKeyDownListener *listener);
+  static void addListener(IKeyUpListener *listener);
   static void removeListener(EventType type, void *listener);
 
   static void playerMoveEvent(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
   static void playerLookEvent(const Attitude &att);
   static void shipLaunchEvent(Ship *ship);
   static void shipLandEvent(Ship *ship);
+  static void keyDownEvent(int key, bool special);
+  static void keyUpEvent(int key, bool special);
 };
 
 #endif

@@ -55,21 +55,6 @@ void ProcessList::advanceAll(int delta)
   }
 }
 
-void PlayerJumpProcess::advance(int delta)
-{
-  Process::advance(delta);
-  
-  if (getElapsedTime() == delta) {
-    //Just started, add the animations
-    
-  }
-}
-
-bool PlayerJumpProcess::isDone()
-{
-  return getNormalizedTimeElapsed() == 1.f;
-}
-
 void MaybeSpawnShipProcess::advance(int delta)
 {
   Process::advance(delta);

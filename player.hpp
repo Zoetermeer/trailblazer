@@ -1,8 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "common.hpp"
 #include <type_traits>
+#include "common.hpp"
+#include "events.hpp"
+#include "process.hpp"
 
 enum class Direction {
   Idle = 0,
@@ -49,16 +51,24 @@ typedef struct player {
 
 void move(player_t *player, GLfloat distance, Direction dir);
 
-class Player {
+class Player : public IKeyDownListener, public IKeyUpListener, public Process {
 private:
   glm::vec4 m_offset;
   GLfloat m_heading;
   Attitude m_attitude;
+  Direction m_moveDir;
   
 public:
   Player()
   {
-    
+    ProcessList::add(this);
+    Events::addListener((IKeyDownListener*)this);
+    Events::addListener((IKeyUpListener*)this);
+  }
+  
+  ~Player()
+  {
+    ProcessList::remove(this);
   }
   
 public:
@@ -70,6 +80,14 @@ public:
   void mouseRoll(int oldX, int oldY, int newX, int newY);
   void mouseLook(int oldX, int oldY, int newX, int newY);
   void move(GLfloat distance, Direction dir);
+  
+  //Key listener methods
+  void onKeyDown(int key, bool special);
+  void onKeyUp(int key, bool special);
+  
+  //Process methods
+  void advance(int delta);
+  bool isDone();
 };
 
 #endif

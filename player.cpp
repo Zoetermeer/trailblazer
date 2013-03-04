@@ -66,3 +66,89 @@ void Player::move(GLfloat distance, Direction dir)
           m_attitude.yaw.getValue());
 #endif
 }
+
+void Player::onKeyDown(int key, bool special)
+{
+  bool move = false;
+  Direction dir;
+  switch (key)
+  {
+    case 'w': /* Up */
+      m_moveDir = m_moveDir | Direction::Forward;
+      //m_rightArm.swimForward();
+      //m_leftArm.swimForward();
+      break;
+    case 's': /* Down */
+      m_moveDir = m_moveDir | Direction::Backward;
+      break;
+    case 'a': /* Left */
+      m_moveDir = m_moveDir | Direction::Left;
+      //m_rightArm.swimForward();
+      break;
+    case 'd': /* Right */
+      m_moveDir = m_moveDir | Direction::Right;
+      //m_leftArm.swimForward();
+      break;
+    case 'q':
+      m_attitude.yaw = nextAngle(m_attitude.yaw, -5.0);
+      break;
+    case 'e':
+      m_attitude.yaw = nextAngle(m_attitude.yaw, 5.0);
+      break;
+  }
+}
+
+void Player::onKeyUp(int key, bool special)
+{
+  switch (key)
+  {
+    case 'w':
+      m_moveDir = m_moveDir ^ Direction::Forward;
+      break;
+    case 's':
+      m_moveDir = m_moveDir ^ Direction::Backward;
+      break;
+    case 'a':
+      m_moveDir = m_moveDir ^ Direction::Left;
+      break;
+    case 'd':
+      m_moveDir = m_moveDir ^ Direction::Right;
+      break;
+  }
+}
+
+void Player::advance(int delta)
+{
+  glm::vec4 old_pos = m_offset;
+  bool moved = false;
+  const int MOVE_INTERVAL = 1.f;
+  if ((m_moveDir & Direction::Forward) > Direction::Idle) {
+    move(MOVE_INTERVAL, Direction::Forward);
+    moved = true;
+  }
+  if ((m_moveDir & Direction::Backward) > Direction::Idle) {
+    move(MOVE_INTERVAL, Direction::Backward);
+    moved = true;
+  }
+  if ((m_moveDir & Direction::Right) > Direction::Idle) {
+    move(MOVE_INTERVAL, Direction::Right);
+    moved = true;
+  }
+  if ((m_moveDir & Direction::Left) > Direction::Idle) {
+    move(MOVE_INTERVAL, Direction::Left);
+    moved = true;
+  }
+  
+  if (m_moveDir == Direction::Idle) {
+    //m_rightArm.lower();
+    //m_leftArm.lower();
+  }
+  
+  if (moved)
+    Events::playerMoveEvent(old_pos, m_offset);
+}
+
+bool Player::isDone()
+{
+  return false;
+}

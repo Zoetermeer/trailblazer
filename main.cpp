@@ -1,9 +1,6 @@
 #include <string.h>
-#include <stdio.h>
-#include <math.h>
 #include <iostream>
 #include <vector>
-#include <GL/glfw.h>
 #include "common.hpp"
 #include "matrix-stack.hpp"
 #include "player.hpp"
@@ -12,7 +9,6 @@
 #include "cameras.hpp"
 #include "shader.hpp"
 #include "events.hpp"
-#include "lighting.hpp"
 #include "GL.hpp"
 #include "arm.hpp"
 #include "exception.hpp"
@@ -115,85 +111,17 @@ protected:
   
   virtual void onKeyDown(char key)
   {
-    bool move = false;
-    Direction dir;
-    switch (key)
-    {
-      case 'w': /* Up */
-        m_moveDir = m_moveDir | Direction::Forward;
-        m_rightArm.swimForward();
-        m_leftArm.swimForward();
-        break;
-      case 's': /* Down */
-        m_moveDir = m_moveDir | Direction::Backward;
-        break;
-      case 'a': /* Left */
-        m_moveDir = m_moveDir | Direction::Left;
-        m_rightArm.swimForward();
-        break;
-      case 'd': /* Right */
-        m_moveDir = m_moveDir | Direction::Right;
-        m_leftArm.swimForward();
-        break;
-      case 'q':
-        m_player.getAttitude().yaw = nextAngle(m_player.getAttitude().yaw, -5.0);
-        break;
-      case 'e':
-        m_player.getAttitude().yaw = nextAngle(m_player.getAttitude().yaw, 5.0);
-        break;
-    }
+    Events::keyDownEvent(key, false);
   }
   
   virtual void onKeyUp(char key)
   {
-    switch (key)
-    {
-      case 'w':
-        m_moveDir = m_moveDir ^ Direction::Forward;
-        break;
-      case 's':
-        m_moveDir = m_moveDir ^ Direction::Backward;
-        break;
-      case 'a':
-        m_moveDir = m_moveDir ^ Direction::Left;
-        break;
-      case 'd':
-        m_moveDir = m_moveDir ^ Direction::Right;
-        break;
-    }
+    Events::keyUpEvent(key, false);
   }
   
   virtual void update(int deltaMs)
   {
     ProcessList::advanceAll(deltaMs);
-    glm::vec4 old_pos = m_player.getOffset();
-    bool moved = false;
-    const int MOVE_INTERVAL = 1.f;
-    
-    //Move...
-    if ((m_moveDir & Direction::Forward) > Direction::Idle) {
-      m_player.move(MOVE_INTERVAL, Direction::Forward);
-      moved = true;
-    }
-    if ((m_moveDir & Direction::Backward) > Direction::Idle) {
-      m_player.move(MOVE_INTERVAL, Direction::Backward);
-      moved = true;
-    }
-    if ((m_moveDir & Direction::Right) > Direction::Idle) {
-      m_player.move(MOVE_INTERVAL, Direction::Right);
-      moved = true;
-    }
-    if ((m_moveDir & Direction::Left) > Direction::Idle) {
-      m_player.move(MOVE_INTERVAL, Direction::Left);
-      moved = true;
-    }
-    if (m_moveDir == Direction::Idle) {
-      m_rightArm.lower();
-      m_leftArm.lower();
-    }
-    
-    if (moved)
-      Events::playerMoveEvent(old_pos, m_player.getOffset());
   }
   
   virtual void draw(Env &env)

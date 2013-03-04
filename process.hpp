@@ -2,7 +2,6 @@
 #define PROCESS_H
 
 #include "common.hpp"
-#include "player.hpp"
 #include "ship.hpp"
 
 class Process;
@@ -82,21 +81,6 @@ public:
   {
     return getNormalizedTimeElapsed() == 1.f;
   }
-};
-
-class PlayerJumpProcess : public Process {
-  private: 
-    player_t *m_player;
-
-public:
-  PlayerJumpProcess(player_t *player)
-  : Process(1000), m_player(player)
-  {
-      
-  }
-
-  void advance(int delta);
-  bool isDone();
 };
 
 class MaybeSpawnShipProcess : public Process {
