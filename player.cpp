@@ -154,6 +154,9 @@ void Player::advance(int delta)
     //m_leftArm.lower();
   }
   
+  //TODO: Collision detection here
+  
+  
   if (moved)
     Events::playerMoveEvent(old_pos, m_offset);
 }
