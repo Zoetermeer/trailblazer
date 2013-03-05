@@ -5,7 +5,10 @@
 #include "scene-object.hpp"
 #include "env.hpp"
 #include "vertex-batch.hpp"
+#include "events.hpp"
+#include "process.hpp"
 #include <cmath>
+#include <vector>
 
 //Number of voxels per chunk face
 #define CHUNK_SIZE 32
@@ -97,6 +100,7 @@ public:
     m_chunkIndex.y = z;
   }
   
+  bool getIsGenerated() const { return m_generated; }
   bool getContainsPlayer() const { return m_containsPlayer; }
   void setContainsPlayer(bool v) { m_containsPlayer = v; }
   
@@ -111,6 +115,45 @@ public:
 public:
   void generate();
   virtual void draw(Env &env);
+};
+
+//The number of chunks visible in a given dimension.
+//So with 5, we see the one we're currently in, plus 2 on
+//either side.
+#define VISIBLE_CHUNKS 5
+class ChunkBuffer : public IPlayerMoveListener, public Process, public SceneObject {
+private:
+  glm::ivec3 m_curPlayerChunkCoords;
+  std::vector<Chunk*> m_loadQueue;
+  std::vector<Chunk*> m_visibleQueue;
+  Chunk *m_curPlayerChunk;
+  
+public:
+  ChunkBuffer()
+  : m_curPlayerChunk(NULL)
+  {
+    Events::addListener((IPlayerMoveListener*)this);
+    ProcessList::add(this);
+  }
+  
+  ~ChunkBuffer()
+  {
+    ProcessList::remove(this);
+    Events::removeListener(EventPlayerMove, this);
+  }
+  
+private:
+  void removeChunksAtX(int xIndex);
+  void removeChunksAtZ(int zIndex);
+  
+public:
+  void init();
+  virtual void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
+  virtual void draw(Env &env);
+  virtual void advance(int delta);
+  virtual bool isDone();
+  
+  Chunk *chunkAt(int x, int z);
 };
 
 #endif

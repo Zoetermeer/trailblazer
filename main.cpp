@@ -39,6 +39,7 @@ private:
   Arm m_rightArm;
   Arm m_leftArm;
   
+  ChunkBuffer m_cbuffer;
   Chunk *m_chunks[SHOW_CHUNKS][SHOW_CHUNKS];
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
@@ -108,13 +109,16 @@ protected:
     
     displayInstructions();
     
+    m_cbuffer.init();
     //Generate the height map
+    /*
     for (int i = 0; i < SHOW_CHUNKS; i++) {
       for (int j = 0; j < SHOW_CHUNKS; j++) {
         m_chunks[i][j] = new Chunk(i, -j);
         m_chunks[i][j]->generate();
       }
     }
+     */
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -175,6 +179,7 @@ protected:
     ProcessList::advanceAll(deltaMs);
     
     //Show the player's chunk coords
+    /*
     glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(m_player.getOffset()));
     if (chunkCoords != m_curChunkCoord) {
       m_curChunkCoord = chunkCoords;
@@ -199,6 +204,7 @@ protected:
       if (done)
         m_curChunk->setContainsPlayer(true);
     }
+     */
   }
   
   virtual void draw(Env &env)
@@ -244,11 +250,14 @@ protected:
       mv.popMatrix();
       
       //Draw the terrain
+      m_cbuffer.draw(env);
+      /*
       for (int i = 0; i < SHOW_CHUNKS; i++) {
         for (int j = 0; j < SHOW_CHUNKS; j++) {
           m_chunks[i][j]->draw(env);
         }
       }
+       */
       
       //m_ssys->draw(env);
       //m_rightArm.draw(env);
