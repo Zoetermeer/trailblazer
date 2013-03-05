@@ -37,7 +37,10 @@ private:
   Arm m_rightArm;
   Arm m_leftArm;
   
-  Chunk *m_chunk;
+  Chunk *m_chunk1;
+  Chunk *m_chunk2;
+  Chunk *m_chunk3;
+  Chunk *m_chunk4;
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
   
@@ -107,18 +110,14 @@ protected:
     displayInstructions();
     
     //Generate the height map
-    m_chunk = new Chunk();
-    m_chunk->generate();
-    /*
-    noise::module::Perlin pmod;
-    for (int i = 0; i < NUM_VOXELS; i++) {
-      for (int j = 0; j < NUM_VOXELS; j++) {
-        GLfloat x = (GLfloat)i / 100.f;
-        GLfloat z = (GLfloat)j / 100.f;
-        m_heightMap[i][j] = pmod.GetValue(x, 1.f, z);
-      }
-    }
-     */
+    m_chunk1 = new Chunk(0, 0);
+    m_chunk2 = new Chunk(1, 0);
+    m_chunk3 = new Chunk(0, 1);
+    m_chunk4 = new Chunk(1, 1);
+    m_chunk1->generate();
+    m_chunk2->generate();
+    m_chunk3->generate();
+    m_chunk4->generate();
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -220,34 +219,10 @@ protected:
       mv.popMatrix();
       
       //Draw the terrain
-      m_chunk->draw(env);
-      /*
-      mv.pushMatrix();
-      {
-        mv.scale(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
-        for (int i = 0; i < NUM_VOXELS; i++) {
-          mv.pushMatrix();
-          {
-            for (int j = 0; j < NUM_VOXELS; j++) {
-              GLfloat ht = (m_heightMap[i][j] + 1.f) * 10.f;
-              mv.pushMatrix();
-              {
-                mv.scaleY(ht);
-                mv.translateY(1.f);
-                shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
-                GL::drawBox(GL_TRIANGLES);
-              }
-              mv.popMatrix();
-              mv.translateZ(2.f);
-            }
-          }
-          mv.popMatrix();
-          
-          mv.translateX(2.f);
-        }
-      }
-      mv.popMatrix();
-       */
+      m_chunk1->draw(env);
+      m_chunk2->draw(env);
+      m_chunk3->draw(env);
+      m_chunk4->draw(env);
       
       //Draw a solid ground plane
       /*

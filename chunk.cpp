@@ -103,10 +103,10 @@ void Chunk::draw(Env &env)
   
   MatrixStack &mv = env.getMV();
   ShaderSet &shaders = env.getShaders();
-  GLfloat offset = CHUNK_SIZE * .5f;
+  GLfloat offset = CHUNK_SIZE * VOXEL_SIZE;
   mv.pushMatrix();
   {
-    mv.translate(m_chunkIndex.x * offset, offset, -(m_chunkIndex.y * offset));
+    mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
     shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
     m_vbo->draw(GL_TRIANGLES);
   }

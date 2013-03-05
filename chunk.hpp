@@ -45,15 +45,29 @@ private:
   
 public:
   Chunk()
-  : SceneObject(), m_generated(false)
+  : Chunk(0, 0)
   {
     m_vbo = NULL;
+  }
+  
+  Chunk(int xIndex, int zIndex)
+  : SceneObject(), m_generated(false), m_chunkIndex(xIndex, zIndex)
+  {
+    
   }
   
   ~Chunk()
   {
     if (m_vbo)
       delete m_vbo;
+  }
+  
+public:
+  glm::ivec2 getIndex() const { return m_chunkIndex; }
+  void setIndex(int x, int z)
+  {
+    m_chunkIndex.x = x;
+    m_chunkIndex.y = z;
   }
   
 public:
