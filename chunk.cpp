@@ -29,10 +29,34 @@ void Chunk::generate()
   stack.translate(-offset, -offset, offset);
   //Should now be at the origin of voxel (0,0,0)
   
-  noise::module::Perlin perlin;
+  noise::module::RidgedMulti mountain;
+  noise::module::Billow baseFlat;
+  baseFlat.SetFrequency(2.0);
+  noise::module::ScaleBias flatTerrain;
+  flatTerrain.SetSourceModule(0, baseFlat);
+  flatTerrain.SetScale(0.125);
+  flatTerrain.SetBias(-0.75);
+  
+  //Perlin to control which type of terrain to generate
+  noise::module::Perlin terrainType;
+  terrainType.SetFrequency(0.5);
+  terrainType.SetPersistence(0.25);
+  
+  noise::module::Select terrainSelector;
+  terrainSelector.SetSourceModule(0, flatTerrain);
+  terrainSelector.SetSourceModule(1, mountain);
+  terrainSelector.SetControlModule(terrainType);
+  terrainSelector.SetBounds(0.0, 1000.0);
+  terrainSelector.SetEdgeFalloff(0.3);
+  
+  noise::module::Turbulence finalTerrain;
+  finalTerrain.SetSourceModule(0, terrainSelector);
+  finalTerrain.SetFrequency(4.0);
+  finalTerrain.SetPower(0.125);
+  
   utils::NoiseMap heightMap;
   utils::NoiseMapBuilderPlane heightMapBuilder;
-  heightMapBuilder.SetSourceModule(perlin);
+  heightMapBuilder.SetSourceModule(finalTerrain);
   heightMapBuilder.SetDestNoiseMap(heightMap);
   heightMapBuilder.SetDestSize(32, 32);
   heightMapBuilder.SetBounds(m_chunkIndex.x,
@@ -128,8 +152,7 @@ void Chunk::draw(Env &env)
   mv.pushMatrix();
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
-    //shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
-    shaders.prepareHemisphere(env, glm::vec3(0.f, 300.f, 0.f), glm::vec4(.8f, .8f, .8f, 1.f), glm::vec4(0.f, 100.f / 255.f, 0.f, 1.f));
+    shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
     m_vbo->draw(GL_TRIANGLES);
   }
   mv.popMatrix();

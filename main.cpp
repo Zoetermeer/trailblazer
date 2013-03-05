@@ -26,6 +26,8 @@
 const int DEFAULT_WIDTH = 1600;
 const int DEFAULT_HEIGHT = 1000;
 
+#define SHOW_CHUNKS 8
+
 class WorldSandboxApp : public OpenGLApp {
 private:
   SolarSystem *m_ssys = NULL;
@@ -37,7 +39,7 @@ private:
   Arm m_rightArm;
   Arm m_leftArm;
   
-  Chunk *m_chunks[4][4];
+  Chunk *m_chunks[SHOW_CHUNKS][SHOW_CHUNKS];
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
   
@@ -107,9 +109,9 @@ protected:
     displayInstructions();
     
     //Generate the height map
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        m_chunks[i][j] = new Chunk(i, j);
+    for (int i = 0; i < SHOW_CHUNKS; i++) {
+      for (int j = 0; j < SHOW_CHUNKS; j++) {
+        m_chunks[i][j] = new Chunk(i, -j);
         m_chunks[i][j]->generate();
       }
     }
@@ -214,23 +216,11 @@ protected:
       mv.popMatrix();
       
       //Draw the terrain
-      for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+      for (int i = 0; i < SHOW_CHUNKS; i++) {
+        for (int j = 0; j < SHOW_CHUNKS; j++) {
           m_chunks[i][j]->draw(env);
         }
       }
-      
-      //Draw a solid ground plane
-      /*
-      mv.pushMatrix();
-      {
-        mv.translateY(-1.f);
-        mv.scale(2000.f, 1.f, 2000.f);
-        shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
-        GL::drawBox(GL_TRIANGLES);
-      }
-      mv.popMatrix();
-       */
       
       //m_ssys->draw(env);
       //m_rightArm.draw(env);

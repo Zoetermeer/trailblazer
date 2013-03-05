@@ -50,6 +50,10 @@ public:
   bool getIsActive() const { return m_isActive; }
   Neighbors getNeighbors() const { return m_neighbors; }
   void setNeighbors(Neighbors n) { m_neighbors = n; }
+  glm::vec3 worldToVoxelSpace(glm::vec3 wc) const
+  {
+    
+  }
   
   void setIndex(int x, int y, int z)
   {

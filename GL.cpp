@@ -5,6 +5,7 @@
 #include "vertex-batch.hpp"
 #include "matrix-stack.hpp"
 #include "env.hpp"
+#include "chunk.hpp"
 
 glm::vec4 GL::WHITE = glm::vec4(1.0, 1.0, 1.0, 1.0);
 glm::vec4 GL::GREEN = glm::vec4(0.0, 1.0, 0.0, 1.0);
@@ -49,7 +50,7 @@ void GL::drawPlane() throw (OpenGLException*)
     //Same normal for all
     const glm::vec3 nrm = glm::vec3(0.0f, 1.0f, 0.0f);
     batch.begin();
-    for (i = -999.0; i < 1000.0; i += 4) {
+    for (i = -999.0; i < 1000.0; i += VOXEL_SIZE) {
       batch.add(i, 0.0, -1000.0, nrm.x, nrm.y, nrm.z);
       batch.add(i, 0.0, 1000.0, nrm.x, nrm.y, nrm.z);
       batch.add(-1000.0, 0.0, i, nrm.x, nrm.y, nrm.z);
@@ -93,13 +94,14 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
   ShaderSet &shaders = env.getShaders();
   
   //Label axes
+  const GLfloat TICK_HEIGHT = CHUNK_SIZE * VOXEL_SIZE + VOXEL_SIZE;
   mv.pushMatrix();
   {
-    mv.translateX(-200.f);
-    for (int i = -10; i < 10; i++) {
+    mv.translateX(-1000.f);
+    for (int i = -50; i < 50; i++) {
       mv.pushMatrix();
       {
-        mv.scale(0.f, 2.f, 0.f);
+        mv.scale(0.f, TICK_HEIGHT, 0.f);
         shaders.current().uniform(Uniform::COLOR) = GL::RED;
         shaders.current().uniform(Uniform::MODELVIEW_MATRIX) = mv.current();
         GL::drawLine();
@@ -107,7 +109,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
       mv.popMatrix();
       mv.pushMatrix();
       {
-        mv.translateY(2.f);
+        mv.translateY(TICK_HEIGHT);
         shaders.current().uniform(Uniform::COLOR) = GL::WHITE;
         shaders.current().uniform(Uniform::MODELVIEW_MATRIX) = mv.current();
         char str[12];
@@ -122,11 +124,11 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
   
   mv.pushMatrix();
   {
-    mv.translateZ(-200.f);
-    for (int i = -10; i < 10; i++) {
+    mv.translateZ(-1000.f);
+    for (int i = -50; i < 50; i++) {
       mv.pushMatrix();
       {
-        mv.scale(0.f, 2.f, 0.f);
+        mv.scale(0.f, TICK_HEIGHT, 0.f);
         shaders.current().uniform(Uniform::COLOR) = GL::RED;
         shaders.current().uniform(Uniform::MODELVIEW_MATRIX) = mv.current();
         GL::drawLine();
@@ -134,7 +136,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
       mv.popMatrix();
       mv.pushMatrix();
       {
-        mv.translateY(2.f);
+        mv.translateY(TICK_HEIGHT);
         shaders.current().uniform(Uniform::COLOR) = GL::WHITE;
         shaders.current().uniform(Uniform::MODELVIEW_MATRIX) = mv.current();
         char str[12];
