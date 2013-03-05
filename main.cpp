@@ -37,10 +37,7 @@ private:
   Arm m_rightArm;
   Arm m_leftArm;
   
-  Chunk *m_chunk1;
-  Chunk *m_chunk2;
-  Chunk *m_chunk3;
-  Chunk *m_chunk4;
+  Chunk *m_chunks[4][4];
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
   
@@ -110,14 +107,12 @@ protected:
     displayInstructions();
     
     //Generate the height map
-    m_chunk1 = new Chunk(0, 0);
-    m_chunk2 = new Chunk(1, 0);
-    m_chunk3 = new Chunk(0, 1);
-    m_chunk4 = new Chunk(1, 1);
-    m_chunk1->generate();
-    m_chunk2->generate();
-    m_chunk3->generate();
-    m_chunk4->generate();
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        m_chunks[i][j] = new Chunk(i, j);
+        m_chunks[i][j]->generate();
+      }
+    }
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -219,10 +214,11 @@ protected:
       mv.popMatrix();
       
       //Draw the terrain
-      m_chunk1->draw(env);
-      m_chunk2->draw(env);
-      m_chunk3->draw(env);
-      m_chunk4->draw(env);
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          m_chunks[i][j]->draw(env);
+        }
+      }
       
       //Draw a solid ground plane
       /*

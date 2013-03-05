@@ -12,19 +12,44 @@
 //Size (in GL units) of a voxel face
 #define VOXEL_SIZE 5.f
 
+enum class Neighbors {
+  None = 0,
+  Left = 1,
+  Right = 2,
+  Top = 4,
+  Bottom = 8,
+  Front = 16,
+  Back = 32
+};
+
+inline Neighbors operator&(Neighbors a, Neighbors b)
+{
+  typedef std::underlying_type<Neighbors>::type enum_type;
+  return static_cast<Neighbors>(static_cast<enum_type>(a) & static_cast<enum_type>(b));
+}
+
+inline Neighbors operator|(Neighbors a, Neighbors b)
+{
+  typedef std::underlying_type<Neighbors>::type enum_type;
+  return static_cast<Neighbors>(static_cast<enum_type>(a) | static_cast<enum_type>(b));
+}
+
 class Voxel {
 private:
   glm::ivec3 m_index;
   bool m_isActive;
+  Neighbors m_neighbors;
   
 public:
   Voxel()
-  : m_isActive(false)
+  : m_isActive(false), m_neighbors(Neighbors::None)
   {
     
   }
   
   bool getIsActive() const { return m_isActive; }
+  Neighbors getNeighbors() const { return m_neighbors; }
+  void setNeighbors(Neighbors n) { m_neighbors = n; }
   
   void setIndex(int x, int y, int z)
   {

@@ -77,7 +77,14 @@ public:
   static void drawLine() throw (OpenGLException*);
   static void drawBackgroundStars() throw (OpenGLException*);
   static void generateBoxWithSurfaceNoise(VertexBatch *b, unsigned steps, bool allowExtension);
-  static void addBox(VertexBatch *batch, MatrixStack &stack, bool includeTop, bool includeBottom);
+  static void addBox(VertexBatch *batch,
+                     MatrixStack &stack,
+                     bool includeTop,
+                     bool includeBottom,
+                     bool includeLeft,
+                     bool includeRight,
+                     bool includeFront,
+                     bool includeBack);
   
 private:
   static void surfaceGeometry(unsigned step, VertexBatch *batch, MatrixStack &tform);

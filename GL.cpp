@@ -282,13 +282,13 @@ ms.popMatrix();
 void GL::surfaceGeometry(unsigned step, VertexBatch *batch, MatrixStack &tform)
 {
   if (!step) {
-    addBox(batch, tform, true, false);
+    addBox(batch, tform, true, false, true, true, true, true);
     return;
   }
   
   if (percentChance(50.f)) {
     //Add a box, then translate to its top surface
-    addBox(batch, tform, false, false);
+    addBox(batch, tform, false, false, true, true, true, true);
     tform.translateY(1.f);
   }
   
@@ -317,7 +317,7 @@ void GL::generateBoxWithSurfaceNoise(VertexBatch *b, unsigned steps, bool allowE
 {
   MatrixStack stack;
   b->begin();
-  addBox(b, stack, false, false);
+  addBox(b, stack, false, false, true, true, true, true);
   stack.pushMatrix();
   {
     if (!allowExtension) {
@@ -387,30 +387,51 @@ void GL::generateBoxWithSurfaceNoise(VertexBatch *b, unsigned steps, bool allowE
   batch->add(v2, nrm); \
   batch->add(v3, nrm); \
 }
-void GL::addBox(VertexBatch *batch, MatrixStack &stack, bool includeTop, bool includeBottom)
+void GL::addBox(VertexBatch *batch,
+                MatrixStack &stack,
+                bool includeTop,
+                bool includeBottom,
+                bool includeLeft,
+                bool includeRight,
+                bool includeFront,
+                bool includeBack)
 {
   glm::mat4 &m = stack.current();
-  ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
-  ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
+  if (includeLeft)
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
+  
+  if (includeBack)
+    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
+  
   if (includeBottom) {
     ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f);
   }
   
-  ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
-  ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
+  if (includeBack)
+    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+  
+  if (includeLeft)
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
+  
   if (includeBottom) {
     ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
   }
   
-  ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
-  ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
-  ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+  if (includeFront)
+    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+  
+  if (includeRight) {
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+  }
+  
   if (includeTop) {
     ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
     ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
   }
   
-  ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+  if (includeFront)
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
 }
 
 
