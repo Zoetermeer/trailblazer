@@ -55,6 +55,7 @@ public:
   Neighbors getNeighbors() const { return m_neighbors; }
   void setNeighbors(Neighbors n) { m_neighbors = n; }
   
+  glm::ivec3 getIndex() const { return m_index; }
   void setIndex(int x, int y, int z)
   {
     m_index.x = x;
@@ -103,6 +104,7 @@ public:
   bool getIsGenerated() const { return m_generated; }
   bool getContainsPlayer() const { return m_containsPlayer; }
   void setContainsPlayer(bool v) { m_containsPlayer = v; }
+  GLclampf getOcclusionFactor(Voxel &voxel, Neighbors direction);
   
   static glm::ivec3 worldToChunkSpace(glm::vec3 wc)
   {

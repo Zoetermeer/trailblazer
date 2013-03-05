@@ -7,7 +7,7 @@
 
 #define VERT(x,y,z) (m * glm::vec4(x,y,z,1.f))
 #define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b - a), glm::vec3(c - a))))
-#define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3,acc) \
+#define ADD_ATTR(x1,y1,z1,x2,y2,z2,x3,y3,z3,acc) \
 {\
 glm::vec4 v1 = VERT(x1,y1,z1); \
 glm::vec4 v2 = VERT(x2,y2,z2); \
@@ -20,41 +20,59 @@ batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
 batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
 batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
 }
+
+#define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3) \
+{\
+glm::vec4 v1 = VERT(x1,y1,z1); \
+glm::vec4 v2 = VERT(x2,y2,z2); \
+glm::vec4 v3 = VERT(x3,y3,z3); \
+glm::vec3 nrm = NORMAL(v1,v2,v3); \
+batch->add(v1, nrm);\
+batch->add(v2, nrm); \
+batch->add(v3, nrm); \
+}
 void Chunk::addVoxel(Voxel &voxel,
                      VertexBatch *batch,
                      MatrixStack &stack)
 {
   glm::mat4 &m = stack.current();
   Neighbors ns = voxel.getNeighbors();
-  float accessibility = .5f;
+  float accessibility = 1.f;
+  float leftAcc = getOcclusionFactor(voxel, Neighbors::Left);
   if ((ns & Neighbors::Left) == Neighbors::None) {
-    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, accessibility);
-    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, accessibility);
+    ADD_ATTR(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, accessibility);
+    ADD_ATTR(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Back) == Neighbors::None) {
-    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, accessibility);
-    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, accessibility);
+    ADD_ATTR(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, accessibility);
+    ADD_ATTR(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Bottom) == Neighbors::None) {
-    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, accessibility);
-    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, accessibility);
+    ADD_ATTR(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, accessibility);
+    ADD_ATTR(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Front) == Neighbors::None) {
-    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
-    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
+    ADD_ATTR(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
+    ADD_ATTR(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Right) == Neighbors::None) {
-    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, accessibility);
-    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
+    ADD_ATTR(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, accessibility);
+    ADD_ATTR(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Top) == Neighbors::None) {
-    ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, accessibility);
-    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, accessibility);
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
+    batch->addAttribValue(VertexAttrib::AOAccessibility, &accessibility);
+    batch->addAttribValue(VertexAttrib::AOAccessibility, &accessibility);
+    batch->addAttribValue(VertexAttrib::AOAccessibility, &leftAcc);
+    batch->addAttribValue(VertexAttrib::AOAccessibility, &accessibility);
+    batch->addAttribValue(VertexAttrib::AOAccessibility, &leftAcc);
+    batch->addAttribValue(VertexAttrib::AOAccessibility, &leftAcc);
   } 
 }
 
@@ -212,6 +230,32 @@ void Chunk::draw(Env &env)
     m_vbo->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
+}
+
+GLclampf Chunk::getOcclusionFactor(Voxel &voxel, Neighbors direction)
+{
+  //'Left' is defined as -X, 'right' = +X,
+  //'Back' = -z, 'front' = +z
+  glm::ivec3 ind = voxel.getIndex();
+  GLclampf fac = 1.f;
+  switch (direction)
+  {
+    case Neighbors::Left:
+      if (ind.x > 0 && ind.y < CHUNK_SIZE - 1) {
+        fac = m_voxels[ind.x - 1][ind.y + 1][ind.z].getIsActive() ? .75f : fac;
+      }
+      break;
+    case Neighbors::Right:
+      break;
+    case Neighbors::Front:
+      break;
+    case Neighbors::Back:
+      break;
+    default: //No top/bot occlusion.  If neighbors on top/bottom, no face anyway, and not visible
+      break;
+  }
+  
+  return fac;
 }
 
 void ChunkBuffer::init()
