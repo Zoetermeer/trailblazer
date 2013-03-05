@@ -120,7 +120,7 @@ public:
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side.
-#define VISIBLE_CHUNKS 5
+#define VISIBLE_CHUNKS 7
 class ChunkBuffer : public IPlayerMoveListener, public Process, public SceneObject {
 private:
   glm::ivec3 m_curPlayerChunkCoords;
