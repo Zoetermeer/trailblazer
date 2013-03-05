@@ -13,6 +13,10 @@ private:
   GLuint m_vaoId;
   GLuint m_vboId;
   
+  size_t m_vertsSize;
+  size_t m_normsSize;
+  size_t m_aoAttribsSize;
+  
 public:
   VertexBatch()
   : m_vboId(0)
@@ -31,7 +35,7 @@ public:
   void add(glm::vec4 &vtx, glm::vec3 &nrm);
   void add(glm::vec3 vtx, GLfloat normX, GLfloat normY, GLfloat normZ);
   void add(GLfloat x, GLfloat y, GLfloat z, GLfloat normX, GLfloat normY, GLfloat normZ);
-  void addAttribValue(VertexAttrib attribType, void *valPtr);
+  void addAOAccessibilityAttrib(float val);
   void end();
   void draw(GLenum drawMode);
 };

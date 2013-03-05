@@ -16,9 +16,9 @@ glm::vec3 nrm = NORMAL(v1,v2,v3); \
 batch->add(v1, nrm);\
 batch->add(v2, nrm); \
 batch->add(v3, nrm); \
-batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
-batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
-batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
+batch->addAOAccessibilityAttrib(acc); \
+batch->addAOAccessibilityAttrib(acc); \
+batch->addAOAccessibilityAttrib(acc); \
 }
 
 #define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3) \
@@ -39,6 +39,9 @@ void Chunk::addVoxel(Voxel &voxel,
   Neighbors ns = voxel.getNeighbors();
   float accessibility = 1.f;
   float leftAcc = getOcclusionFactor(voxel, Neighbors::Left);
+  float rightAcc = getOcclusionFactor(voxel, Neighbors::Right);
+  float backAcc = getOcclusionFactor(voxel, Neighbors::Back);
+  float frontAcc = getOcclusionFactor(voxel, Neighbors::Front);
   if ((ns & Neighbors::Left) == Neighbors::None) {
     ADD_ATTR(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, accessibility);
     ADD_ATTR(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, accessibility);
@@ -67,12 +70,12 @@ void Chunk::addVoxel(Voxel &voxel,
   if ((ns & Neighbors::Top) == Neighbors::None) {
     ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
     ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
-    batch->addAttribValue(VertexAttrib::AOAccessibility, &accessibility);
-    batch->addAttribValue(VertexAttrib::AOAccessibility, &accessibility);
-    batch->addAttribValue(VertexAttrib::AOAccessibility, &leftAcc);
-    batch->addAttribValue(VertexAttrib::AOAccessibility, &accessibility);
-    batch->addAttribValue(VertexAttrib::AOAccessibility, &leftAcc);
-    batch->addAttribValue(VertexAttrib::AOAccessibility, &leftAcc);
+    batch->addAOAccessibilityAttrib(rightAcc * frontAcc);
+    batch->addAOAccessibilityAttrib(rightAcc * backAcc);
+    batch->addAOAccessibilityAttrib(leftAcc * backAcc);
+    batch->addAOAccessibilityAttrib(rightAcc * frontAcc);
+    batch->addAOAccessibilityAttrib(leftAcc * backAcc);
+    batch->addAOAccessibilityAttrib(leftAcc * frontAcc);
   } 
 }
 
@@ -190,14 +193,6 @@ void Chunk::generate()
               stack.pushMatrix();
               {
                 stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
-                /*GL::addBox(m_vbo,
-                           stack,
-                           (ns & Neighbors::Top) == Neighbors::None,
-                           (ns & Neighbors::Bottom) == Neighbors::None,
-                           (ns & Neighbors::Left) == Neighbors::None,
-                           (ns & Neighbors::Right) == Neighbors::None,
-                           (ns & Neighbors::Front) == Neighbors::None,
-                           (ns & Neighbors::Back) == Neighbors::None); */
                 addVoxel(voxel, m_vbo, stack);
               }
               stack.popMatrix();
@@ -238,18 +233,29 @@ GLclampf Chunk::getOcclusionFactor(Voxel &voxel, Neighbors direction)
   //'Back' = -z, 'front' = +z
   glm::ivec3 ind = voxel.getIndex();
   GLclampf fac = 1.f;
+  const GLclampf OCCLUDED = .75f;
+  
+  //If we're at the maximum height, can't be occluded
+  if (ind.y == CHUNK_SIZE - 1)
+    return fac;
   switch (direction)
   {
     case Neighbors::Left:
-      if (ind.x > 0 && ind.y < CHUNK_SIZE - 1) {
-        fac = m_voxels[ind.x - 1][ind.y + 1][ind.z].getIsActive() ? .75f : fac;
+      if (ind.x > 0) {
+        fac = m_voxels[ind.x - 1][ind.y + 1][ind.z].getIsActive() ? OCCLUDED : fac;
       }
       break;
     case Neighbors::Right:
+      if (ind.x < CHUNK_SIZE - 1)
+        fac = m_voxels[ind.x + 1][ind.y + 1][ind.z].getIsActive() ? OCCLUDED : fac;
       break;
     case Neighbors::Front:
+      if (ind.z < CHUNK_SIZE - 1)
+        fac = m_voxels[ind.x][ind.y + 1][ind.z + 1].getIsActive() ? OCCLUDED : fac;
       break;
     case Neighbors::Back:
+      if (ind.z > 0)
+        fac = m_voxels[ind.x][ind.y + 1][ind.z - 1].getIsActive() ? OCCLUDED : fac;
       break;
     default: //No top/bot occlusion.  If neighbors on top/bottom, no face anyway, and not visible
       break;

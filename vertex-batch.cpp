@@ -27,16 +27,9 @@ void VertexBatch::add(GLfloat x, GLfloat y, GLfloat z, GLfloat normX, GLfloat no
   m_norms.push_back(normZ);
 }
 
-void VertexBatch::addAttribValue(VertexAttrib attribType, void *valPtr)
+void VertexBatch::addAOAccessibilityAttrib(float val)
 {
-  switch (attribType)
-  {
-    case VertexAttrib::None:
-      break;
-    case VertexAttrib::AOAccessibility:
-      m_aoAttribs.push_back(*((float*)valPtr));
-      break;
-  }
+  m_aoAttribs.push_back(val);
 }
 
 void VertexBatch::end()
@@ -51,29 +44,28 @@ void VertexBatch::end()
   glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
   
   //Copy vertex data
-  size_t vertsz = m_verts.size() * sizeof(GLfloat);
-  size_t normsz = m_norms.size() * sizeof(GLfloat);
-  size_t accssz = m_aoAttribs.size() * sizeof(float);
-  bool accAtts = accssz > 0;
-  glBufferData(GL_ARRAY_BUFFER, vertsz + normsz + accssz, NULL, GL_STATIC_DRAW);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, vertsz, verts);
-  glBufferSubData(GL_ARRAY_BUFFER, vertsz, normsz, norms);
-  if (accAtts) {
+  m_vertsSize = m_verts.size() * sizeof(GLfloat);
+  m_normsSize = m_norms.size() * sizeof(GLfloat);
+  m_aoAttribsSize = m_aoAttribs.size() * sizeof(float);
+  glBufferData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize + m_aoAttribsSize, NULL, GL_STATIC_DRAW);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertsSize, verts);
+  glBufferSubData(GL_ARRAY_BUFFER, m_vertsSize, m_normsSize, norms);
+  if (m_aoAttribsSize) {
     float *accAtts = m_aoAttribs.data();
-    glBufferSubData(GL_ARRAY_BUFFER, vertsz + normsz, m_aoAttribs.size() * sizeof(float), accAtts);
+    glBufferSubData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize, m_aoAttribsSize, accAtts);
   }
   
   glVertexPointer(4, GL_FLOAT, 0, 0);
   glNormalPointer(GL_FLOAT, 0, (const GLvoid*)(m_verts.size() * sizeof(GLfloat)));
   //If we have vertex attributes, store them as a sub-buffer
-  if (accAtts) {
+  if (m_aoAttribsSize) {
     glEnableVertexAttribArray((GLuint)VertexAttrib::AOAccessibility);
     glVertexAttribPointer((GLuint)VertexAttrib::AOAccessibility,
                           1,
                           GL_FLOAT,
                           GL_FALSE,
                           0,
-                          (const GLvoid*)(normsz + vertsz));
+                          (const GLvoid*)(m_normsSize + m_vertsSize));
   }
   
   CHECK_OPENGL_ERROR;
@@ -86,17 +78,15 @@ void VertexBatch::draw(GLenum drawMode)
   glVertexPointer(4, GL_FLOAT, 0, 0);
   glEnableClientState(GL_NORMAL_ARRAY);
   
-  size_t vertsz = m_verts.size() * sizeof(GLfloat);
-  size_t normsz = m_norms.size() * sizeof(GLfloat);
-  glNormalPointer(GL_FLOAT, 0, (const GLvoid*)vertsz);
-  if (m_aoAttribs.size() > 0) {
+  glNormalPointer(GL_FLOAT, 0, (const GLvoid*)m_vertsSize);
+  if (m_aoAttribsSize) {
     glEnableVertexAttribArray((GLuint)VertexAttrib::AOAccessibility);
     glVertexAttribPointer((GLuint)VertexAttrib::AOAccessibility,
                           1,
                           GL_FLOAT,
                           GL_FALSE,
                           0,
-                          (const GLvoid*)(vertsz + normsz));
+                          (const GLvoid*)(m_vertsSize + m_normsSize));
   }
   
   glDrawArrays(drawMode, 0, m_verts.size() / 4);
