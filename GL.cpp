@@ -395,33 +395,11 @@ void GL::addBox(VertexBatch *batch, MatrixStack &stack, bool includeTop, bool in
   if (includeBottom) {
     ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f);
   }
-  //batch->add(m * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(-1.0f, 0.0f, 0.0f, 1.f));
-  //batch->add(m * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(-1.0f, 0.0f, 0.0f, 1.f));
-  //batch->add(m * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(-1.0f, 0.0f, 0.0f, 1.f)); //Facing left
-  //batch->add(m * glm::vec4(1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, -1.0f, 1.f)); //Top-right-back
-  //batch->add(m * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, -1.0f, 1.f)); //Bottom-left-back
-  //batch->add(m * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, -1.0f, 1.f)); //Top-left-back (facing back)
-  if (includeBottom) {
-    //batch->add(m * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, -1.0f, 0.0f, 1.f)); //Right-bottom-front
-    //batch->add(m * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, -1.0f, 0.0f, 1.f)); //Left-bottom-back
-    //batch->add(m * glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, -1.0f, 0.0f, 1.f)); //Right-bottom-back (facing bottom)
-  }
   
   ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
   ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
   if (includeBottom) {
     ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
-  }
-  //batch->add(m * glm::vec4(1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, -1.0f, 1.f)); //Right-top-back
-  //batch->add(m * glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, -1.0f, 1.f)); //Right-bottom-back
-  //batch->add(m * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, -1.0f, 1.f)); //Left-bottom-back (back facing)
-  //batch->add(m * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(-1.0f, 0.0f, 0.0f, 1.f)); //Left-bottom-back
-  //batch->add(m * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(-1.0f, 0.0f, 0.0f, 1.f)); //Left-top-front
-  //batch->add(m * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(-1.0f, 0.0f, 0.0f, 1.f)); //Left-top-back (facing left)
-  if (includeBottom) {
-    //batch->add(m * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, -1.0f, 0.0f, 1.f)); //Right-bottom-front
-    //batch->add(m * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, -1.0f, 0.0f, 1.f)); //Left-bottom-front
-    //batch->add(m * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, -1.0f, 0.0f, 1.f)); //Left-bottom-back (bottom facing)
   }
   
   ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
@@ -433,26 +411,6 @@ void GL::addBox(VertexBatch *batch, MatrixStack &stack, bool includeTop, bool in
   }
   
   ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
-  //batch->add(m * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, 1.0f, 1.f)); //Left-top-front
-  //batch->add(m * glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, 1.0f, 1.f)); //Left-bottom-front
-  //batch->add(m * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, 1.0f, 1.f)); //Right-bottom-front (facing front)
-  //batch->add(m * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(1.0f, 0.0f, 0.0f, 1.f)); //Right-top-front
-  //batch->add(m * glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(1.0f, 0.0f, 0.0f, 1.f)); //Right-bottom-back
-  //batch->add(m * glm::vec4(1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(1.0f, 0.0f, 0.0f, 1.f)); //Right-top-back (right-facing)
-  //batch->add(m * glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), m * glm::vec4(1.0f, 0.0f, 0.0f, 1.f)); //Right-bottom-back
-  //batch->add(m * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(1.0f, 0.0f, 0.0f, 1.f)); //Right-top-front
-  //batch->add(m * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(1.0f, 0.0f, 0.0f, 1.f)); //Right-bottom-front (right-facing)
-  if (includeTop) {
-    //batch->add(m * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 1.0f, 0.0f, 1.f)); //Right-top-front
-    //batch->add(m * glm::vec4(1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 1.0f, 0.0f, 1.f)); //Right-top-back
-    //batch->add(m * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 1.0f, 0.0f, 1.f)); //Left-top-back (top-facing)
-    //batch->add(m * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 1.0f, 0.0f, 1.f)); //Right-top-front
-    //batch->add(m * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f), m * glm::vec4(0.0f, 1.0f, 0.0f, 1.f)); //Left-top-back
-    //batch->add(m * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 1.0f, 0.0f, 1.f)); //Left-top-front (top-facing)
-  }
-  //batch->add(m * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, 1.0f, 1.f)); //Right-top-front
-  //batch->add(m * glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, 1.0f, 1.f)); //Left-top-front
-  //batch->add(m * glm::vec4(1.0f, -1.0f, 1.0f, 1.0f), m * glm::vec4(0.0f, 0.0f, 1.0f, 1.f)); //Right-bottom-front (front-facing)
 }
 
 

@@ -32,7 +32,7 @@ SOURCES=../src/latlon.cpp \
 	../src/module/terrace.cpp \
 	../src/module/translatepoint.cpp \
 	../src/module/turbulence.cpp \
-	../src/module/voronoi.cpp 
+	../src/module/voronoi.cpp
 
 HEADERS=../src/basictypes.h \
 	../src/exception.h \

@@ -14,6 +14,7 @@
 #include "exception.hpp"
 #include "env.hpp"
 #include "opengl-app.hpp"
+#include "chunk.hpp"
 #include <noise.h>
 
 #if defined(TEST)
@@ -36,9 +37,9 @@ private:
   Arm m_rightArm;
   Arm m_leftArm;
   
+  Chunk *m_chunk;
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
-  const GLfloat VOXEL_SIZE = 5.f;
   
 public:
   WorldSandboxApp()
@@ -106,6 +107,9 @@ protected:
     displayInstructions();
     
     //Generate the height map
+    m_chunk = new Chunk();
+    m_chunk->generate();
+    /*
     noise::module::Perlin pmod;
     for (int i = 0; i < NUM_VOXELS; i++) {
       for (int j = 0; j < NUM_VOXELS; j++) {
@@ -114,6 +118,7 @@ protected:
         m_heightMap[i][j] = pmod.GetValue(x, 1.f, z);
       }
     }
+     */
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -215,6 +220,8 @@ protected:
       mv.popMatrix();
       
       //Draw the terrain
+      m_chunk->draw(env);
+      /*
       mv.pushMatrix();
       {
         mv.scale(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
@@ -240,6 +247,7 @@ protected:
         }
       }
       mv.popMatrix();
+       */
       
       //Draw a solid ground plane
       /*
@@ -253,7 +261,7 @@ protected:
       mv.popMatrix();
        */
       
-      m_ssys->draw(env);
+      //m_ssys->draw(env);
       //m_rightArm.draw(env);
       //m_leftArm.draw(env);
       
