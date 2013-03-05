@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "events.hpp" 
+#include <GL/glfw.h>
 
 void Player::mouseRoll(int oldX, int oldY, int newX, int newY)
 {
@@ -23,11 +24,13 @@ void Player::mouseLook(int oldX, int oldY, int newX, int newY)
   Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw });
 }
 
+#include <iostream>
+
 #undef PRINT_PLAYER_LOCATION
 void Player::move(GLfloat distance, Direction dir)
 {
   GLfloat ang;
-  GLfloat dist;
+  GLfloat vertDist = 0.f;
   bool northSouth = false;
   glm::vec4 old = m_offset;
   switch (dir) 
@@ -45,6 +48,12 @@ void Player::move(GLfloat distance, Direction dir)
     case Direction::Left:
       ang = nextAngle(m_attitude.yaw, 90.0);
       break;
+    case Direction::Up:
+      vertDist = distance;
+      break;
+    case Direction::Down:
+      vertDist = -distance;
+      break;
     case Direction::Idle:
       break;
   }
@@ -54,8 +63,12 @@ void Player::move(GLfloat distance, Direction dir)
     ang = m_heading;
   }
 
-  m_offset.x += distance * -sin(DEG_TO_RAD(ang));
-  m_offset.z -= distance * cos(DEG_TO_RAD(ang));
+  if (vertDist != 0.f) {
+    m_offset.y += vertDist;
+  } else {
+    m_offset.x += distance * -sin(DEG_TO_RAD(ang));
+    m_offset.z -= distance * cos(DEG_TO_RAD(ang));
+  }
 
 #ifdef PRINT_PLAYER_LOCATION
   printf("pos: (%f, %f, %f), heading=%f, rotation=%f\n",
@@ -101,6 +114,13 @@ void Player::onKeyDown(int key, bool special)
     case 'E':
       m_attitude.yaw = nextAngle(m_attitude.yaw, 5.0);
       break;
+    case GLFW_KEY_LSHIFT:
+    case GLFW_KEY_RSHIFT:
+      m_moveDir = m_moveDir | Direction::Down;
+      break;
+    case GLFW_KEY_SPACE:
+      m_moveDir = m_moveDir | Direction::Up;
+      break;
   }
 }
 
@@ -124,6 +144,15 @@ void Player::onKeyUp(int key, bool special)
     case 'D':
       m_moveDir = m_moveDir ^ Direction::Right;
       break;
+    case GLFW_KEY_LSHIFT:
+      m_moveDir = m_moveDir ^ Direction::Down;
+      break;
+    case GLFW_KEY_RSHIFT:
+      m_moveDir = m_moveDir ^ Direction::Down;
+      break;
+    case GLFW_KEY_SPACE:
+      m_moveDir = m_moveDir ^ Direction::Up;
+      break;
   }
 }
 
@@ -146,6 +175,14 @@ void Player::advance(int delta)
   }
   if ((m_moveDir & Direction::Left) > Direction::Idle) {
     move(MOVE_INTERVAL, Direction::Left);
+    moved = true;
+  }
+  if ((m_moveDir & Direction::Up) > Direction::Idle) {
+    move(MOVE_INTERVAL, Direction::Up);
+    moved = true;
+  }
+  if ((m_moveDir & Direction::Down) > Direction::Idle) {
+    move(MOVE_INTERVAL, Direction::Down);
     moved = true;
   }
   

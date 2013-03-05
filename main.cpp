@@ -14,6 +14,7 @@
 #include "exception.hpp"
 #include "env.hpp"
 #include "opengl-app.hpp"
+#include <noise.h>
 
 #if defined(TEST)
 #include <cppunit/CompilerOutputter.h>
@@ -34,6 +35,10 @@ private:
   
   Arm m_rightArm;
   Arm m_leftArm;
+  
+  GLfloat m_heightMap[32][32];
+  const int NUM_VOXELS = 32;
+  const GLfloat VOXEL_SIZE = 5.f;
   
 public:
   WorldSandboxApp()
@@ -99,6 +104,16 @@ protected:
     m_leftArm.generateGeometry();
     
     displayInstructions();
+    
+    //Generate the height map
+    noise::module::Perlin pmod;
+    for (int i = 0; i < NUM_VOXELS; i++) {
+      for (int j = 0; j < NUM_VOXELS; j++) {
+        GLfloat x = (GLfloat)i / 100.f;
+        GLfloat z = (GLfloat)j / 100.f;
+        m_heightMap[i][j] = pmod.GetValue(x, 1.f, z);
+      }
+    }
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -142,12 +157,12 @@ protected:
     
   }
   
-  virtual void onKeyDown(char key)
+  virtual void onKeyDown(int key)
   {
     Events::keyDownEvent(key, false);
   }
   
-  virtual void onKeyUp(char key)
+  virtual void onKeyUp(int key)
   {
     Events::keyUpEvent(key, false);
   }
@@ -199,7 +214,35 @@ protected:
       }
       mv.popMatrix();
       
+      //Draw the terrain
+      mv.pushMatrix();
+      {
+        mv.scale(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
+        for (int i = 0; i < NUM_VOXELS; i++) {
+          mv.pushMatrix();
+          {
+            for (int j = 0; j < NUM_VOXELS; j++) {
+              GLfloat ht = (m_heightMap[i][j] + 1.f) * 10.f;
+              mv.pushMatrix();
+              {
+                mv.scaleY(ht);
+                mv.translateY(1.f);
+                shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
+                GL::drawBox(GL_TRIANGLES);
+              }
+              mv.popMatrix();
+              mv.translateZ(2.f);
+            }
+          }
+          mv.popMatrix();
+          
+          mv.translateX(2.f);
+        }
+      }
+      mv.popMatrix();
+      
       //Draw a solid ground plane
+      /*
       mv.pushMatrix();
       {
         mv.translateY(-1.f);
@@ -208,10 +251,11 @@ protected:
         GL::drawBox(GL_TRIANGLES);
       }
       mv.popMatrix();
+       */
       
       m_ssys->draw(env);
-      m_rightArm.draw(env);
-      m_leftArm.draw(env);
+      //m_rightArm.draw(env);
+      //m_leftArm.draw(env);
       
       //Draw ships
       for (Ship *ship : m_ships) {

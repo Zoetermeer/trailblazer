@@ -57,8 +57,8 @@ protected:
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos);
   virtual void onMouseDown(int button);
   virtual void onMouseUp(int button);
-  virtual void onKeyDown(char key);
-  virtual void onKeyUp(char key);
+  virtual void onKeyDown(int key);
+  virtual void onKeyUp(int key);
   void quit();
   
 public:

@@ -52,7 +52,7 @@ void FirstPersonCamera::draw(int winWidth, int winHeight, MatrixStack &proj)
   proj.rotateZ(m_attitude.roll);
   proj.rotateX(-m_attitude.pitch);
   proj.rotateY(-m_attitude.yaw);
-  proj.translate(-m_pos.x, m_pos.y, -m_pos.z);
+  proj.translate(-m_pos.x, -m_pos.y, -m_pos.z);
   
   m_lookVector = glm::vec3(proj.getCurrent() * glm::vec4(0.f, 0.f, -1.f, 1.f));
   m_upVector = glm::vec3(proj.getCurrent() * glm::vec4(0.f, 1.f, 0.f, 1.f));

@@ -11,7 +11,9 @@ enum class Direction {
   Forward = 1,
   Backward = 2,
   Left = 4,
-  Right = 8
+  Right = 8,
+  Up = 16,
+  Down = 32
 };
 
 inline Direction operator|(Direction a, Direction b)
@@ -60,6 +62,7 @@ private:
   
 public:
   Player()
+  : m_moveDir(Direction::Idle)
   {
     ProcessList::add(this);
     Events::addListener((IKeyDownListener*)this);

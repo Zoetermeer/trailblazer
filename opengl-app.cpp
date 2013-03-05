@@ -112,5 +112,5 @@ void OpenGLApp::onResize(int width, int height) { }
 void OpenGLApp::onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos) { }
 void OpenGLApp::onMouseDown(int button) { }
 void OpenGLApp::onMouseUp(int button) { }
-void OpenGLApp::onKeyDown(char key) { }
-void OpenGLApp::onKeyUp(char key) { }
+void OpenGLApp::onKeyDown(int key) { }
+void OpenGLApp::onKeyUp(int key) { }
