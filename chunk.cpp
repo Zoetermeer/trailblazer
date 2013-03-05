@@ -7,7 +7,7 @@
 
 #define VERT(x,y,z) (m * glm::vec4(x,y,z,1.f))
 #define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b - a), glm::vec3(c - a))))
-#define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3) \
+#define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3,acc) \
 {\
 glm::vec4 v1 = VERT(x1,y1,z1); \
 glm::vec4 v2 = VERT(x2,y2,z2); \
@@ -16,6 +16,9 @@ glm::vec3 nrm = NORMAL(v1,v2,v3); \
 batch->add(v1, nrm);\
 batch->add(v2, nrm); \
 batch->add(v3, nrm); \
+batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
+batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
+batch->addAttribValue(VertexAttrib::AOAccessibility, &acc); \
 }
 void Chunk::addVoxel(Voxel &voxel,
                      VertexBatch *batch,
@@ -23,34 +26,35 @@ void Chunk::addVoxel(Voxel &voxel,
 {
   glm::mat4 &m = stack.current();
   Neighbors ns = voxel.getNeighbors();
+  float accessibility = .5f;
   if ((ns & Neighbors::Left) == Neighbors::None) {
-    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
-    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, accessibility);
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Back) == Neighbors::None) {
-    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
-    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, accessibility);
+    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Bottom) == Neighbors::None) {
-    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f);
-    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
+    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, accessibility);
+    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Front) == Neighbors::None) {
-    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
-    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Right) == Neighbors::None) {
-    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
-    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, accessibility);
+    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
   }
   
   if ((ns & Neighbors::Top) == Neighbors::None) {
-    ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
-    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, accessibility);
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, accessibility);
   } 
 }
 
@@ -204,7 +208,7 @@ void Chunk::draw(Env &env)
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
     glm::vec4 groundColor = m_containsPlayer ? glm::vec4(1.f, 0.f, 0.f, 1.f) : glm::vec4(0.0f, 0.0f, 0.3f, 1.f);
-    shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), groundColor);
+    shaders.prepareHemisphereAO(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), groundColor);
     m_vbo->draw(GL_TRIANGLES);
   }
   mv.popMatrix();

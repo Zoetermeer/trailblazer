@@ -214,6 +214,7 @@ public:
   void prepareDistortion(Env &env, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec);
   void prepareShip(Env &env, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec);
   void prepareHemisphere(Env &env, const glm::vec3 &lightPos, const glm::vec4 &skyColor, const glm::vec4 &groundColor);
+  void prepareHemisphereAO(Env &env, const glm::vec3 &lightPos, const glm::vec4 &skyColor, const glm::vec4 &groundColor);
 };
 
 #endif
