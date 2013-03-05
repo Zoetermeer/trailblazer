@@ -155,15 +155,24 @@ bool ShaderSet::tryFindShader(GLenum type, const char *fileName, GLuint *id)
   return false;
 }
 
-void ShaderSet::add(ShaderType type,
-                    const char *vertShader,
-                    const char *fragShader) throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*)
+void HemisphereAOShaderProgram::bindAttributes()
 {
-  auto *program = new ShaderProgram(type, vertShader, fragShader);
-  program->build();
+  glBindAttribLocation(getId(), (GLuint)VertexAttrib::AOAccessibility, "AOAccessibility");
+}
+
+void ShaderSet::add(ShaderType type, const char *vShader, const char *fShader)
+  throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*)
+{
+  auto *shprog = new ShaderProgram(type, vShader, fShader);
+  add(shprog);
+}
+
+void ShaderSet::add(ShaderProgram *prog) throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*)
+{
+  prog->build();
   CHECK_OPENGL_ERROR;
   
-  m_programs.push_back(program);
+  m_programs.push_back(prog);
 }
 
 ShaderProgram &ShaderSet::use(ShaderType type) throw (FileNotFoundException*)

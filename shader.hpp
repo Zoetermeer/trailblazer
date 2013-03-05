@@ -16,7 +16,13 @@ enum class ShaderType {
   Brick,
   Ship,
   Distortion,
-  Hemisphere
+  Hemisphere,
+  HemisphereAmbientOcclusion
+};
+
+enum class VertexAttrib {
+  None, 
+  AOAccessibility
 };
 
 class Uniform {
@@ -130,7 +136,9 @@ private:
   std::vector<Uniform> m_uniforms;
   
 public:
-  ShaderProgram(ShaderType type, const char *vShader, const char *fShader)
+  ShaderProgram(ShaderType type,
+                const char *vShader,
+                const char *fShader)
   : m_type(type), m_enabled(false)
   {
     m_vertexShader = new Shader(vShader, GL_VERTEX_SHADER);
@@ -148,13 +156,26 @@ public:
   const GLuint getId() const { return m_id; }
   Uniform &uniform(const char *name);
   
-  virtual void bindAttributes();
-  
   void build();
   void enable();
   void disable();
   
   void prepare();
+  
+protected:
+  virtual void bindAttributes();
+};
+
+class HemisphereAOShaderProgram : public ShaderProgram {
+public:
+  HemisphereAOShaderProgram()
+  : ShaderProgram(ShaderType::HemisphereAmbientOcclusion, "shaders/hem-ao.vert", "shaders/default.frag")
+  {
+    
+  }
+
+protected:
+  virtual void bindAttributes();
 };
 
 class ShaderSet {
@@ -184,6 +205,7 @@ public:
   ShaderProgram &current();
   ShaderProgram &use(ShaderType type) throw (FileNotFoundException*);
   void disable();
+  void add(ShaderProgram *prog) throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*);
   void add(ShaderType type, 
            const char *vertShader,
            const char *fragShader) throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*);

@@ -5,6 +5,56 @@
 #include <noise.h>
 #include "noiseutils.h"
 
+#define VERT(x,y,z) (m * glm::vec4(x,y,z,1.f))
+#define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b - a), glm::vec3(c - a))))
+#define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3) \
+{\
+glm::vec4 v1 = VERT(x1,y1,z1); \
+glm::vec4 v2 = VERT(x2,y2,z2); \
+glm::vec4 v3 = VERT(x3,y3,z3); \
+glm::vec3 nrm = NORMAL(v1,v2,v3); \
+batch->add(v1, nrm);\
+batch->add(v2, nrm); \
+batch->add(v3, nrm); \
+}
+void Chunk::addVoxel(Voxel &voxel,
+                     VertexBatch *batch,
+                     MatrixStack &stack)
+{
+  glm::mat4 &m = stack.current();
+  Neighbors ns = voxel.getNeighbors();
+  if ((ns & Neighbors::Left) == Neighbors::None) {
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
+  }
+  
+  if ((ns & Neighbors::Back) == Neighbors::None) {
+    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
+    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+  }
+  
+  if ((ns & Neighbors::Bottom) == Neighbors::None) {
+    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f);
+    ADD(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
+  }
+  
+  if ((ns & Neighbors::Front) == Neighbors::None) {
+    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+  }
+  
+  if ((ns & Neighbors::Right) == Neighbors::None) {
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+  }
+  
+  if ((ns & Neighbors::Top) == Neighbors::None) {
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
+  } 
+}
+
+
 void Chunk::generate()
 {
   if (m_generated)
@@ -118,14 +168,15 @@ void Chunk::generate()
               stack.pushMatrix();
               {
                 stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
-                GL::addBox(m_vbo,
+                /*GL::addBox(m_vbo,
                            stack,
                            (ns & Neighbors::Top) == Neighbors::None,
                            (ns & Neighbors::Bottom) == Neighbors::None,
                            (ns & Neighbors::Left) == Neighbors::None,
                            (ns & Neighbors::Right) == Neighbors::None,
                            (ns & Neighbors::Front) == Neighbors::None,
-                           (ns & Neighbors::Back) == Neighbors::None);
+                           (ns & Neighbors::Back) == Neighbors::None); */
+                addVoxel(voxel, m_vbo, stack);
               }
               stack.popMatrix();
             }

@@ -63,6 +63,7 @@ private:
       shaders.add(ShaderType::Ship, "shaders/ship.vert", "shaders/ship.frag");
       shaders.add(ShaderType::Distortion, "shaders/distortion.vert", "shaders/phong.frag");
       shaders.add(ShaderType::Hemisphere, "shaders/hemisphere.vert", "shaders/default.frag");
+      shaders.add(new HemisphereAOShaderProgram());
       CHECK_OPENGL_ERROR;
     } catch (std::exception *ex) {
       std::cout << ex->what() << std::endl;

@@ -10,7 +10,9 @@ FileNotFoundException::FileNotFoundException(const char *fileName)
 
 const char *FileNotFoundException::what() const throw()
 {
-  return m_fileName;
+  std::string wh = "File not found: ";
+  wh += m_fileName;
+  return wh.c_str();
 }
 
 ShaderCompileException::ShaderCompileException(const char *sourceFileName, const char *details)

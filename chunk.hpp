@@ -112,6 +112,9 @@ public:
     return glm::ivec3(ceil(wc.x / FACTOR) - 1, ceil(wc.y / FACTOR) - 1, ceil(wc.z / FACTOR) - 1);
   }
   
+private:
+  void addVoxel(Voxel &voxel, VertexBatch *batch, MatrixStack &stack);
+  
 public:
   void generate();
   virtual void draw(Env &env);
