@@ -168,9 +168,37 @@ protected:
     Events::keyUpEvent(key, false);
   }
   
+  glm::ivec3 m_curChunkCoord;
+  Chunk *m_curChunk = NULL;
   virtual void update(int deltaMs)
   {
     ProcessList::advanceAll(deltaMs);
+    
+    //Show the player's chunk coords
+    glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(m_player.getOffset()));
+    if (chunkCoords != m_curChunkCoord) {
+      m_curChunkCoord = chunkCoords;
+      std::cout << "In chunk: (" << m_curChunkCoord.x << "," << m_curChunkCoord.y << "," << m_curChunkCoord.z << ")" << std::endl;
+      
+      if (m_curChunk)
+        m_curChunk->setContainsPlayer(false);
+      bool done = false;
+      for (int i = 0; i < SHOW_CHUNKS; i++) {
+        for (int j = 0; j < SHOW_CHUNKS; j++) {
+          if (m_chunks[i][j]->getIndex().x == chunkCoords.x && m_chunks[i][j]->getIndex().y == chunkCoords.z) {
+            m_curChunk = m_chunks[i][j];
+            done = true;
+            break;
+          }
+        }
+        
+        if (done)
+          break;
+      }
+      
+      if (done)
+        m_curChunk->setContainsPlayer(true);
+    }
   }
   
   virtual void draw(Env &env)

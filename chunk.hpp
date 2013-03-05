@@ -5,6 +5,7 @@
 #include "scene-object.hpp"
 #include "env.hpp"
 #include "vertex-batch.hpp"
+#include <cmath>
 
 //Number of voxels per chunk face
 #define CHUNK_SIZE 32
@@ -50,10 +51,6 @@ public:
   bool getIsActive() const { return m_isActive; }
   Neighbors getNeighbors() const { return m_neighbors; }
   void setNeighbors(Neighbors n) { m_neighbors = n; }
-  glm::vec3 worldToVoxelSpace(glm::vec3 wc) const
-  {
-    
-  }
   
   void setIndex(int x, int y, int z)
   {
@@ -71,6 +68,7 @@ private:
   Voxel m_voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
   VertexBatch *m_vbo;
   glm::ivec2 m_chunkIndex;
+  bool m_containsPlayer;
   
 public:
   Chunk()
@@ -80,7 +78,7 @@ public:
   }
   
   Chunk(int xIndex, int zIndex)
-  : SceneObject(), m_generated(false), m_chunkIndex(xIndex, zIndex)
+  : SceneObject(), m_generated(false), m_chunkIndex(xIndex, zIndex), m_containsPlayer(false)
   {
     
   }
@@ -97,6 +95,17 @@ public:
   {
     m_chunkIndex.x = x;
     m_chunkIndex.y = z;
+  }
+  
+  bool getContainsPlayer() const { return m_containsPlayer; }
+  void setContainsPlayer(bool v) { m_containsPlayer = v; }
+  
+  static glm::ivec3 worldToChunkSpace(glm::vec3 wc)
+  {
+    const GLfloat FACTOR = CHUNK_SIZE * VOXEL_SIZE;
+    glm::vec3 v(wc.x / FACTOR, wc.y / FACTOR, wc.z / FACTOR);
+
+    return glm::ivec3(ceil(wc.x / FACTOR) - 1, ceil(wc.y / FACTOR) - 1, ceil(wc.z / FACTOR) - 1);
   }
   
 public:

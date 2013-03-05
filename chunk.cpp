@@ -152,7 +152,8 @@ void Chunk::draw(Env &env)
   mv.pushMatrix();
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
-    shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(0.0f, 0.0f, 0.3f, 1.f));
+    glm::vec4 groundColor = m_containsPlayer ? glm::vec4(1.f, 0.f, 0.f, 1.f) : glm::vec4(0.0f, 0.0f, 0.3f, 1.f);
+    shaders.prepareHemisphere(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), groundColor);
     m_vbo->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
