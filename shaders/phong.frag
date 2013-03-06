@@ -31,5 +31,5 @@ void main (void)
   spec = clamp(spec, 0.0, 1.0);
 
   vec4 color = gl_FrontLightModelProduct.sceneColor + amb + diff + spec;
-  gl_FragColor = clamp(gl_FrontLightModelProduct.sceneColor + amb + diff + spec, 0.3, 1.0);
+  gl_FragColor = clamp(color, 0.3, 1.0);
 }

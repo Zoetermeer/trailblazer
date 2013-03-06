@@ -41,25 +41,25 @@ void Chunk::addVoxel(Voxel &voxel,
   int x = ind.x, y = ind.y, z = ind.z;
   Neighbors ns = voxel.getNeighbors();
   float accessibility = 1.f;
-  float leftAcc = getOcclusionFactor(voxel, Neighbors::Left);
-  float rightAcc = getOcclusionFactor(voxel, Neighbors::Right);
-  float backAcc = getOcclusionFactor(voxel, Neighbors::Back);
-  float frontAcc = getOcclusionFactor(voxel, Neighbors::Front);
   if ((ns & Neighbors::Left) == Neighbors::None) {
     float top = accessibilityAt(ind.x - 1, ind.y + 1, ind.z);
     float bot = accessibilityAt(ind.x - 1, ind.y - 1, ind.z);
     float lft = accessibilityAt(ind.x - 1, ind.y, ind.z - 1);
     float rgt = accessibilityAt(ind.x - 1, ind.y, ind.z + 1);
+    float toprgt = accessibilityAt(ind.x - 1, ind.y + 1, ind.z + 1);
+    float toplft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z - 1);
+    float botrgt = accessibilityAt(ind.x - 1, ind.y - 1, ind.z + 1);
+    float botlft = accessibilityAt(ind.x - 1, ind.y - 1, ind.z - 1);
     
     ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
     ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
     
-    batch->addAOAccessibilityAttrib(bot * lft);
-    batch->addAOAccessibilityAttrib(bot * rgt);
-    batch->addAOAccessibilityAttrib(top * rgt);
-    batch->addAOAccessibilityAttrib(bot * lft);
-    batch->addAOAccessibilityAttrib(top * rgt);
-    batch->addAOAccessibilityAttrib(top * lft);
+    batch->addAOAccessibilityAttrib(bot * lft * botlft);
+    batch->addAOAccessibilityAttrib(bot * rgt * botrgt);
+    batch->addAOAccessibilityAttrib(top * rgt * toprgt);
+    batch->addAOAccessibilityAttrib(bot * lft * botlft);
+    batch->addAOAccessibilityAttrib(top * rgt * toprgt);
+    batch->addAOAccessibilityAttrib(top * lft * toplft);
   }
   
   if ((ns & Neighbors::Back) == Neighbors::None) {
@@ -67,16 +67,20 @@ void Chunk::addVoxel(Voxel &voxel,
     float bot = accessibilityAt(ind.x, ind.y - 1, ind.z - 1);
     float lft = accessibilityAt(ind.x + 1, ind.y, ind.z - 1);
     float rgt = accessibilityAt(ind.x - 1, ind.y, ind.z - 1);
+    float toplft = accessibilityAt(ind.x + 1, ind.y + 1, ind.z - 1);
+    float toprgt = accessibilityAt(ind.x - 1, ind.y + 1, ind.z - 1);
+    float botlft = accessibilityAt(ind.x + 1, ind.y - 1, ind.z - 1);
+    float botrgt = accessibilityAt(ind.x - 1, ind.y - 1, ind.z - 1);
     
     ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
     ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
     
-    batch->addAOAccessibilityAttrib(lft * top);
-    batch->addAOAccessibilityAttrib(rgt * bot);
-    batch->addAOAccessibilityAttrib(rgt * top);
-    batch->addAOAccessibilityAttrib(lft * top);
-    batch->addAOAccessibilityAttrib(lft * bot);
-    batch->addAOAccessibilityAttrib(rgt * bot);
+    batch->addAOAccessibilityAttrib(lft * top * toplft);
+    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
+    batch->addAOAccessibilityAttrib(rgt * top * toprgt);
+    batch->addAOAccessibilityAttrib(lft * top * toplft);
+    batch->addAOAccessibilityAttrib(lft * bot * botlft);
+    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
   }
   
   if ((ns & Neighbors::Bottom) == Neighbors::None) {
@@ -91,15 +95,17 @@ void Chunk::addVoxel(Voxel &voxel,
     float rgt = accessibilityAt(ind.x + 1, ind.y, ind.z + 1);
     float botrgt = accessibilityAt(ind.x + 1, ind.y - 1, ind.z + 1);
     float botlft = accessibilityAt(ind.x - 1, ind.y - 1, ind.z + 1);
+    float toprgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z + 1);
+    float toplft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z + 1);
     
     ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
     ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
     
-    batch->addAOAccessibilityAttrib(lft * top);
+    batch->addAOAccessibilityAttrib(lft * top * toplft);
     batch->addAOAccessibilityAttrib(lft * bot * botlft);
     batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
-    batch->addAOAccessibilityAttrib(rgt * top);
-    batch->addAOAccessibilityAttrib(lft * top);
+    batch->addAOAccessibilityAttrib(rgt * top * toprgt);
+    batch->addAOAccessibilityAttrib(lft * top * toplft);
     batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
   }
   
@@ -108,27 +114,40 @@ void Chunk::addVoxel(Voxel &voxel,
     float bot = accessibilityAt(ind.x + 1, ind.y - 1, ind.z);
     float lft = accessibilityAt(ind.x + 1, ind.y, ind.z + 1);
     float rgt = accessibilityAt(ind.x + 1, ind.y, ind.z - 1);
+    float toplft = accessibilityAt(ind.x + 1, ind.y + 1, ind.z + 1);
+    float toprgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z - 1);
+    float botlft = accessibilityAt(ind.x + 1, ind.y - 1, ind.z + 1);
+    float botrgt = accessibilityAt(ind.x + 1, ind.y - 1, ind.z - 1);
     
     ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
     ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
     
-    batch->addAOAccessibilityAttrib(top * lft);
-    batch->addAOAccessibilityAttrib(bot * rgt);
-    batch->addAOAccessibilityAttrib(top * rgt);
-    batch->addAOAccessibilityAttrib(bot * rgt);
-    batch->addAOAccessibilityAttrib(top * lft);
-    batch->addAOAccessibilityAttrib(bot * lft);
+    batch->addAOAccessibilityAttrib(top * lft * toplft);
+    batch->addAOAccessibilityAttrib(bot * rgt * botrgt);
+    batch->addAOAccessibilityAttrib(top * rgt * toprgt);
+    batch->addAOAccessibilityAttrib(bot * rgt * botrgt);
+    batch->addAOAccessibilityAttrib(top * lft * toplft);
+    batch->addAOAccessibilityAttrib(bot * lft * botlft);
   }
   
   if ((ns & Neighbors::Top) == Neighbors::None) {
+    float lft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z);
+    float rgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z);
+    float fnt = accessibilityAt(ind.x, ind.y + 1, ind.z + 1);
+    float bck = accessibilityAt(ind.x, ind.y + 1, ind.z - 1);
+    float fntlft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z + 1);
+    float fntrgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z + 1);
+    float bcklft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z - 1);
+    float bckrgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z - 1);
+    
     ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
     ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
-    batch->addAOAccessibilityAttrib(rightAcc * frontAcc);
-    batch->addAOAccessibilityAttrib(rightAcc * backAcc);
-    batch->addAOAccessibilityAttrib(leftAcc * backAcc);
-    batch->addAOAccessibilityAttrib(rightAcc * frontAcc);
-    batch->addAOAccessibilityAttrib(leftAcc * backAcc);
-    batch->addAOAccessibilityAttrib(leftAcc * frontAcc);
+    batch->addAOAccessibilityAttrib(rgt * fnt * fntrgt);
+    batch->addAOAccessibilityAttrib(rgt * bck * bckrgt);
+    batch->addAOAccessibilityAttrib(lft * bck * bcklft);
+    batch->addAOAccessibilityAttrib(rgt * fnt * fntrgt);
+    batch->addAOAccessibilityAttrib(lft * bck * bcklft);
+    batch->addAOAccessibilityAttrib(lft * fnt * fntlft);
   } 
 }
 
@@ -167,7 +186,8 @@ void Chunk::generate()
   
   //Perlin to control which type of terrain to generate
   noise::module::Perlin terrainType;
-  terrainType.SetFrequency(0.5);
+  terrainType.SetOctaveCount(1);
+  terrainType.SetFrequency(0.2);
   terrainType.SetPersistence(0.25);
   
   noise::module::Select terrainSelector;
@@ -175,7 +195,7 @@ void Chunk::generate()
   terrainSelector.SetSourceModule(1, mountain);
   terrainSelector.SetControlModule(terrainType);
   terrainSelector.SetBounds(0.0, 1000.0);
-  terrainSelector.SetEdgeFalloff(0.3);
+  terrainSelector.SetEdgeFalloff(0.6);
   
   //noise::module::Turbulence finalTerrain;
   //finalTerrain.SetSourceModule(0, terrainSelector);

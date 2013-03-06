@@ -76,10 +76,13 @@ private:
   void displayInstructions()
   {
     std::cout << "INSTRUCTIONS:" << std::endl;
+    std::cout << "mouse - look around" << std::endl;
     std::cout << "w - forward" << std::endl;
     std::cout << "s - backward" << std::endl;
     std::cout << "d - right" << std::endl;
     std::cout << "a - left" << std::endl;
+    std::cout << "spacebar - fly up" << std::endl;
+    std::cout << "shift - fly down" << std::endl;
   }
   
 protected:
@@ -91,7 +94,7 @@ protected:
     glEnable(GL_DEPTH_TEST);
     
     //Set up the player
-    glm::vec4 startPos(0.f, -2.f, 50.f, 1.f);
+    glm::vec4 startPos(0.f, 100.f, 0.f, 1.f);
     m_player.setOffset(startPos);
     Events::playerMoveEvent(startPos, startPos);
     
