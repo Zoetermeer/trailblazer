@@ -321,43 +321,6 @@ GLclampf Chunk::accessibilityAt(int x, int y, int z)
   return 1.f;
 }
 
-GLclampf Chunk::getOcclusionFactor(Voxel &voxel, Neighbors direction)
-{
-  //'Left' is defined as -X, 'right' = +X,
-  //'Back' = -z, 'front' = +z
-  glm::ivec3 ind = voxel.getIndex();
-  GLclampf fac = 1.f;
-  const GLclampf OCCLUDED = .75f;
-  
-  //If we're at the maximum height, can't be occluded
-  if (ind.y == CHUNK_SIZE - 1)
-    return fac;
-  switch (direction)
-  {
-    case Neighbors::Left:
-      if (ind.x > 0) {
-        fac = m_voxels[ind.x - 1][ind.y + 1][ind.z].getIsActive() ? OCCLUDED : fac;
-      }
-      break;
-    case Neighbors::Right:
-      if (ind.x < CHUNK_SIZE - 1)
-        fac = m_voxels[ind.x + 1][ind.y + 1][ind.z].getIsActive() ? OCCLUDED : fac;
-      break;
-    case Neighbors::Front:
-      if (ind.z < CHUNK_SIZE - 1)
-        fac = m_voxels[ind.x][ind.y + 1][ind.z + 1].getIsActive() ? OCCLUDED : fac;
-      break;
-    case Neighbors::Back:
-      if (ind.z > 0)
-        fac = m_voxels[ind.x][ind.y + 1][ind.z - 1].getIsActive() ? OCCLUDED : fac;
-      break;
-    default: //No top/bot occlusion.  If neighbors on top/bottom, no face anyway, and not visible
-      break;
-  }
-  
-  return fac;
-}
-
 void ChunkBuffer::init()
 {
   //Load a 5x5 grid, centered on the world-space origin

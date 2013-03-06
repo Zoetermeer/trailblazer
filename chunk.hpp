@@ -108,7 +108,6 @@ public:
   bool getIsGenerated() const { return m_generated; }
   bool getContainsPlayer() const { return m_containsPlayer; }
   void setContainsPlayer(bool v) { m_containsPlayer = v; }
-  GLclampf getOcclusionFactor(Voxel &voxel, Neighbors direction);
   
   static glm::ivec3 worldToChunkSpace(glm::vec3 wc)
   {
