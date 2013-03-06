@@ -110,16 +110,8 @@ protected:
     
     displayInstructions();
     
+    //Generate the initial state of the world
     m_cbuffer.init();
-    //Generate the height map
-    /*
-    for (int i = 0; i < SHOW_CHUNKS; i++) {
-      for (int j = 0; j < SHOW_CHUNKS; j++) {
-        m_chunks[i][j] = new Chunk(i, -j);
-        m_chunks[i][j]->generate();
-      }
-    }
-     */
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -173,39 +165,9 @@ protected:
     Events::keyUpEvent(key, false);
   }
   
-  glm::ivec3 m_curChunkCoord;
-  Chunk *m_curChunk = NULL;
   virtual void update(int deltaMs)
   {
     ProcessList::advanceAll(deltaMs);
-    
-    //Show the player's chunk coords
-    /*
-    glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(m_player.getOffset()));
-    if (chunkCoords != m_curChunkCoord) {
-      m_curChunkCoord = chunkCoords;
-      std::cout << "In chunk: (" << m_curChunkCoord.x << "," << m_curChunkCoord.y << "," << m_curChunkCoord.z << ")" << std::endl;
-      
-      if (m_curChunk)
-        m_curChunk->setContainsPlayer(false);
-      bool done = false;
-      for (int i = 0; i < SHOW_CHUNKS; i++) {
-        for (int j = 0; j < SHOW_CHUNKS; j++) {
-          if (m_chunks[i][j]->getIndex().x == chunkCoords.x && m_chunks[i][j]->getIndex().y == chunkCoords.z) {
-            m_curChunk = m_chunks[i][j];
-            done = true;
-            break;
-          }
-        }
-        
-        if (done)
-          break;
-      }
-      
-      if (done)
-        m_curChunk->setContainsPlayer(true);
-    }
-     */
   }
   
   virtual void draw(Env &env)
@@ -252,13 +214,6 @@ protected:
       
       //Draw the terrain
       m_cbuffer.draw(env);
-      /*
-      for (int i = 0; i < SHOW_CHUNKS; i++) {
-        for (int j = 0; j < SHOW_CHUNKS; j++) {
-          m_chunks[i][j]->draw(env);
-        }
-      }
-       */
       
       //m_ssys->draw(env);
       //m_rightArm.draw(env);

@@ -77,16 +77,11 @@ private:
   VertexBatch *m_vbo;
   glm::ivec2 m_chunkIndex;
   bool m_containsPlayer;
+  class ChunkBuffer *m_buffer;
   
 public:
-  Chunk()
-  : Chunk(0, 0)
-  {
-    m_vbo = NULL;
-  }
-  
-  Chunk(int xIndex, int zIndex)
-  : SceneObject(), m_generated(false), m_chunkIndex(xIndex, zIndex), m_containsPlayer(false)
+  Chunk(int xIndex, int zIndex, class ChunkBuffer *buffer)
+  : SceneObject(), m_generated(false), m_chunkIndex(xIndex, zIndex), m_containsPlayer(false), m_buffer(buffer)
   {
     
   }
@@ -137,10 +132,11 @@ private:
   std::vector<Chunk*> m_loadQueue;
   std::vector<Chunk*> m_visibleQueue;
   Chunk *m_curPlayerChunk;
+  GLfloat m_sunZRotation;
   
 public:
   ChunkBuffer()
-  : m_curPlayerChunk(NULL)
+  : m_curPlayerChunk(NULL), m_sunZRotation(0.f)
   {
     Events::addListener((IPlayerMoveListener*)this);
     ProcessList::add(this);
@@ -151,6 +147,9 @@ public:
     ProcessList::remove(this);
     Events::removeListener(EventPlayerMove, this);
   }
+  
+public:
+  GLfloat getSunZRotation() const { return m_sunZRotation; }
   
 private:
   void removeChunksAtX(int xIndex);

@@ -63,8 +63,20 @@ void Chunk::addVoxel(Voxel &voxel,
   }
   
   if ((ns & Neighbors::Back) == Neighbors::None) {
-    ADD_ATTR(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, accessibility);
-    ADD_ATTR(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, accessibility);
+    float top = accessibilityAt(ind.x, ind.y + 1, ind.z - 1);
+    float bot = accessibilityAt(ind.x, ind.y - 1, ind.z - 1);
+    float lft = accessibilityAt(ind.x + 1, ind.y, ind.z - 1);
+    float rgt = accessibilityAt(ind.x - 1, ind.y, ind.z - 1);
+    
+    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
+    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+    
+    batch->addAOAccessibilityAttrib(lft * top);
+    batch->addAOAccessibilityAttrib(rgt * bot);
+    batch->addAOAccessibilityAttrib(rgt * top);
+    batch->addAOAccessibilityAttrib(lft * top);
+    batch->addAOAccessibilityAttrib(lft * bot);
+    batch->addAOAccessibilityAttrib(rgt * bot);
   }
   
   if ((ns & Neighbors::Bottom) == Neighbors::None) {
@@ -73,8 +85,22 @@ void Chunk::addVoxel(Voxel &voxel,
   }
   
   if ((ns & Neighbors::Front) == Neighbors::None) {
-    ADD_ATTR(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
-    ADD_ATTR(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
+    float top = accessibilityAt(ind.x, ind.y + 1, ind.z + 1);
+    float bot = accessibilityAt(ind.x, ind.y - 1, ind.z + 1);
+    float lft = accessibilityAt(ind.x - 1, ind.y, ind.z + 1);
+    float rgt = accessibilityAt(ind.x + 1, ind.y, ind.z + 1);
+    float botrgt = accessibilityAt(ind.x + 1, ind.y - 1, ind.z + 1);
+    float botlft = accessibilityAt(ind.x - 1, ind.y - 1, ind.z + 1);
+    
+    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    
+    batch->addAOAccessibilityAttrib(lft * top);
+    batch->addAOAccessibilityAttrib(lft * bot * botlft);
+    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
+    batch->addAOAccessibilityAttrib(rgt * top);
+    batch->addAOAccessibilityAttrib(lft * top);
+    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
   }
   
   if ((ns & Neighbors::Right) == Neighbors::None) {
@@ -248,7 +274,13 @@ void Chunk::draw(Env &env)
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
     glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
-    shaders.prepareHemisphereAO(env, glm::vec3(0.f, 1000.f, 0.f), glm::vec4(.8f, .8f, .8f, 1.f), groundColor);
+    
+    //Rotate the sun
+    glm::mat4 m;
+    m = glm::rotate(m, m_buffer->getSunZRotation(), glm::vec3(0.f, 0.f, 1.f));
+    m = glm::translate(m, glm::vec3(0.f, 1000.f, 0.f));
+    glm::vec3 sunPos = glm::vec3(m * glm::vec4(0.f, 0.f, 0.f, 1.f));
+    shaders.prepareHemisphereAO(env, sunPos, glm::vec4(.8f, .8f, .8f, 1.f), groundColor);
     m_vbo->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
@@ -264,7 +296,7 @@ GLclampf Chunk::accessibilityAt(int x, int y, int z)
     return 1.f;
   
   if (m_voxels[x][y][z].getIsActive())
-    return .75f;
+    return .9f;
   
   return 1.f;
 }
@@ -312,9 +344,7 @@ void ChunkBuffer::init()
   int halfDown = floor((GLfloat)VISIBLE_CHUNKS * .5);
   for (int i = -halfDown; i <= halfDown; i++) {
     for (int j = -halfDown; j <= halfDown; j++) {
-      Chunk *ch = new Chunk(i, j);
-      //ch->generate();
-      //m_visibleQueue.push_back(ch);
+      Chunk *ch = new Chunk(i, j, this);
       m_loadQueue.push_back(ch);
     }
   }
@@ -372,7 +402,7 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
       int x = chunkCoords.x - (delta.x * halfUp);
       removeChunksAtX(x);
       for (int i = chunkCoords.z - halfDown; i <= chunkCoords.z + halfDown; i++) {
-        m_loadQueue.push_back(new Chunk(chunkCoords.x + (delta.x * halfDown), i));
+        m_loadQueue.push_back(new Chunk(chunkCoords.x + (delta.x * halfDown), i, this));
       }
     }
     
@@ -381,7 +411,7 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
       int z = chunkCoords.z - (delta.z * halfUp);
       removeChunksAtZ(z);
       for (int i = chunkCoords.x - halfDown; i <= chunkCoords.x + halfDown; i++) {
-        m_loadQueue.push_back(new Chunk(i, chunkCoords.z + (delta.z * halfDown)));
+        m_loadQueue.push_back(new Chunk(i, chunkCoords.z + (delta.z * halfDown), this));
       }
     }
     
@@ -398,6 +428,9 @@ void ChunkBuffer::advance(int delta)
     ch->generate();
     m_visibleQueue.push_back(ch);
   }
+  
+  //Rotate the sun
+  m_sunZRotation = nextAngle(m_sunZRotation, 1.f);
 }
 
 bool ChunkBuffer::isDone()
