@@ -23,7 +23,11 @@ enum class Neighbors {
   Top = 4,
   Bottom = 8,
   Front = 16,
-  Back = 32
+  Back = 32,
+  LeftFront = Left | Front,
+  RightFront = Right | Front,
+  LeftBack = Left | Back,
+  RightBack = Right | Back
 };
 
 inline Neighbors operator&(Neighbors a, Neighbors b)
@@ -115,6 +119,7 @@ public:
   }
   
 private:
+  GLclampf accessibilityAt(int x, int y, int z);
   void addVoxel(Voxel &voxel, VertexBatch *batch, MatrixStack &stack);
   
 public:

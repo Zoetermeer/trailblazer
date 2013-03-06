@@ -9,33 +9,36 @@
 #define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b - a), glm::vec3(c - a))))
 #define ADD_ATTR(x1,y1,z1,x2,y2,z2,x3,y3,z3,acc) \
 {\
-glm::vec4 v1 = VERT(x1,y1,z1); \
-glm::vec4 v2 = VERT(x2,y2,z2); \
-glm::vec4 v3 = VERT(x3,y3,z3); \
-glm::vec3 nrm = NORMAL(v1,v2,v3); \
-batch->add(v1, nrm);\
-batch->add(v2, nrm); \
-batch->add(v3, nrm); \
-batch->addAOAccessibilityAttrib(acc); \
-batch->addAOAccessibilityAttrib(acc); \
-batch->addAOAccessibilityAttrib(acc); \
+  glm::vec4 v1 = VERT(x1,y1,z1); \
+  glm::vec4 v2 = VERT(x2,y2,z2); \
+  glm::vec4 v3 = VERT(x3,y3,z3); \
+  glm::vec3 nrm = NORMAL(v1,v2,v3); \
+  batch->add(v1, nrm);\
+  batch->add(v2, nrm); \
+  batch->add(v3, nrm); \
+  batch->addAOAccessibilityAttrib(acc); \
+  batch->addAOAccessibilityAttrib(acc); \
+  batch->addAOAccessibilityAttrib(acc); \
 }
 
 #define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3) \
 {\
-glm::vec4 v1 = VERT(x1,y1,z1); \
-glm::vec4 v2 = VERT(x2,y2,z2); \
-glm::vec4 v3 = VERT(x3,y3,z3); \
-glm::vec3 nrm = NORMAL(v1,v2,v3); \
-batch->add(v1, nrm);\
-batch->add(v2, nrm); \
-batch->add(v3, nrm); \
+  glm::vec4 v1 = VERT(x1,y1,z1); \
+  glm::vec4 v2 = VERT(x2,y2,z2); \
+  glm::vec4 v3 = VERT(x3,y3,z3); \
+  glm::vec3 nrm = NORMAL(v1,v2,v3); \
+  batch->add(v1, nrm);\
+  batch->add(v2, nrm); \
+  batch->add(v3, nrm); \
 }
+
 void Chunk::addVoxel(Voxel &voxel,
                      VertexBatch *batch,
                      MatrixStack &stack)
 {
   glm::mat4 &m = stack.current();
+  glm::ivec3 ind = voxel.getIndex();
+  int x = ind.x, y = ind.y, z = ind.z;
   Neighbors ns = voxel.getNeighbors();
   float accessibility = 1.f;
   float leftAcc = getOcclusionFactor(voxel, Neighbors::Left);
@@ -43,8 +46,20 @@ void Chunk::addVoxel(Voxel &voxel,
   float backAcc = getOcclusionFactor(voxel, Neighbors::Back);
   float frontAcc = getOcclusionFactor(voxel, Neighbors::Front);
   if ((ns & Neighbors::Left) == Neighbors::None) {
-    ADD_ATTR(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, accessibility);
-    ADD_ATTR(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, accessibility);
+    float top = accessibilityAt(ind.x - 1, ind.y + 1, ind.z);
+    float bot = accessibilityAt(ind.x - 1, ind.y - 1, ind.z);
+    float lft = accessibilityAt(ind.x - 1, ind.y, ind.z - 1);
+    float rgt = accessibilityAt(ind.x - 1, ind.y, ind.z + 1);
+    
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
+    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
+    
+    batch->addAOAccessibilityAttrib(bot * lft);
+    batch->addAOAccessibilityAttrib(bot * rgt);
+    batch->addAOAccessibilityAttrib(top * rgt);
+    batch->addAOAccessibilityAttrib(bot * lft);
+    batch->addAOAccessibilityAttrib(top * rgt);
+    batch->addAOAccessibilityAttrib(top * lft);
   }
   
   if ((ns & Neighbors::Back) == Neighbors::None) {
@@ -63,8 +78,20 @@ void Chunk::addVoxel(Voxel &voxel,
   }
   
   if ((ns & Neighbors::Right) == Neighbors::None) {
-    ADD_ATTR(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, accessibility);
-    ADD_ATTR(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, accessibility);
+    float top = accessibilityAt(ind.x + 1, ind.y + 1, ind.z);
+    float bot = accessibilityAt(ind.x + 1, ind.y - 1, ind.z);
+    float lft = accessibilityAt(ind.x + 1, ind.y, ind.z + 1);
+    float rgt = accessibilityAt(ind.x + 1, ind.y, ind.z - 1);
+    
+    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    
+    batch->addAOAccessibilityAttrib(top * lft);
+    batch->addAOAccessibilityAttrib(bot * rgt);
+    batch->addAOAccessibilityAttrib(top * rgt);
+    batch->addAOAccessibilityAttrib(bot * rgt);
+    batch->addAOAccessibilityAttrib(top * lft);
+    batch->addAOAccessibilityAttrib(bot * lft);
   }
   
   if ((ns & Neighbors::Top) == Neighbors::None) {
@@ -124,14 +151,14 @@ void Chunk::generate()
   terrainSelector.SetBounds(0.0, 1000.0);
   terrainSelector.SetEdgeFalloff(0.3);
   
-  noise::module::Turbulence finalTerrain;
-  finalTerrain.SetSourceModule(0, terrainSelector);
-  finalTerrain.SetFrequency(4.0);
-  finalTerrain.SetPower(0.125);
+  //noise::module::Turbulence finalTerrain;
+  //finalTerrain.SetSourceModule(0, terrainSelector);
+  //finalTerrain.SetFrequency(4.0);
+  //finalTerrain.SetPower(0.125);
   
   utils::NoiseMap heightMap;
   utils::NoiseMapBuilderPlane heightMapBuilder;
-  heightMapBuilder.SetSourceModule(finalTerrain);
+  heightMapBuilder.SetSourceModule(terrainSelector);
   heightMapBuilder.SetDestNoiseMap(heightMap);
   heightMapBuilder.SetDestSize(32, 32);
   heightMapBuilder.SetBounds(m_chunkIndex.x,
@@ -220,11 +247,26 @@ void Chunk::draw(Env &env)
   mv.pushMatrix();
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
-    glm::vec4 groundColor = m_containsPlayer ? glm::vec4(1.f, 0.f, 0.f, 1.f) : glm::vec4(0.0f, 0.0f, 0.3f, 1.f);
-    shaders.prepareHemisphereAO(env, glm::vec3(0.f, 100.f, 0.f), glm::vec4(1.f, 1.f, 1.f, 1.f), groundColor);
+    glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
+    shaders.prepareHemisphereAO(env, glm::vec3(0.f, 1000.f, 0.f), glm::vec4(.8f, .8f, .8f, 1.f), groundColor);
     m_vbo->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
+}
+
+GLclampf Chunk::accessibilityAt(int x, int y, int z)
+{
+  if (x < 0 || x > CHUNK_SIZE - 1)
+    return 1.f;
+  if (y < 0 || y > CHUNK_SIZE - 1)
+    return 1.f;
+  if (z < 0 || z > CHUNK_SIZE - 1)
+    return 1.f;
+  
+  if (m_voxels[x][y][z].getIsActive())
+    return .75f;
+  
+  return 1.f;
 }
 
 GLclampf Chunk::getOcclusionFactor(Voxel &voxel, Neighbors direction)
@@ -308,7 +350,6 @@ void ChunkBuffer::removeChunksAtZ(int zIndex)
   }
 }
 
-#include <iostream>
 void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos)
 {
   glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(new_pos));
@@ -345,7 +386,6 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
     }
     
     m_curPlayerChunkCoords = chunkCoords;
-    std::cout << "Buffer size: " << m_visibleQueue.size() << std::endl;
   }
 }
 

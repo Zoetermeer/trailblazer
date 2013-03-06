@@ -67,6 +67,11 @@ public:
     glTranslatef(0.f, 0.f, v);
   }
   
+  static inline glm::vec4 color(unsigned char r, unsigned char g, unsigned char b)
+  {
+    return glm::vec4((GLfloat)r / 255.f, (GLfloat)g / 255.f, (GLfloat)b / 255.f, 1.f);
+  }
+  
   static void drawBox(GLenum mode) throw (OpenGLException*);
   static void drawFilledWireframeBox(const vec3_t<GLfloat> &lineColor, const vec3_t<GLfloat> &faceColor);
   static void drawText(double x, double y, const char *str);
