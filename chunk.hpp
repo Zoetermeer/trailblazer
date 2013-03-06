@@ -16,6 +16,11 @@
 //Size (in GL units) of a voxel face
 #define VOXEL_SIZE 5.f
 
+//The number of chunks visible in a given dimension.
+//So with 5, we see the one we're currently in, plus 2 on
+//either side.
+#define VISIBLE_CHUNKS 9
+
 enum class Neighbors {
   None = 0,
   Left = 1,
@@ -122,10 +127,6 @@ public:
   virtual void draw(Env &env);
 };
 
-//The number of chunks visible in a given dimension.
-//So with 5, we see the one we're currently in, plus 2 on
-//either side.
-#define VISIBLE_CHUNKS 7
 class ChunkBuffer : public IPlayerMoveListener, public Process, public SceneObject {
 private:
   glm::ivec3 m_curPlayerChunkCoords;
