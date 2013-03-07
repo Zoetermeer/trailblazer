@@ -1,5 +1,4 @@
 #include "player.hpp"
-#include <stdio.h>
 #include <math.h>
 #include "events.hpp" 
 #include <GL/glfw.h>
@@ -24,9 +23,9 @@ void Player::mouseLook(int oldX, int oldY, int newX, int newY)
   Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw });
 }
 
-#include <iostream>
-
-#undef PRINT_PLAYER_LOCATION
+#ifdef PRINT_PLAYER_LOCATION
+#include <stdio.h>
+#endif
 void Player::move(GLfloat distance, Direction dir)
 {
   GLfloat ang;

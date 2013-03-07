@@ -209,6 +209,7 @@ protected:
       Sky::getInstance().draw(env);
       
       //Draw a yellow sphere at player's position for testing
+      /*
       mv.pushMatrix();
       {
         glm::vec4 poff = m_player.getOffset();
@@ -224,6 +225,7 @@ protected:
         glutSolidSphere(1.f, 20, 20);
       }
       mv.popMatrix();
+       */
       
       //Draw the terrain
       m_cbuffer.draw(env);
@@ -233,9 +235,9 @@ protected:
       //m_leftArm.draw(env);
       
       //Draw ships
-      for (Ship *ship : m_ships) {
-        ship->draw(env);
-      }
+      //for (Ship *ship : m_ships) {
+      //  ship->draw(env);
+      //}
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

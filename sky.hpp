@@ -14,7 +14,7 @@ private:
   static Sky *s_instance;
   
 private:
-  Sky() : m_sunZRotation(90.f)
+  Sky() : m_sunZRotation(0.f)
   {
     ProcessList::add(this);
     Events::addListener((IPlayerMoveListener*)this);

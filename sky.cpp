@@ -32,7 +32,7 @@ void Sky::draw(Env &env)
     m_world = mv.getCurrent();
     
     shaders.prepareDefault(env, GL::YELLOW);
-    glutSolidSphere(100, 5, 5);
+    glutSolidSphere(50, 20, 20);
   }
   mv.popMatrix();
 }
