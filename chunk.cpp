@@ -2,6 +2,7 @@
 #include "matrix-stack.hpp"
 #include "shader.hpp"
 #include "GL.hpp"
+#include "sky.hpp"
 #include <noise.h>
 #include "noiseutils.h"
 
@@ -151,7 +152,6 @@ void Chunk::addVoxel(Voxel &voxel,
   } 
 }
 
-
 void Chunk::generate()
 {
   if (m_generated)
@@ -281,7 +281,7 @@ void Chunk::generate()
   m_vbo->end();
   m_generated = true;
 }
-
+#include <iostream>
 void Chunk::draw(Env &env)
 {
   if (!m_generated)
@@ -295,11 +295,7 @@ void Chunk::draw(Env &env)
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
     glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
     
-    //Rotate the sun
-    glm::mat4 m;
-    m = glm::rotate(m, m_buffer->getSunZRotation(), glm::vec3(0.f, 0.f, 1.f));
-    m = glm::translate(m, glm::vec3(0.f, 1000.f, 0.f));
-    glm::vec3 sunPos = glm::vec3(m * glm::vec4(0.f, 0.f, 0.f, 1.f));
+    glm::vec3 sunPos = glm::vec3(Sky::getSunPosition());
     shaders.prepareHemisphereAO(env, sunPos, glm::vec4(.8f, .8f, .8f, 1.f), groundColor);
     m_vbo->draw(GL_TRIANGLES);
   }
@@ -327,7 +323,7 @@ void ChunkBuffer::init()
   int halfDown = floor((GLfloat)VISIBLE_CHUNKS * .5);
   for (int i = -halfDown; i <= halfDown; i++) {
     for (int j = -halfDown; j <= halfDown; j++) {
-      Chunk *ch = new Chunk(i, j, this);
+      Chunk *ch = new Chunk(i, j);
       m_loadQueue.push_back(ch);
     }
   }
@@ -385,7 +381,7 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
       int x = chunkCoords.x - (delta.x * halfUp);
       removeChunksAtX(x);
       for (int i = chunkCoords.z - halfDown; i <= chunkCoords.z + halfDown; i++) {
-        m_loadQueue.push_back(new Chunk(chunkCoords.x + (delta.x * halfDown), i, this));
+        m_loadQueue.push_back(new Chunk(chunkCoords.x + (delta.x * halfDown), i));
       }
     }
     
@@ -394,7 +390,7 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
       int z = chunkCoords.z - (delta.z * halfUp);
       removeChunksAtZ(z);
       for (int i = chunkCoords.x - halfDown; i <= chunkCoords.x + halfDown; i++) {
-        m_loadQueue.push_back(new Chunk(i, chunkCoords.z + (delta.z * halfDown), this));
+        m_loadQueue.push_back(new Chunk(i, chunkCoords.z + (delta.z * halfDown)));
       }
     }
     
@@ -411,9 +407,6 @@ void ChunkBuffer::advance(int delta)
     ch->generate();
     m_visibleQueue.push_back(ch);
   }
-  
-  //Rotate the sun
-  m_sunZRotation = nextAngle(m_sunZRotation, 1.f);
 }
 
 bool ChunkBuffer::isDone()

@@ -15,7 +15,7 @@
 #include "env.hpp"
 #include "opengl-app.hpp"
 #include "chunk.hpp"
-#include <noise.h>
+#include "sky.hpp"
 
 #if defined(TEST)
 #include <cppunit/CompilerOutputter.h>
@@ -35,6 +35,7 @@ private:
   Player m_player;
   Direction m_moveDir;
   FirstPersonCamera m_camera;
+  Sky *m_sky;
   
   Arm m_rightArm;
   Arm m_leftArm;
@@ -49,6 +50,11 @@ public:
   : m_rightArm(ArmType::Right, 5.0, 5.0, 2.0),
     m_leftArm(ArmType::Left, 5.0, 5.0, 2.0),
     m_moveDir(Direction::Idle)
+  {
+    
+  }
+  
+  ~WorldSandboxApp()
   {
     
   }
@@ -102,10 +108,12 @@ protected:
     m_camera.init(m_player);
     
     //Generate the solar system
-    generator_params_t params = { 5000, 10 };
-    m_ssys = SolarSystem::generate(params);
-    std::cout << m_ssys->getName() << " system\n";
-    m_ssys->animate();
+    //generator_params_t params = { 5000, 10 };
+    //m_ssys = SolarSystem::generate(params);
+    //std::cout << m_ssys->getName() << " system\n";
+    //m_ssys->animate();
+    
+    Sky::init();
     
     //Generate the arm geometry
     m_rightArm.generateGeometry();
@@ -197,6 +205,8 @@ protected:
       GL::drawPlane();
       shaders.current().uniform(Uniform::COLOR) = GL::RED;
       GL::drawAxes(env);
+      
+      Sky::getInstance().draw(env);
       
       //Draw a yellow sphere at player's position for testing
       mv.pushMatrix();
