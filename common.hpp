@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <string>
+#include <iostream>
 
 #define DEFAULT_UPDATE_INTERVAL (1000 / 60)
 
@@ -22,6 +23,7 @@ memset(ptr, 0, sizeof(type));
 
 #define glGenVertexArrays glGenVertexArraysAPPLE
 #define glBindVertexArray glBindVertexArrayAPPLE
+#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 
 template <typename T, int dimension>
 struct vec_t {

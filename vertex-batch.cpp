@@ -27,9 +27,33 @@ void VertexBatch::add(GLfloat x, GLfloat y, GLfloat z, GLfloat normX, GLfloat no
   m_norms.push_back(normZ);
 }
 
+void VertexBatch::addIndex(GLuint index)
+{
+  m_indices.push_back(index);
+}
+
 void VertexBatch::addAOAccessibilityAttrib(float val)
 {
   m_aoAttribs.push_back(val);
+}
+
+void VertexBatch::add(vertex_t &vertex)
+{
+  vertex.index = m_vertexSpec.next_index++;
+  m_verts.push_back(vertex.position.x);
+  m_verts.push_back(vertex.position.y);
+  m_verts.push_back(vertex.position.z);
+  m_verts.push_back(vertex.position.w);
+  m_norms.push_back(vertex.normal.x);
+  m_norms.push_back(vertex.normal.y);
+  m_norms.push_back(vertex.normal.z);
+  if (m_vertexSpec.use_color) {
+    
+  }
+  
+  if (m_vertexSpec.use_ao) {
+    m_aoAttribs.push_back(vertex.ao_accessibility);
+  }
 }
 
 void VertexBatch::end()
@@ -37,59 +61,82 @@ void VertexBatch::end()
   GLfloat *verts = m_verts.data();
   GLfloat *norms = m_norms.data();
   
-  //glGenVertexArrays(1, &m_vaoId);
-  //glBindVertexArray(m_vaoId);
+  glGenVertexArrays(1, &m_vaoId);
+  glBindVertexArray(m_vaoId);
   
-  glGenBuffers(1, &m_vboId);
+  if (m_vertexSpec.indexed) {
+    GLuint ids[2];
+    glGenBuffers(2, ids);
+    m_vboId = ids[0];
+    m_iboId = ids[1];
+  } else {
+    glGenBuffers(1, &m_vboId);
+  }
+  
   glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
   
   //Copy vertex data
   m_vertsSize = m_verts.size() * sizeof(GLfloat);
   m_normsSize = m_norms.size() * sizeof(GLfloat);
+  m_indexSize = m_indices.size() * sizeof(GLuint);
   m_aoAttribsSize = m_aoAttribs.size() * sizeof(float);
-  glBufferData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize + m_aoAttribsSize, NULL, GL_STATIC_DRAW);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertsSize, verts);
-  glBufferSubData(GL_ARRAY_BUFFER, m_vertsSize, m_normsSize, norms);
-  if (m_aoAttribsSize) {
-    float *accAtts = m_aoAttribs.data();
-    glBufferSubData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize, m_aoAttribsSize, accAtts);
-  }
+  m_vertPtr = 0;
+  m_normPtr = m_vertPtr + m_vertsSize;
+  m_aoPtr = m_normPtr + m_normsSize;
   
-  glVertexPointer(4, GL_FLOAT, 0, 0);
-  glNormalPointer(GL_FLOAT, 0, (const GLvoid*)(m_verts.size() * sizeof(GLfloat)));
+  glBufferData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize + m_aoAttribsSize, NULL, GL_STATIC_DRAW);
+  
+  //Positions
+  glBufferSubData(GL_ARRAY_BUFFER, m_vertPtr, m_vertsSize, verts);
+  
+  //Normals
+  glBufferSubData(GL_ARRAY_BUFFER, m_normPtr, m_normsSize, norms);
+  
   //If we have vertex attributes, store them as a sub-buffer
   if (m_aoAttribsSize) {
+    float *accAtts = m_aoAttribs.data();
+    glBufferSubData(GL_ARRAY_BUFFER, m_aoPtr, m_aoAttribsSize, accAtts);
+  }
+  
+  glVertexPointer(4, GL_FLOAT, 0, (const GLvoid*)m_vertPtr);
+  glNormalPointer(GL_FLOAT, 0, (const GLvoid*)m_normPtr);
+  
+  //Ambient occlusion (accessibility factor) vertex attribute
+  if (m_vertexSpec.use_ao) {
     glEnableVertexAttribArray((GLuint)VertexAttrib::AOAccessibility);
     glVertexAttribPointer((GLuint)VertexAttrib::AOAccessibility,
                           1,
                           GL_FLOAT,
                           GL_FALSE,
                           0,
-                          (const GLvoid*)(m_normsSize + m_vertsSize));
+                          (const GLvoid*)m_aoPtr);
+  }
+  
+  //Vertex element indices
+  if (m_vertexSpec.indexed) {
+    GLuint *inds = m_indices.data();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iboId);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexSize, inds, GL_STATIC_DRAW);
   }
   
   CHECK_OPENGL_ERROR;
+  glBindVertexArray(0);
+  
+  m_indices.clear();
 }
 
 void VertexBatch::draw(GLenum drawMode)
 {
-  glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+  glBindVertexArray(m_vaoId);
   glEnableClientState(GL_VERTEX_ARRAY);
-  glVertexPointer(4, GL_FLOAT, 0, 0);
-  glEnableClientState(GL_NORMAL_ARRAY);
-  
-  glNormalPointer(GL_FLOAT, 0, (const GLvoid*)m_vertsSize);
-  if (m_aoAttribsSize) {
-    glEnableVertexAttribArray((GLuint)VertexAttrib::AOAccessibility);
-    glVertexAttribPointer((GLuint)VertexAttrib::AOAccessibility,
-                          1,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          0,
-                          (const GLvoid*)(m_vertsSize + m_normsSize));
+  if (m_vertexSpec.indexed) {
+    glDrawElements(drawMode, m_indexSize / sizeof(GLuint), GL_UNSIGNED_INT, 0);
   }
+  else
+    glDrawArrays(drawMode, 0, (m_vertsSize / sizeof(GLfloat)) / 4);
   
-  glDrawArrays(drawMode, 0, m_verts.size() / 4);
+  glBindVertexArray(0);
+  glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 

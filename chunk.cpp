@@ -6,33 +6,8 @@
 #include <noise.h>
 #include "noiseutils.h"
 
-#define VERT(x,y,z) (m * glm::vec4(x,y,z,1.f))
-#define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b - a), glm::vec3(c - a))))
-#define ADD_ATTR(x1,y1,z1,x2,y2,z2,x3,y3,z3,acc) \
-{\
-  glm::vec4 v1 = VERT(x1,y1,z1); \
-  glm::vec4 v2 = VERT(x2,y2,z2); \
-  glm::vec4 v3 = VERT(x3,y3,z3); \
-  glm::vec3 nrm = NORMAL(v1,v2,v3); \
-  batch->add(v1, nrm);\
-  batch->add(v2, nrm); \
-  batch->add(v3, nrm); \
-  batch->addAOAccessibilityAttrib(acc); \
-  batch->addAOAccessibilityAttrib(acc); \
-  batch->addAOAccessibilityAttrib(acc); \
-}
-
-#define ADD(x1,y1,z1,x2,y2,z2,x3,y3,z3) \
-{\
-  glm::vec4 v1 = VERT(x1,y1,z1); \
-  glm::vec4 v2 = VERT(x2,y2,z2); \
-  glm::vec4 v3 = VERT(x3,y3,z3); \
-  glm::vec3 nrm = NORMAL(v1,v2,v3); \
-  batch->add(v1, nrm);\
-  batch->add(v2, nrm); \
-  batch->add(v3, nrm); \
-}
-
+#define VERT(m,x,y,z) (new_vertex((m * glm::vec4(x,y,z,1.f))))
+#define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b.position - a.position), glm::vec3(c.position - a.position))))
 void Chunk::addVoxel(Voxel &voxel,
                      VertexBatch *batch,
                      MatrixStack &stack)
@@ -52,15 +27,28 @@ void Chunk::addVoxel(Voxel &voxel,
     float botrgt = accessibilityAt(ind.x - 1, ind.y - 1, ind.z + 1);
     float botlft = accessibilityAt(ind.x - 1, ind.y - 1, ind.z - 1);
     
-    ADD(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
-    ADD(-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f);
+    auto v1 = VERT(m, -1, -1, -1);
+    auto v2 = VERT(m, -1, -1, 1);
+    auto v3 = VERT(m, -1, 1, 1);
+    auto v4 = VERT(m, -1, 1, -1);
+    auto nrm = NORMAL(v1, v2, v3);
+    v1.normal = v2.normal = v3.normal = v4.normal = nrm;
+    v1.ao_accessibility = bot * lft * botlft;
+    v2.ao_accessibility = bot * rgt * botrgt;
+    v3.ao_accessibility = top * rgt * toprgt;
+    v4.ao_accessibility = top * lft * toplft;
     
-    batch->addAOAccessibilityAttrib(bot * lft * botlft);
-    batch->addAOAccessibilityAttrib(bot * rgt * botrgt);
-    batch->addAOAccessibilityAttrib(top * rgt * toprgt);
-    batch->addAOAccessibilityAttrib(bot * lft * botlft);
-    batch->addAOAccessibilityAttrib(top * rgt * toprgt);
-    batch->addAOAccessibilityAttrib(top * lft * toplft);
+    batch->add(v1);
+    batch->add(v2);
+    batch->add(v3);
+    batch->add(v4);
+    
+    batch->addIndex(v1.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v1.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v4.index);
   }
   
   if ((ns & Neighbors::Back) == Neighbors::None) {
@@ -73,20 +61,48 @@ void Chunk::addVoxel(Voxel &voxel,
     float botlft = accessibilityAt(ind.x + 1, ind.y - 1, ind.z - 1);
     float botrgt = accessibilityAt(ind.x - 1, ind.y - 1, ind.z - 1);
     
-    ADD(1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
-    ADD(1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+    auto v1 = VERT(m, 1, 1, -1);
+    auto v2 = VERT(m, -1, -1, -1);
+    auto v3 = VERT(m, -1, 1, -1);
+    auto v4 = VERT(m, 1, -1, -1);
+    v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.ao_accessibility = lft * top * toplft;
+    v2.ao_accessibility = rgt * bot * botrgt;
+    v3.ao_accessibility = rgt * top * toprgt;
+    v4.ao_accessibility = lft * bot * botlft;
     
-    batch->addAOAccessibilityAttrib(lft * top * toplft);
-    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
-    batch->addAOAccessibilityAttrib(rgt * top * toprgt);
-    batch->addAOAccessibilityAttrib(lft * top * toplft);
-    batch->addAOAccessibilityAttrib(lft * bot * botlft);
-    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
+    batch->add(v1);
+    batch->add(v2);
+    batch->add(v3);
+    batch->add(v4);
+    
+    batch->addIndex(v1.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v1.index);
+    batch->addIndex(v4.index);
+    batch->addIndex(v2.index);
   }
   
   if ((ns & Neighbors::Bottom) == Neighbors::None) {
-    ADD_ATTR(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, accessibility);
-    ADD_ATTR(1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, accessibility);
+    auto v1 = VERT(m, 1, -1, 1);
+    auto v2 = VERT(m, -1, -1, -1);
+    auto v3 = VERT(m, 1, -1, -1);
+    auto v4 = VERT(m, -1, -1, 1);
+    v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.ao_accessibility = v2.ao_accessibility = v3.ao_accessibility = v4.ao_accessibility = 1.f;
+    
+    batch->add(v1);
+    batch->add(v2);
+    batch->add(v3);
+    batch->add(v4);
+    
+    batch->addIndex(v1.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v1.index);
+    batch->addIndex(v4.index);
+    batch->addIndex(v2.index);
   }
   
   if ((ns & Neighbors::Front) == Neighbors::None) {
@@ -99,15 +115,27 @@ void Chunk::addVoxel(Voxel &voxel,
     float toprgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z + 1);
     float toplft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z + 1);
     
-    ADD(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
-    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    auto v1 = VERT(m, -1, 1, 1);
+    auto v2 = VERT(m, -1, -1, 1);
+    auto v3 = VERT(m, 1, -1, 1);
+    auto v4 = VERT(m, 1, 1, 1);
+    v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.ao_accessibility = lft * top * toplft;
+    v2.ao_accessibility = lft * bot * botlft;
+    v3.ao_accessibility = rgt * bot * botrgt;
+    v4.ao_accessibility = rgt * top * toprgt;
     
-    batch->addAOAccessibilityAttrib(lft * top * toplft);
-    batch->addAOAccessibilityAttrib(lft * bot * botlft);
-    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
-    batch->addAOAccessibilityAttrib(rgt * top * toprgt);
-    batch->addAOAccessibilityAttrib(lft * top * toplft);
-    batch->addAOAccessibilityAttrib(rgt * bot * botrgt);
+    batch->add(v1);
+    batch->add(v2);
+    batch->add(v3);
+    batch->add(v4);
+    
+    batch->addIndex(v1.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v4.index);
+    batch->addIndex(v1.index);
+    batch->addIndex(v3.index);
   }
   
   if ((ns & Neighbors::Right) == Neighbors::None) {
@@ -120,15 +148,27 @@ void Chunk::addVoxel(Voxel &voxel,
     float botlft = accessibilityAt(ind.x + 1, ind.y - 1, ind.z + 1);
     float botrgt = accessibilityAt(ind.x + 1, ind.y - 1, ind.z - 1);
     
-    ADD(1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
-    ADD(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
+    auto v1 = VERT(m, 1, 1, 1);
+    auto v2 = VERT(m, 1, -1, -1);
+    auto v3 = VERT(m, 1, 1, -1);
+    auto v4 = VERT(m, 1, -1, 1);
+    v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.ao_accessibility = top * lft * toplft;
+    v2.ao_accessibility = bot * rgt * botrgt;
+    v3.ao_accessibility = top * rgt * toprgt;
+    v4.ao_accessibility = bot * lft * botlft;
     
-    batch->addAOAccessibilityAttrib(top * lft * toplft);
-    batch->addAOAccessibilityAttrib(bot * rgt * botrgt);
-    batch->addAOAccessibilityAttrib(top * rgt * toprgt);
-    batch->addAOAccessibilityAttrib(bot * rgt * botrgt);
-    batch->addAOAccessibilityAttrib(top * lft * toplft);
-    batch->addAOAccessibilityAttrib(bot * lft * botlft);
+    batch->add(v1);
+    batch->add(v2);
+    batch->add(v3);
+    batch->add(v4);
+    
+    batch->addIndex(v1.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v1.index);
+    batch->addIndex(v4.index);
   }
   
   if ((ns & Neighbors::Top) == Neighbors::None) {
@@ -141,15 +181,28 @@ void Chunk::addVoxel(Voxel &voxel,
     float bcklft = accessibilityAt(ind.x - 1, ind.y + 1, ind.z - 1);
     float bckrgt = accessibilityAt(ind.x + 1, ind.y + 1, ind.z - 1);
     
-    ADD(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f);
-    ADD(1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
-    batch->addAOAccessibilityAttrib(rgt * fnt * fntrgt);
-    batch->addAOAccessibilityAttrib(rgt * bck * bckrgt);
-    batch->addAOAccessibilityAttrib(lft * bck * bcklft);
-    batch->addAOAccessibilityAttrib(rgt * fnt * fntrgt);
-    batch->addAOAccessibilityAttrib(lft * bck * bcklft);
-    batch->addAOAccessibilityAttrib(lft * fnt * fntlft);
-  } 
+    auto v1 = VERT(m, 1, 1, 1);
+    auto v2 = VERT(m, 1, 1, -1);
+    auto v3 = VERT(m, -1, 1, -1);
+    auto v4 = VERT(m, -1, 1, 1);
+    v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.ao_accessibility = rgt * fnt * fntrgt;
+    v2.ao_accessibility = rgt * bck * bckrgt;
+    v3.ao_accessibility = lft * bck * bcklft;
+    v4.ao_accessibility = lft * fnt * fntlft;
+    
+    batch->add(v1);
+    batch->add(v2);
+    batch->add(v3);
+    batch->add(v4);
+    
+    batch->addIndex(v1.index);
+    batch->addIndex(v2.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v1.index);
+    batch->addIndex(v3.index);
+    batch->addIndex(v4.index);
+  }
 }
 
 void Chunk::generate()
@@ -168,6 +221,8 @@ void Chunk::generate()
     Voxels are indexed starting at the bottom left corner of the chunk.
    */
   m_vbo = new VertexBatch();
+  m_vbo->getVertexSpec().indexed = true;
+  m_vbo->getVertexSpec().use_ao = true;
   m_vbo->begin();
   
   //Translate to the bottom left
@@ -281,7 +336,7 @@ void Chunk::generate()
   m_vbo->end();
   m_generated = true;
 }
-#include <iostream>
+
 void Chunk::draw(Env &env)
 {
   if (!m_generated)

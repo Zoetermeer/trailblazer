@@ -19,7 +19,7 @@
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side.
-#define VISIBLE_CHUNKS 9
+#define VISIBLE_CHUNKS 11
 
 enum class Neighbors {
   None = 0,
