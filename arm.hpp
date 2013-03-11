@@ -5,6 +5,7 @@
 #include "process.hpp"
 #include "events.hpp"
 #include "vertex-batch.hpp"
+#include "scene-object.hpp"
 
 #define ARM_LOWERED_PITCH 90.f
 #define ARM_RAISE_LOWER_DURATION_MS 500

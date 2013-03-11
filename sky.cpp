@@ -1,4 +1,5 @@
 #include "sky.hpp"
+#include "shader.hpp"
 
 Sky *Sky::s_instance = NULL;
 

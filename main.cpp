@@ -27,7 +27,6 @@ const int DEFAULT_HEIGHT = 1000;
 
 class WorldSandboxApp : public OpenGLApp {
 private:
-  std::vector<Ship*> m_ships;
   Player m_player;
   Direction m_moveDir;
   FirstPersonCamera m_camera;
@@ -103,11 +102,9 @@ protected:
     
     Sky::init();
     
-#if defined(DRAW_ARMS)
     //Generate the arm geometry
     m_rightArm.generateGeometry();
     m_leftArm.generateGeometry();
-#endif
     
     displayInstructions();
     
@@ -206,10 +203,8 @@ protected:
       shaders.preparePhong(env, glm::vec3(Sky::getSunPosition()), GL::BLACK, GL::BLUE, GL::WHITE);
       glutSolidSphere(100, 20, 20);
       
-#if defined(DRAW_ARMS)
       m_rightArm.draw(env);
       m_leftArm.draw(env);
-#endif
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

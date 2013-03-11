@@ -2,7 +2,6 @@
 #define PROCESS_H
 
 #include "common.hpp"
-#include "ship.hpp"
 
 class Process;
 
@@ -81,39 +80,6 @@ public:
   {
     return getNormalizedTimeElapsed() == 1.f;
   }
-};
-
-class MaybeSpawnShipProcess : public Process {
-private:
-  
-public:
-  MaybeSpawnShipProcess()
-  : Process(0)
-  {
-    
-  }
-  
-public:
-  void advance(int delta);
-  bool isDone();
-};
-
-class PtoPShipFlyProcess : public Process {
-private:
-  Ship *m_ship;
-  glm::vec3 m_startPos;
-  glm::vec3 m_endPos;
-  
-public:
-  PtoPShipFlyProcess(glm::vec3 &startPos, glm::vec3 &endPos);
-  
-  ~PtoPShipFlyProcess()
-  {
-    delete m_ship;
-  }
-  
-  void advance(int delta);
-  bool isDone();
 };
 
 #endif

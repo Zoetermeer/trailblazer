@@ -2,8 +2,6 @@
 
 std::vector<IPlayerMoveListener*> Events::m_pmListeners;
 std::vector<IPlayerLookListener*> Events::m_plListeners;
-std::vector<IShipLaunchListener*> Events::m_launchListeners;
-std::vector<IShipLandListener*> Events::m_landListeners;
 std::vector<IKeyDownListener*> Events::m_keyDownListeners;
 std::vector<IKeyUpListener*> Events::m_keyUpListeners;
 
@@ -15,16 +13,6 @@ void Events::addListener(IPlayerMoveListener *listener)
 void Events::addListener(IPlayerLookListener* listener)
 {
   Events::m_plListeners.push_back(listener);
-}
-
-void Events::addListener(IShipLaunchListener *listener)
-{
-  Events::m_launchListeners.push_back(listener);
-}
-
-void Events::addListener(IShipLandListener *listener)
-{
-  Events::m_landListeners.push_back(listener);
 }
 
 void Events::addListener(IKeyDownListener *listener)
@@ -70,22 +58,6 @@ void Events::playerLookEvent(const Attitude &att)
 {
   for (IPlayerLookListener *listener : m_plListeners) {
     listener->onPlayerLook(att);
-  }
-}
-
-void Events::shipLaunchEvent(Ship *ship)
-{
-  IShipLaunchListener *listener;
-  for (IShipLaunchListener *listener : Events::m_launchListeners) {
-    listener->onShipLaunch(ship);
-  }
-}
-
-void Events::shipLandEvent(Ship *ship)
-{
-  IShipLandListener *listener;
-  for (IShipLandListener *listener : Events::m_landListeners) {
-    listener->onShipLand(ship);
   }
 }
 
