@@ -2,6 +2,8 @@ uniform mat4 ModelViewMatrix;
 uniform mat4 ProjectionMatrix;
 uniform mat3 NormalMatrix;
 
+uniform vec3 LightPosition;
+
 varying vec3 Normal;
 varying vec3 Vertex;
 

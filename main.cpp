@@ -5,7 +5,6 @@
 #include "matrix-stack.hpp"
 #include "player.hpp"
 #include "process.hpp"
-#include "solar-system.hpp"
 #include "cameras.hpp"
 #include "shader.hpp"
 #include "events.hpp"
@@ -30,7 +29,6 @@ const int DEFAULT_HEIGHT = 1000;
 
 class WorldSandboxApp : public OpenGLApp {
 private:
-  SolarSystem *m_ssys = NULL;
   std::vector<Ship*> m_ships;
   Player m_player;
   Direction m_moveDir;
@@ -110,8 +108,8 @@ protected:
     Sky::init();
     
     //Generate the arm geometry
-    m_rightArm.generateGeometry();
-    m_leftArm.generateGeometry();
+    //m_rightArm.generateGeometry();
+    //m_leftArm.generateGeometry();
     
     displayInstructions();
     
@@ -205,8 +203,8 @@ protected:
       //Draw the terrain
       m_cbuffer.draw(env);
       
-      //m_rightArm.draw(env);
-      //m_leftArm.draw(env);
+      m_rightArm.draw(env);
+      m_leftArm.draw(env);
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

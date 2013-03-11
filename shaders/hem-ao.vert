@@ -17,9 +17,6 @@ void main()
   vec3 lightVec = normalize(LightPosition - eyePos.xyz);
   float cosTheta = dot(tnorm, lightVec);
   float a = cosTheta * 0.5 + 0.2;
-  //if (LightPosition.y <= 0.0) {
-  //  a -= .0;
-  //}
   
   VertexColor = mix(Color, SkyColor, a) * AOAccessibility;
   gl_Position = ProjectionMatrix * eyePos;

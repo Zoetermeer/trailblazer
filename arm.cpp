@@ -4,6 +4,7 @@
 #include "env.hpp"
 #include "matrix-stack.hpp"
 #include "shader.hpp"
+#include "sky.hpp"
 
 #define BODY_OFFSET 6.0
 
@@ -34,6 +35,7 @@ void Arm::draw(Env &env)
 {
   MatrixStack &mv = env.getMV();
   ShaderSet &shaders = env.getShaders();
+  auto sunPos = glm::vec3(Sky::getSunPosition());
   mv.pushMatrix();
   {
     mv.translate(m_pos.x, m_pos.y, m_pos.z);
@@ -52,7 +54,7 @@ void Arm::draw(Env &env)
     mv.pushMatrix();
     {
       mv.scaleZ(m_armLength);
-      shaders.preparePhong(env, GL::BLUE, GL::BLACK, GL::WHITE);
+      shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
       GL::drawBox(GL_TRIANGLES);
     }
     mv.popMatrix();
@@ -79,7 +81,7 @@ void Arm::draw(Env &env)
     
     //Joint position
     mv.translateZ(-m_handRadius);
-    shaders.preparePhong(env, GL::BLUE, GL::BLACK, GL::WHITE);
+    shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
     glutSolidSphere(m_handRadius, 20, 20);
     
     //Draw fingers
@@ -99,7 +101,7 @@ void Arm::draw(Env &env)
           mv.pushMatrix();
           {
             mv.scale(0.2, 0.2, f.getLength() / 3.f);
-            shaders.preparePhong(env, GL::BLUE, GL::BLACK, GL::WHITE);
+            shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
             GL::drawBox(GL_TRIANGLES);
           }
           mv.popMatrix();
@@ -112,7 +114,7 @@ void Arm::draw(Env &env)
           mv.pushMatrix();
           {
             mv.scale(0.2, 0.2, f.getLength() / 3.f);
-            shaders.preparePhong(env, GL::BLUE, GL::BLACK, GL::WHITE);
+            shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
             GL::drawBox(GL_TRIANGLES);
           }
           mv.popMatrix();
@@ -124,7 +126,7 @@ void Arm::draw(Env &env)
           mv.pushMatrix();
           {
             mv.scale(0.2, 0.2, f.getLength() / 3.f);
-            shaders.preparePhong(env, GL::BLUE, GL::BLACK, GL::WHITE);
+            shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
             GL::drawBox(GL_TRIANGLES);
           }
           mv.popMatrix();

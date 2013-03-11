@@ -211,7 +211,7 @@ public:
            const char *vertShader,
            const char *fragShader) throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*);
   void prepareDefault(Env &env, const glm::vec4 &color);
-  void preparePhong(Env &env, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec);
+  void preparePhong(Env &env, const glm::vec3 &lightPos, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec);
   void prepareDistortion(Env &env, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec);
   void prepareShip(Env &env, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec);
   void prepareHemisphere(Env &env, const glm::vec3 &lightPos, const glm::vec4 &skyColor, const glm::vec4 &groundColor);
