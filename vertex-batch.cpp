@@ -98,7 +98,9 @@ void VertexBatch::end()
     glBufferSubData(GL_ARRAY_BUFFER, m_aoPtr, m_aoAttribsSize, accAtts);
   }
   
+  glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(4, GL_FLOAT, 0, (const GLvoid*)m_vertPtr);
+  glEnableClientState(GL_NORMAL_ARRAY);
   glNormalPointer(GL_FLOAT, 0, (const GLvoid*)m_normPtr);
   
   //Ambient occlusion (accessibility factor) vertex attribute
