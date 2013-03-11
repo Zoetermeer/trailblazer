@@ -3,6 +3,17 @@
 #include "events.hpp" 
 #include <GL/glfw.h>
 
+glm::vec3 Player::getLookVector() const
+{
+  glm::mat4 mat;
+  mat = glm::translate(mat, glm::vec3(m_offset));
+  mat = glm::rotate(mat, m_attitude.yaw.getValue(), glm::vec3(0.f, 1.f, 0.f));
+  mat = glm::rotate(mat, m_attitude.pitch.getValue(), glm::vec3(1.f, 0.f, 1.f));
+  glm::vec4 vec(0.f, 0.f, -1.f, 1.f);
+  vec = mat * vec;
+  return glm::vec3(vec.x, vec.y, vec.z) / vec.w;
+}
+
 void Player::mouseRoll(int oldX, int oldY, int newX, int newY)
 {
   int xdelt = newX - oldX;
@@ -13,16 +24,7 @@ void Player::mouseRoll(int oldX, int oldY, int newX, int newY)
 
 void Player::raiseLookEvent()
 {
-  //Compute the transform for the look vector
-  glm::mat4 mat;
-  mat = glm::translate(mat, glm::vec3(m_offset));
-  mat = glm::rotate(mat, m_attitude.yaw.getValue(), glm::vec3(0.f, 1.f, 0.f));
-  mat = glm::rotate(mat, m_attitude.pitch.getValue(), glm::vec3(1.f, 0.f, 1.f));
-  glm::vec4 vec(0.f, 0.f, -1.f, 1.f);
-  vec = mat * vec;
-  auto look = glm::vec3(vec.x, vec.y, vec.z) / vec.w;
-  
-  Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw }, look, m_headlightOn);
+  Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw }, getLookVector(), m_headlightOn);
 }
 
 void Player::mouseLook(int oldX, int oldY, int newX, int newY)

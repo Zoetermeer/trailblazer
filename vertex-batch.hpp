@@ -11,6 +11,7 @@ typedef struct vertex {
   glm::vec3 normal;
   glm::vec4 color;
   GLfloat ao_accessibility;
+  glm::ivec3 voxel_coordinate;
 } vertex_t;
 
 typedef struct vertex_spec {
@@ -18,6 +19,7 @@ typedef struct vertex_spec {
   GLuint next_index;
   bool use_color;
   bool use_ao;
+  bool use_voxel_coordinates;
 } vertex_spec_t;
 
 inline vertex_t new_vertex()
@@ -41,7 +43,8 @@ private:
   std::vector<GLfloat> m_norms;
   std::vector<GLuint> m_indices;
   std::vector<GLfloat> m_colors;
-  std::vector<float> m_aoAttribs;
+  std::vector<GLfloat> m_aoAttribs;
+  std::vector<GLfloat> m_vcAttribs;
   GLuint m_vaoId;
   GLuint m_vboId;
   GLuint m_iboId;
@@ -53,12 +56,14 @@ private:
   size_t m_aoPtr;
   size_t m_indPtr;
   size_t m_colPtr;
+  size_t m_vcPtr;
   
   size_t m_vertsSize;
   size_t m_normsSize;
   size_t m_indexSize;
   size_t m_colorSize;
   size_t m_aoAttribsSize;
+  size_t m_vcAttribsSize;
   
 public:
   VertexBatch()
@@ -69,12 +74,14 @@ public:
     m_normPtr(NULL),
     m_aoPtr(NULL),
     m_indPtr(NULL),
-    m_colPtr(NULL), 
+    m_colPtr(NULL),
+    m_vcPtr(NULL), 
     m_vertsSize(0),
     m_normsSize(0),
     m_indexSize(0),
     m_colorSize(0), 
-    m_aoAttribsSize(0)
+    m_aoAttribsSize(0),
+    m_vcAttribsSize(0)
   {
     memset(&m_vertexSpec, 0, sizeof(vertex_spec_t));
   }

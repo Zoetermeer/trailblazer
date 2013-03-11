@@ -24,6 +24,7 @@ memset(ptr, 0, sizeof(type));
 #define glGenVertexArrays glGenVertexArraysAPPLE
 #define glBindVertexArray glBindVertexArrayAPPLE
 #define glDeleteVertexArrays glDeleteVertexArraysAPPLE
+#define glVertexAttribIPointer glVertexAttribIPointerEXT
 
 template <typename T, int dimension>
 struct vec_t {

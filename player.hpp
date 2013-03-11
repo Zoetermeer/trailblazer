@@ -84,6 +84,7 @@ public:
   GLfloat getHeading() const { return m_heading; }
   Attitude &getAttitude() { return m_attitude; }
   bool getIsHeadlightOn() const { return m_headlightOn; }
+  glm::vec3 getLookVector() const;
   
   void mouseRoll(int oldX, int oldY, int newX, int newY);
   void mouseLook(int oldX, int oldY, int newX, int newY);

@@ -5,6 +5,7 @@
 #include "sky.hpp"
 #include <noise.h>
 #include "noiseutils.h"
+#include <GL/glfw.h>
 
 #define VERT(m,x,y,z) (new_vertex((m * glm::vec4(x,y,z,1.f))))
 #define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b.position - a.position), glm::vec3(c.position - a.position))))
@@ -50,6 +51,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto nrm = NORMAL(v1, v2, v3);
     v1.normal = v2.normal = v3.normal = v4.normal = nrm;
     v1.color = v2.color = v3.color = v4.color = color;
+    v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = ind;
     v1.ao_accessibility = bot * lft * botlft;
     v2.ao_accessibility = bot * rgt * botrgt;
     v3.ao_accessibility = top * rgt * toprgt;
@@ -84,6 +86,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v4 = VERT(m, 1, -1, -1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
     v1.color = v2.color = v3.color = v4.color = color;
+    v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = ind;
     v1.ao_accessibility = lft * top * toplft;
     v2.ao_accessibility = rgt * bot * botrgt;
     v3.ao_accessibility = rgt * top * toprgt;
@@ -110,6 +113,7 @@ void Chunk::addVoxel(Voxel &voxel,
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
     v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = v2.ao_accessibility = v3.ao_accessibility = v4.ao_accessibility = 1.f;
+    v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = ind;
     
     batch->add(v1);
     batch->add(v2);
@@ -140,6 +144,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v4 = VERT(m, 1, 1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
     v1.color = v2.color = v3.color = v4.color = color;
+    v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = ind;
     v1.ao_accessibility = lft * top * toplft;
     v2.ao_accessibility = lft * bot * botlft;
     v3.ao_accessibility = rgt * bot * botrgt;
@@ -174,6 +179,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v4 = VERT(m, 1, -1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
     v1.color = v2.color = v3.color = v4.color = color;
+    v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = ind;
     v1.ao_accessibility = top * lft * toplft;
     v2.ao_accessibility = bot * rgt * botrgt;
     v3.ao_accessibility = top * rgt * toprgt;
@@ -208,6 +214,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v4 = VERT(m, -1, 1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
     v1.color = v2.color = v3.color = v4.color = color;
+    v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = ind;
     v1.ao_accessibility = rgt * fnt * fntrgt;
     v2.ao_accessibility = rgt * bck * bckrgt;
     v3.ao_accessibility = lft * bck * bcklft;
@@ -243,9 +250,11 @@ void Chunk::generate()
     Voxels are indexed starting at the bottom left corner of the chunk.
    */
   m_voxelBatch = new VertexBatch();
-  m_voxelBatch->getVertexSpec().indexed = true;
-  m_voxelBatch->getVertexSpec().use_ao = true;
-  m_voxelBatch->getVertexSpec().use_color = true;
+  vertex_spec_t &spec = m_voxelBatch->getVertexSpec();
+  spec.indexed = true;
+  spec.use_ao = true;
+  spec.use_color = true;
+  spec.use_voxel_coordinates = true;
   m_voxelBatch->begin();
   
   //Translate to the bottom left
@@ -371,7 +380,12 @@ void Chunk::generate()
   m_generated = true;
 }
 
-void Chunk::draw(Env &env, const glm::vec4 &playerPos, const glm::vec3 &playerLookVec, bool isHeadlightOn)
+void Chunk::draw(Env &env,
+                 const glm::vec4 &playerPos,
+                 const glm::vec3 &playerLookVec,
+                 bool isHeadlightOn,
+                 bool exploding,
+                 GLclampf explosionTime)
 {
   if (!m_generated)
     return;
@@ -388,9 +402,12 @@ void Chunk::draw(Env &env, const glm::vec4 &playerPos, const glm::vec3 &playerLo
     shaders.prepareHemisphereAO(env,
                                 sunPos,
                                 glm::vec3(playerPos),
+                                playerLookVec,
                                 isHeadlightOn,
                                 glm::vec4(.8f, .8f, .8f, 1.f),
-                                groundColor);
+                                groundColor,
+                                exploding,
+                                explosionTime);
     m_voxelBatch->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
@@ -450,6 +467,20 @@ void ChunkBuffer::removeChunksAtZ(int zIndex)
     }
     
     ++iter;
+  }
+}
+
+void ChunkBuffer::onKeyDown(int key, bool special)
+{
+  if (m_exploding)
+    return;
+  
+  switch (key)
+  {
+    case GLFW_KEY_ENTER:
+      m_exploding = true;
+      m_explosionTime = 0.f;
+      break;
   }
 }
 
@@ -518,7 +549,12 @@ bool ChunkBuffer::isDone()
 void ChunkBuffer::draw(Env &env)
 {
   for (Chunk *ch : m_visibleQueue) {
-    ch->draw(env, m_playerPos, m_playerLookVector, m_isPlayerHeadlightOn);
+    ch->draw(env,
+             m_playerPos,
+             m_playerLookVector,
+             m_isPlayerHeadlightOn,
+             m_exploding,
+             m_explosionTime);
   }
 }
 

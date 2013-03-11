@@ -159,6 +159,7 @@ void HemisphereAOShaderProgram::bindAttributes()
 {
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::AOAccessibility, "AOAccessibility");
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::Color, "Color");
+  glBindAttribLocation(getId(), (GLuint)VertexAttrib::VoxelCoordinate, "VoxelCoordinate");
 }
 
 void ShaderSet::add(ShaderType type, const char *vShader, const char *fShader)
@@ -220,6 +221,7 @@ void ShaderSet::prepareDefault(Env &env, const glm::vec4 &color)
 void ShaderSet::preparePhong(Env &env,
                              const glm::vec3 &lightPos,
                              const glm::vec3 &headlightPos,
+                             const glm::vec3 &headlightDir,
                              const bool headlightOn, 
                              const glm::vec4 &amb,
                              const glm::vec4 &diff,
@@ -232,6 +234,7 @@ void ShaderSet::preparePhong(Env &env,
   sh.uniform("LightPosition") = lightPos;
   sh.uniform("HeadlightPosition") = headlightPos;
   sh.uniform("HeadlightOn") = headlightOn;
+  sh.uniform("HeadlightDir") = headlightDir;
   sh.uniform(Uniform::AMBIENT_COLOR) = amb;
   sh.uniform(Uniform::DIFFUSE_COLOR) = diff;
   sh.uniform(Uniform::SPECULAR_COLOR) = spec;
@@ -273,9 +276,12 @@ void ShaderSet::prepareHemisphere(Env &env, const glm::vec3 &lightPos, const glm
 void ShaderSet::prepareHemisphereAO(Env &env,
                                     const glm::vec3 &lightPos,
                                     const glm::vec3 &headlightPos,
+                                    const glm::vec3 &headlightDir,
                                     const bool headlightOn,
                                     const glm::vec4 &skyColor,
-                                    const glm::vec4 &groundColor)
+                                    const glm::vec4 &groundColor,
+                                    const bool animating,
+                                    const GLclampf animationTime)
 {
   ShaderProgram &sh = use(ShaderType::HemisphereAmbientOcclusion);
   sh.uniform(Uniform::MODELVIEW_MATRIX) = env.getMV().getCurrent();
@@ -284,8 +290,11 @@ void ShaderSet::prepareHemisphereAO(Env &env,
   sh.uniform("LightPosition") = lightPos;
   sh.uniform("HeadlightPosition") = headlightPos;
   sh.uniform("HeadlightOn") = headlightOn;
+  sh.uniform("HeadlightDir") = headlightDir;
   sh.uniform("SkyColor") = skyColor;
   sh.uniform("GroundColor") = groundColor;
+  sh.uniform("Animating") = animating;
+  sh.uniform("Time") = animationTime;
 }
 
 

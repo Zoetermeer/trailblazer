@@ -7,7 +7,6 @@
 #include "vertex-batch.hpp"
 #include "events.hpp"
 #include "process.hpp"
-#include <cmath>
 #include <vector>
 
 //Number of voxels per chunk face
@@ -140,10 +139,15 @@ private:
   
 public:
   void generate();
-  void draw(Env &env, const glm::vec4 &playerPos, const glm::vec3 &playerLookVec, bool isHeadlightOn);
+  void draw(Env &env,
+            const glm::vec4 &playerPos,
+            const glm::vec3 &playerLookVec,
+            bool isHeadlightOn,
+            bool exploding,
+            GLclampf explosionTime);
 };
 
-class ChunkBuffer : public IPlayerMoveListener, public IPlayerLookListener, public Process, public SceneObject {
+class ChunkBuffer : public IPlayerMoveListener, public IPlayerLookListener, public IKeyDownListener, public Process, public SceneObject {
 private:
   glm::ivec3 m_curPlayerChunkCoords;
   std::vector<Chunk*> m_loadQueue;
@@ -152,10 +156,12 @@ private:
   glm::vec4 m_playerPos;
   glm::vec3 m_playerLookVector;
   bool m_isPlayerHeadlightOn;
+  bool m_exploding;
+  GLclampf m_explosionTime;
   
 public:
   ChunkBuffer()
-  : m_curPlayerChunk(NULL)
+  : m_curPlayerChunk(NULL), m_exploding(false), m_explosionTime(0.f)
   {
     Events::addListener((IPlayerMoveListener*)this);
     Events::addListener((IPlayerLookListener*)this);
@@ -174,6 +180,7 @@ private:
   
 public:
   void init();
+  virtual void onKeyDown(int key, bool special);
   virtual void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
   virtual void onPlayerLook(const Attitude &attitude, const glm::vec3 &lookVector, bool headlightOn);
   virtual void draw(Env &env);

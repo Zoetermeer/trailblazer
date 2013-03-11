@@ -102,8 +102,8 @@ protected:
     Sky::init();
     
     //Generate the arm geometry
-    m_rightArm.generateGeometry();
-    m_leftArm.generateGeometry();
+    //m_rightArm.generateGeometry();
+    //m_leftArm.generateGeometry();
     
     displayInstructions();
     
@@ -203,14 +203,15 @@ protected:
       shaders.preparePhong(env,
                            glm::vec3(Sky::getSunPosition()),
                            playerPos,
+                           m_player.getLookVector(),
                            m_player.getIsHeadlightOn(), 
                            GL::color(178, 34, 34),
                            GL::color(205, 92, 92),
                            GL::WHITE);
       glutSolidSphere(100, 20, 20);
       
-      m_rightArm.draw(env);
-      m_leftArm.draw(env);
+      //m_rightArm.draw(env);
+      //m_leftArm.draw(env);
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

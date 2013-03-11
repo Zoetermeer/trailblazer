@@ -57,6 +57,12 @@ void VertexBatch::add(vertex_t &vertex)
   if (m_vertexSpec.use_ao) {
     m_aoAttribs.push_back(vertex.ao_accessibility);
   }
+  
+  if (m_vertexSpec.use_voxel_coordinates) {
+    m_vcAttribs.push_back(vertex.voxel_coordinate.x);
+    m_vcAttribs.push_back(vertex.voxel_coordinate.y);
+    m_vcAttribs.push_back(vertex.voxel_coordinate.z);
+  }
 }
 
 void VertexBatch::end()
@@ -83,13 +89,16 @@ void VertexBatch::end()
   m_normsSize = m_norms.size() * sizeof(GLfloat);
   m_indexSize = m_indices.size() * sizeof(GLuint);
   m_aoAttribsSize = m_aoAttribs.size() * sizeof(float);
+  m_vcAttribsSize = m_vcAttribs.size() * sizeof(GLuint);
   m_colorSize = m_colors.size() * sizeof(GLfloat);
   m_vertPtr = 0;
   m_normPtr = m_vertPtr + m_vertsSize;
   m_aoPtr = m_normPtr + m_normsSize;
   m_colPtr = m_aoPtr + m_aoAttribsSize;
+  m_vcPtr = m_colPtr + m_colorSize;
   
-  glBufferData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize + m_aoAttribsSize + m_colorSize, NULL, GL_STATIC_DRAW);
+  const size_t bufSize = m_vertsSize + m_normsSize + m_aoAttribsSize + m_colorSize + m_vcAttribsSize;
+  glBufferData(GL_ARRAY_BUFFER, bufSize, NULL, GL_STATIC_DRAW);
   
   //Positions
   glBufferSubData(GL_ARRAY_BUFFER, m_vertPtr, m_vertsSize, verts);
@@ -105,7 +114,7 @@ void VertexBatch::end()
   //Ambient occlusion (accessibility factor) vertex attribute
   //If we have vertex attributes, store them as a sub-buffer
   if (m_vertexSpec.use_ao) {
-    float *accAtts = m_aoAttribs.data();
+    GLfloat *accAtts = m_aoAttribs.data();
     glBufferSubData(GL_ARRAY_BUFFER, m_aoPtr, m_aoAttribsSize, accAtts);
     glEnableVertexAttribArray((GLuint)VertexAttrib::AOAccessibility);
     glVertexAttribPointer((GLuint)VertexAttrib::AOAccessibility,
@@ -128,6 +137,18 @@ void VertexBatch::end()
                           (const GLvoid*)m_colPtr);
   }
   
+  if (m_vertexSpec.use_voxel_coordinates) {
+    GLfloat *vcs = m_vcAttribs.data();
+    glBufferSubData(GL_ARRAY_BUFFER, m_vcPtr, m_vcAttribsSize, vcs);
+    glEnableVertexAttribArray((GLuint)VertexAttrib::VoxelCoordinate);
+    glVertexAttribPointer((GLuint)VertexAttrib::VoxelCoordinate,
+                          3,
+                          GL_FLOAT,
+                          GL_TRUE, 
+                          0,
+                          (const GLvoid*)m_vcPtr);
+  }
+  
   //Vertex element indices
   if (m_vertexSpec.indexed) {
     GLuint *inds = m_indices.data();
@@ -144,6 +165,7 @@ void VertexBatch::end()
   m_indices.clear();
   m_colors.clear();
   m_aoAttribs.clear();
+  m_vcAttribs.clear();
 }
 
 void VertexBatch::draw(GLenum drawMode)
