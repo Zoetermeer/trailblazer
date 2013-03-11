@@ -16,7 +16,23 @@ void Chunk::addVoxel(Voxel &voxel,
   glm::ivec3 ind = voxel.getIndex();
   int x = ind.x, y = ind.y, z = ind.z;
   Neighbors ns = voxel.getNeighbors();
-  float accessibility = 1.f;
+  glm::vec4 color;
+  switch (voxel.getTerrainType())
+  {
+    case TerrainType::Grass:
+      color = GL::color(107, 142, 35);
+      break;
+    case TerrainType::Dirt:
+      color = GL::color(139, 69, 19);
+      break;
+    case TerrainType::Water:
+      color = GL::BLUE;
+      break;
+    case TerrainType::Stone:
+      color = GL::GRAY;
+      break;
+  }
+
   if ((ns & Neighbors::Left) == Neighbors::None) {
     float top = accessibilityAt(ind.x - 1, ind.y + 1, ind.z);
     float bot = accessibilityAt(ind.x - 1, ind.y - 1, ind.z);
@@ -33,6 +49,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v4 = VERT(m, -1, 1, -1);
     auto nrm = NORMAL(v1, v2, v3);
     v1.normal = v2.normal = v3.normal = v4.normal = nrm;
+    v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = bot * lft * botlft;
     v2.ao_accessibility = bot * rgt * botrgt;
     v3.ao_accessibility = top * rgt * toprgt;
@@ -66,6 +83,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v3 = VERT(m, -1, 1, -1);
     auto v4 = VERT(m, 1, -1, -1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = lft * top * toplft;
     v2.ao_accessibility = rgt * bot * botrgt;
     v3.ao_accessibility = rgt * top * toprgt;
@@ -90,6 +108,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v3 = VERT(m, 1, -1, -1);
     auto v4 = VERT(m, -1, -1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = v2.ao_accessibility = v3.ao_accessibility = v4.ao_accessibility = 1.f;
     
     batch->add(v1);
@@ -120,6 +139,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v3 = VERT(m, 1, -1, 1);
     auto v4 = VERT(m, 1, 1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = lft * top * toplft;
     v2.ao_accessibility = lft * bot * botlft;
     v3.ao_accessibility = rgt * bot * botrgt;
@@ -153,6 +173,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v3 = VERT(m, 1, 1, -1);
     auto v4 = VERT(m, 1, -1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = top * lft * toplft;
     v2.ao_accessibility = bot * rgt * botrgt;
     v3.ao_accessibility = top * rgt * toprgt;
@@ -186,6 +207,7 @@ void Chunk::addVoxel(Voxel &voxel,
     auto v3 = VERT(m, -1, 1, -1);
     auto v4 = VERT(m, -1, 1, 1);
     v1.normal = v2.normal = v3.normal = v4.normal = NORMAL(v1, v2, v3);
+    v1.color = v2.color = v3.color = v4.color = color;
     v1.ao_accessibility = rgt * fnt * fntrgt;
     v2.ao_accessibility = rgt * bck * bckrgt;
     v3.ao_accessibility = lft * bck * bcklft;
@@ -223,6 +245,7 @@ void Chunk::generate()
   m_vbo = new VertexBatch();
   m_vbo->getVertexSpec().indexed = true;
   m_vbo->getVertexSpec().use_ao = true;
+  m_vbo->getVertexSpec().use_color = true;
   m_vbo->begin();
   
   //Translate to the bottom left
@@ -288,7 +311,8 @@ void Chunk::generate()
   }
   
   //Second pass -- figure out neighbors so
-  //we can avoid drawing unnecessary vertices
+  //we can avoid drawing unnecessary vertices,
+  //and assign voxel types
   for (int i = 0; i < CHUNK_SIZE; i++) {
     stack.translateX(VOXEL_SIZE);
     stack.pushMatrix();
@@ -306,12 +330,20 @@ void Chunk::generate()
             if (voxel.getIsActive()) {
               Neighbors ns = voxel.getNeighbors();
               ns = ns | Neighbors::Bottom;
+              if (v < CHUNK_SIZE - 1 && m_voxels[i][v + 1][j].getIsActive()) {
+                ns = ns | Neighbors::Top;
+                voxel.setTerrainType(TerrainType::Dirt);
+              } else if (v > 0) {
+                //Grass, unless we are at a low enough altitude
+                voxel.setTerrainType(TerrainType::Grass);
+              } else {
+                voxel.setTerrainType(TerrainType::Water);
+              }
+              
               if (i > 0 && m_voxels[i - 1][v][j].getIsActive())
                 ns = ns | Neighbors::Left;
               if (i < CHUNK_SIZE - 1 && m_voxels[i + 1][v][j].getIsActive())
                 ns = ns | Neighbors::Right;
-              if (v < CHUNK_SIZE - 1 && m_voxels[i][v + 1][j].getIsActive())
-                ns = ns | Neighbors::Top;
               if (j > 0 && m_voxels[i][v][j - 1].getIsActive())
                 ns = ns | Neighbors::Back;
               if (j < CHUNK_SIZE - 1 && m_voxels[i][v][j + 1].getIsActive())

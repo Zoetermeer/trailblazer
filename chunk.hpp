@@ -21,6 +21,13 @@
 //either side.
 #define VISIBLE_CHUNKS 11
 
+enum class TerrainType {
+  Grass,
+  Dirt,
+  Stone,
+  Water
+};
+
 enum class Neighbors {
   None = 0,
   Left = 1,
@@ -52,6 +59,7 @@ private:
   glm::ivec3 m_index;
   bool m_isActive;
   Neighbors m_neighbors;
+  TerrainType m_type;
   
 public:
   Voxel()
@@ -63,6 +71,8 @@ public:
   bool getIsActive() const { return m_isActive; }
   Neighbors getNeighbors() const { return m_neighbors; }
   void setNeighbors(Neighbors n) { m_neighbors = n; }
+  TerrainType getTerrainType() const { return m_type; }
+  void setTerrainType(TerrainType t) { m_type = t; }
   
   glm::ivec3 getIndex() const { return m_index; }
   void setIndex(int x, int y, int z)

@@ -48,7 +48,10 @@ void VertexBatch::add(vertex_t &vertex)
   m_norms.push_back(vertex.normal.y);
   m_norms.push_back(vertex.normal.z);
   if (m_vertexSpec.use_color) {
-    
+    m_colors.push_back(vertex.color.x);
+    m_colors.push_back(vertex.color.y);
+    m_colors.push_back(vertex.color.z);
+    m_colors.push_back(vertex.color.w);
   }
   
   if (m_vertexSpec.use_ao) {
@@ -80,11 +83,13 @@ void VertexBatch::end()
   m_normsSize = m_norms.size() * sizeof(GLfloat);
   m_indexSize = m_indices.size() * sizeof(GLuint);
   m_aoAttribsSize = m_aoAttribs.size() * sizeof(float);
+  m_colorSize = m_colors.size() * sizeof(GLfloat);
   m_vertPtr = 0;
   m_normPtr = m_vertPtr + m_vertsSize;
   m_aoPtr = m_normPtr + m_normsSize;
+  m_colPtr = m_aoPtr + m_aoAttribsSize;
   
-  glBufferData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize + m_aoAttribsSize, NULL, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, m_vertsSize + m_normsSize + m_aoAttribsSize + m_colorSize, NULL, GL_STATIC_DRAW);
   
   //Positions
   glBufferSubData(GL_ARRAY_BUFFER, m_vertPtr, m_vertsSize, verts);
@@ -92,19 +97,16 @@ void VertexBatch::end()
   //Normals
   glBufferSubData(GL_ARRAY_BUFFER, m_normPtr, m_normsSize, norms);
   
-  //If we have vertex attributes, store them as a sub-buffer
-  if (m_aoAttribsSize) {
-    float *accAtts = m_aoAttribs.data();
-    glBufferSubData(GL_ARRAY_BUFFER, m_aoPtr, m_aoAttribsSize, accAtts);
-  }
-  
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(4, GL_FLOAT, 0, (const GLvoid*)m_vertPtr);
   glEnableClientState(GL_NORMAL_ARRAY);
   glNormalPointer(GL_FLOAT, 0, (const GLvoid*)m_normPtr);
   
   //Ambient occlusion (accessibility factor) vertex attribute
+  //If we have vertex attributes, store them as a sub-buffer
   if (m_vertexSpec.use_ao) {
+    float *accAtts = m_aoAttribs.data();
+    glBufferSubData(GL_ARRAY_BUFFER, m_aoPtr, m_aoAttribsSize, accAtts);
     glEnableVertexAttribArray((GLuint)VertexAttrib::AOAccessibility);
     glVertexAttribPointer((GLuint)VertexAttrib::AOAccessibility,
                           1,
@@ -112,6 +114,18 @@ void VertexBatch::end()
                           GL_FALSE,
                           0,
                           (const GLvoid*)m_aoPtr);
+  }
+  
+  if (m_vertexSpec.use_color) {
+    GLfloat *colors = m_colors.data();
+    glBufferSubData(GL_ARRAY_BUFFER, m_colPtr, m_colorSize, colors);
+    glEnableVertexAttribArray((GLuint)VertexAttrib::Color);
+    glVertexAttribPointer((GLuint)VertexAttrib::Color,
+                          4,
+                          GL_FLOAT,
+                          GL_TRUE,
+                          0,
+                          (const GLvoid*)m_colPtr);
   }
   
   //Vertex element indices

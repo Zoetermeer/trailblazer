@@ -21,7 +21,8 @@ enum class ShaderType {
 };
 
 enum class VertexAttrib {
-  None, 
+  None,
+  Color, 
   AOAccessibility
 };
 

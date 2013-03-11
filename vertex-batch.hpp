@@ -40,6 +40,7 @@ private:
   std::vector<GLfloat> m_verts;
   std::vector<GLfloat> m_norms;
   std::vector<GLuint> m_indices;
+  std::vector<GLfloat> m_colors;
   std::vector<float> m_aoAttribs;
   GLuint m_vaoId;
   GLuint m_vboId;
@@ -51,10 +52,12 @@ private:
   size_t m_normPtr;
   size_t m_aoPtr;
   size_t m_indPtr;
+  size_t m_colPtr;
   
   size_t m_vertsSize;
   size_t m_normsSize;
   size_t m_indexSize;
+  size_t m_colorSize;
   size_t m_aoAttribsSize;
   
 public:
@@ -66,9 +69,11 @@ public:
     m_normPtr(NULL),
     m_aoPtr(NULL),
     m_indPtr(NULL),
+    m_colPtr(NULL), 
     m_vertsSize(0),
     m_normsSize(0),
     m_indexSize(0),
+    m_colorSize(0), 
     m_aoAttribsSize(0)
   {
     memset(&m_vertexSpec, 0, sizeof(vertex_spec_t));
