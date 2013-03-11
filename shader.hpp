@@ -170,7 +170,7 @@ protected:
 class HemisphereAOShaderProgram : public ShaderProgram {
 public:
   HemisphereAOShaderProgram()
-  : ShaderProgram(ShaderType::HemisphereAmbientOcclusion, "shaders/hem-ao.vert", "shaders/default.frag")
+  : ShaderProgram(ShaderType::HemisphereAmbientOcclusion, "shaders/hem-ao.vert", "shaders/hem-ao.frag")
   {
     
   }
