@@ -17,6 +17,7 @@ glm::vec4 Sky::getSunPosition()
   return s_instance->toWorld();
 }
 
+#define SUN_HEIGHT 5000.f
 void Sky::draw(Env &env)
 {
   MatrixStack &mv = env.getMV();
@@ -27,10 +28,13 @@ void Sky::draw(Env &env)
     mv.translate(m_playerPos.x, 0.f, m_playerPos.z);
     mv.rotateZ(m_sunZRotation);
     
-    shaders.prepareDefault(env, GL::color(135, 206, 250));
-    glutSolidSphere(6000, 20, 20);
+    glm::vec4 sunPos = toWorld();
+    glm::vec4 skyColor = glm::mix(GL::BLACK, GL::color(135, 206, 250), (sunPos.y + SUN_HEIGHT) / (SUN_HEIGHT * 2));
+    //shaders.prepareDefault(env, GL::color(135, 206, 250));
+    shaders.prepareDefault(env, skyColor);
+    glutSolidSphere(SUN_HEIGHT + 1000, 20, 20);
     
-    mv.translateY(5000.f);
+    mv.translateY(SUN_HEIGHT);
     
     //Update our world position
     m_world = mv.getCurrent();
