@@ -26,13 +26,17 @@ void Sky::draw(Env &env)
     //Always center the 'sky dome' on the player's (x,z) coordinates
     mv.translate(m_playerPos.x, 0.f, m_playerPos.z);
     mv.rotateZ(m_sunZRotation);
-    mv.translateY(1000.f);
+    
+    shaders.prepareDefault(env, GL::color(135, 206, 250));
+    glutSolidSphere(6000, 20, 20);
+    
+    mv.translateY(5000.f);
     
     //Update our world position
     m_world = mv.getCurrent();
     
     shaders.prepareDefault(env, GL::YELLOW);
-    glutSolidSphere(50, 20, 20);
+    glutSolidSphere(500, 20, 20);
   }
   mv.popMatrix();
 }

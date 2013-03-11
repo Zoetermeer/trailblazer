@@ -107,12 +107,6 @@ protected:
     //Camera
     m_camera.init(m_player);
     
-    //Generate the solar system
-    //generator_params_t params = { 5000, 10 };
-    //m_ssys = SolarSystem::generate(params);
-    //std::cout << m_ssys->getName() << " system\n";
-    //m_ssys->animate();
-    
     Sky::init();
     
     //Generate the arm geometry
@@ -208,36 +202,11 @@ protected:
       
       Sky::getInstance().draw(env);
       
-      //Draw a yellow sphere at player's position for testing
-      /*
-      mv.pushMatrix();
-      {
-        glm::vec4 poff = m_player.getOffset();
-        mv.translate(poff.x, poff.y, poff.z);
-        Attitude &att = m_player.getAttitude();
-        mv.rotateY(att.yaw);
-        mv.rotateZ(att.roll);
-        mv.rotateX(att.pitch);
-        mv.translate(0.f, 3.f, -20.f);
-        
-        mv.scaleZ(.1f);
-        shaders.prepareDefault(env, GL::YELLOW);
-        glutSolidSphere(1.f, 20, 20);
-      }
-      mv.popMatrix();
-       */
-      
       //Draw the terrain
       m_cbuffer.draw(env);
       
-      //m_ssys->draw(env);
       //m_rightArm.draw(env);
       //m_leftArm.draw(env);
-      
-      //Draw ships
-      //for (Ship *ship : m_ships) {
-      //  ship->draw(env);
-      //}
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;
