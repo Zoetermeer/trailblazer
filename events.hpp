@@ -17,7 +17,7 @@ public:
 
 class IPlayerLookListener {
 public:
-  virtual void onPlayerLook(const Attitude &att) = 0;
+  virtual void onPlayerLook(const Attitude &att, const glm::vec3 &lookVEctor, bool headlightOn) = 0;
 };
 
 class IKeyDownListener {
@@ -49,7 +49,7 @@ public:
   static void removeListener(EventType type, void *listener);
 
   static void playerMoveEvent(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
-  static void playerLookEvent(const Attitude &att);
+  static void playerLookEvent(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn);
   static void keyDownEvent(int key, bool special);
   static void keyUpEvent(int key, bool special);
 };

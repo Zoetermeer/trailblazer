@@ -217,13 +217,21 @@ void ShaderSet::prepareDefault(Env &env, const glm::vec4 &color)
   sh.uniform(Uniform::COLOR) = color;
 }
 
-void ShaderSet::preparePhong(Env &env, const glm::vec3 &lightPos, const glm::vec4 &amb, const glm::vec4 &diff, const glm::vec4 &spec)
+void ShaderSet::preparePhong(Env &env,
+                             const glm::vec3 &lightPos,
+                             const glm::vec3 &headlightPos,
+                             const bool headlightOn, 
+                             const glm::vec4 &amb,
+                             const glm::vec4 &diff,
+                             const glm::vec4 &spec)
 {
   ShaderProgram &sh = use(ShaderType::Phong);
   sh.uniform(Uniform::MODELVIEW_MATRIX) = env.getMV().getCurrent();
   sh.uniform(Uniform::PROJECTION_MATRIX) = env.getProj().getCurrent();
   sh.uniform(Uniform::NORMAL_MATRIX) = env.getMV().getNormalMatrix();
   sh.uniform("LightPosition") = lightPos;
+  sh.uniform("HeadlightPosition") = headlightPos;
+  sh.uniform("HeadlightOn") = headlightOn;
   sh.uniform(Uniform::AMBIENT_COLOR) = amb;
   sh.uniform(Uniform::DIFFUSE_COLOR) = diff;
   sh.uniform(Uniform::SPECULAR_COLOR) = spec;
@@ -262,13 +270,20 @@ void ShaderSet::prepareHemisphere(Env &env, const glm::vec3 &lightPos, const glm
   sh.uniform("GroundColor") = groundColor;
 }
 
-void ShaderSet::prepareHemisphereAO(Env &env, const glm::vec3 &lightPos, const glm::vec4 &skyColor, const glm::vec4 &groundColor)
+void ShaderSet::prepareHemisphereAO(Env &env,
+                                    const glm::vec3 &lightPos,
+                                    const glm::vec3 &headlightPos,
+                                    const bool headlightOn,
+                                    const glm::vec4 &skyColor,
+                                    const glm::vec4 &groundColor)
 {
   ShaderProgram &sh = use(ShaderType::HemisphereAmbientOcclusion);
   sh.uniform(Uniform::MODELVIEW_MATRIX) = env.getMV().getCurrent();
   sh.uniform(Uniform::PROJECTION_MATRIX) = env.getProj().getCurrent();
   sh.uniform(Uniform::NORMAL_MATRIX) = env.getMV().getNormalMatrix();
   sh.uniform("LightPosition") = lightPos;
+  sh.uniform("HeadlightPosition") = headlightPos;
+  sh.uniform("HeadlightOn") = headlightOn;
   sh.uniform("SkyColor") = skyColor;
   sh.uniform("GroundColor") = groundColor;
 }

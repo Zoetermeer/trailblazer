@@ -20,10 +20,10 @@ void Chunk::addVoxel(Voxel &voxel,
   switch (voxel.getTerrainType())
   {
     case TerrainType::Grass:
-      color = GL::color(107, 142, 35);
+      color = GL::color(0, 100, 0);
       break;
     case TerrainType::Dirt:
-      color = GL::color(139, 69, 19);
+      color = GL::color(100, 69, 19);
       break;
     case TerrainType::Water:
       color = GL::BLUE;
@@ -371,7 +371,7 @@ void Chunk::generate()
   m_generated = true;
 }
 
-void Chunk::draw(Env &env)
+void Chunk::draw(Env &env, const glm::vec4 &playerPos, const glm::vec3 &playerLookVec, bool isHeadlightOn)
 {
   if (!m_generated)
     return;
@@ -385,7 +385,12 @@ void Chunk::draw(Env &env)
     glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
     
     glm::vec3 sunPos = glm::vec3(Sky::getSunPosition());
-    shaders.prepareHemisphereAO(env, sunPos, glm::vec4(.8f, .8f, .8f, 1.f), groundColor);
+    shaders.prepareHemisphereAO(env,
+                                sunPos,
+                                glm::vec3(playerPos),
+                                isHeadlightOn,
+                                glm::vec4(.8f, .8f, .8f, 1.f),
+                                groundColor);
     m_voxelBatch->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
@@ -450,6 +455,7 @@ void ChunkBuffer::removeChunksAtZ(int zIndex)
 
 void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos)
 {
+  m_playerPos = new_pos;
   glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(new_pos));
   if (chunkCoords.x != m_curPlayerChunkCoords.x || chunkCoords.z != m_curPlayerChunkCoords.z) {
     //Set the new chunk as the player's 'current' one
@@ -487,6 +493,12 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
   }
 }
 
+void ChunkBuffer::onPlayerLook(const Attitude &attitude, const glm::vec3 &lookVector, bool headlightOn)
+{
+  m_playerLookVector = lookVector;
+  m_isPlayerHeadlightOn = headlightOn;
+}
+
 void ChunkBuffer::advance(int delta)
 {
   //If the load list is non-empty, load 1 chunk
@@ -506,7 +518,7 @@ bool ChunkBuffer::isDone()
 void ChunkBuffer::draw(Env &env)
 {
   for (Chunk *ch : m_visibleQueue) {
-    ch->draw(env);
+    ch->draw(env, m_playerPos, m_playerLookVector, m_isPlayerHeadlightOn);
   }
 }
 

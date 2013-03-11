@@ -85,7 +85,7 @@ public:
   void setIsActive(bool v) { m_isActive = v; }
 };
 
-class Chunk : public SceneObject {
+class Chunk {
 private:
   bool m_generated;
   Voxel m_voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -96,8 +96,7 @@ private:
   
 public:
   Chunk(int xIndex, int zIndex)
-  : SceneObject(),
-    m_generated(false),
+  : m_generated(false),
     m_chunkIndex(xIndex, zIndex),
     m_containsPlayer(false),
     m_voxelBatch(NULL),
@@ -141,21 +140,25 @@ private:
   
 public:
   void generate();
-  virtual void draw(Env &env);
+  void draw(Env &env, const glm::vec4 &playerPos, const glm::vec3 &playerLookVec, bool isHeadlightOn);
 };
 
-class ChunkBuffer : public IPlayerMoveListener, public Process, public SceneObject {
+class ChunkBuffer : public IPlayerMoveListener, public IPlayerLookListener, public Process, public SceneObject {
 private:
   glm::ivec3 m_curPlayerChunkCoords;
   std::vector<Chunk*> m_loadQueue;
   std::vector<Chunk*> m_visibleQueue;
   Chunk *m_curPlayerChunk;
+  glm::vec4 m_playerPos;
+  glm::vec3 m_playerLookVector;
+  bool m_isPlayerHeadlightOn;
   
 public:
   ChunkBuffer()
   : m_curPlayerChunk(NULL)
   {
     Events::addListener((IPlayerMoveListener*)this);
+    Events::addListener((IPlayerLookListener*)this);
     ProcessList::add(this);
   }
   
@@ -172,6 +175,7 @@ private:
 public:
   void init();
   virtual void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
+  virtual void onPlayerLook(const Attitude &attitude, const glm::vec3 &lookVector, bool headlightOn);
   virtual void draw(Env &env);
   virtual void advance(int delta);
   virtual bool isDone();

@@ -104,7 +104,7 @@ public:
   void generateGeometry();
   void draw(Env &env);
   void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
-  void onPlayerLook(const Attitude &att);
+  void onPlayerLook(const Attitude &att, const glm::vec3 &playerLook, bool isHeadlightOn);
   void swimForward();
   void lower();
   

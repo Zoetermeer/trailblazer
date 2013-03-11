@@ -3,6 +3,8 @@ uniform mat3 NormalMatrix;
 uniform mat4 ProjectionMatrix;
 
 uniform vec3 LightPosition;
+uniform vec3 HeadlightPosition;
+uniform bool HeadlightOn;
 
 attribute float AOAccessibility;
 attribute vec4 Color;

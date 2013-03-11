@@ -54,10 +54,10 @@ void Events::playerMoveEvent(const glm::vec4 &old_pos, const glm::vec4 &new_pos)
   }
 }
 
-void Events::playerLookEvent(const Attitude &att)
+void Events::playerLookEvent(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn)
 {
   for (IPlayerLookListener *listener : m_plListeners) {
-    listener->onPlayerLook(att);
+    listener->onPlayerLook(att, lookVector, headlightOn);
   }
 }
 

@@ -29,7 +29,7 @@ void IsometricCamera::onPlayerMove(const glm::vec4 &oldPos, const glm::vec4 &new
   m_pos = newPos;
 }
 
-void IsometricCamera::onPlayerLook(const Attitude &att)
+void IsometricCamera::onPlayerLook(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn)
 {
   
 }
@@ -68,7 +68,7 @@ void FirstPersonCamera::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &
   m_pos.y -= HEAD_Y;
 }
 
-void FirstPersonCamera::onPlayerLook(const Attitude &att)
+void FirstPersonCamera::onPlayerLook(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn)
 {
   m_attitude.pitch = att.pitch;
   m_attitude.roll = att.roll;

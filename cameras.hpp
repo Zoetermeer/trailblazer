@@ -38,7 +38,7 @@ public:
   void init(const Player &player);
   void draw(int winWidth, int winHeight, MatrixStack &proj);
   void onPlayerMove(const glm::vec4 &oldPos, const glm::vec4 &newPos);
-  void onPlayerLook(const Attitude &att);
+  void onPlayerLook(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn);
 };
 
 class FirstPersonCamera : public ICamera, public IPlayerMoveListener, public IPlayerLookListener {
@@ -81,7 +81,7 @@ public:
   void init(const Player &player);
   void draw(int winWidth, int winHeight, MatrixStack &proj);
   void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
-  void onPlayerLook(const Attitude &att);
+  void onPlayerLook(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn);
 };
 
 #endif

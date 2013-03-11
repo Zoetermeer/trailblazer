@@ -59,10 +59,11 @@ private:
   GLfloat m_heading;
   Attitude m_attitude;
   Direction m_moveDir;
+  bool m_headlightOn;
   
 public:
   Player()
-  : m_moveDir(Direction::Idle)
+  : m_moveDir(Direction::Idle), m_headlightOn(false)
   {
     ProcessList::add(this);
     Events::addListener((IKeyDownListener*)this);
@@ -74,12 +75,16 @@ public:
     ProcessList::remove(this);
   }
   
+private:
+  void raiseLookEvent();
+  
 public:
   glm::vec4 getOffset() const { return m_offset; }
   void setOffset(const glm::vec4 v) { m_offset = v; }
   GLfloat getHeading() const { return m_heading; }
   Attitude &getAttitude() { return m_attitude; }
-
+  bool getIsHeadlightOn() const { return m_headlightOn; }
+  
   void mouseRoll(int oldX, int oldY, int newX, int newY);
   void mouseLook(int oldX, int oldY, int newX, int newY);
   void move(GLfloat distance, Direction dir);

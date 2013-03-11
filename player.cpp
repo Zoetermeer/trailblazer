@@ -8,7 +8,21 @@ void Player::mouseRoll(int oldX, int oldY, int newX, int newY)
   int xdelt = newX - oldX;
   m_attitude.roll = nextAngle(m_attitude.roll, xdelt);
   
-  Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw });
+  raiseLookEvent();
+}
+
+void Player::raiseLookEvent()
+{
+  //Compute the transform for the look vector
+  glm::mat4 mat;
+  mat = glm::translate(mat, glm::vec3(m_offset));
+  mat = glm::rotate(mat, m_attitude.yaw.getValue(), glm::vec3(0.f, 1.f, 0.f));
+  mat = glm::rotate(mat, m_attitude.pitch.getValue(), glm::vec3(1.f, 0.f, 1.f));
+  glm::vec4 vec(0.f, 0.f, -1.f, 1.f);
+  vec = mat * vec;
+  auto look = glm::vec3(vec.x, vec.y, vec.z) / vec.w;
+  
+  Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw }, look, m_headlightOn);
 }
 
 void Player::mouseLook(int oldX, int oldY, int newX, int newY)
@@ -20,7 +34,7 @@ void Player::mouseLook(int oldX, int oldY, int newX, int newY)
     m_attitude.pitch = new_pitch;
   
   m_attitude.yaw = nextAngle(m_attitude.yaw, xdelt * .1f);
-  Events::playerLookEvent({ m_attitude.roll, m_attitude.pitch, m_attitude.yaw });
+  raiseLookEvent();
 }
 
 #ifdef PRINT_PLAYER_LOCATION
@@ -119,6 +133,10 @@ void Player::onKeyDown(int key, bool special)
       break;
     case GLFW_KEY_SPACE:
       m_moveDir = m_moveDir | Direction::Up;
+      break;
+    case '.':
+      m_headlightOn = !m_headlightOn;
+      raiseLookEvent();
       break;
   }
 }

@@ -3,9 +3,11 @@ uniform mat4 ProjectionMatrix;
 uniform mat3 NormalMatrix;
 
 uniform vec3 LightPosition;
+uniform vec3 HeadlightPosition;
 
 varying vec3 VaryingNormal;
 varying vec3 VaryingLightDir;
+varying vec3 VaryingHeadlightDir;
 
 void main()
 {
@@ -16,6 +18,7 @@ void main()
   
   //Vector to light source
   VaryingLightDir = normalize(LightPosition - pos3);
+  VaryingHeadlightDir = normalize(HeadlightPosition - pos3);
   
   gl_Position = ProjectionMatrix * (ModelViewMatrix * gl_Vertex);
 }

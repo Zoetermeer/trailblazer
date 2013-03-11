@@ -60,7 +60,6 @@ private:
     try {
       shaders.add(ShaderType::Default, "shaders/default.vert", "shaders/default.frag");
       shaders.add(ShaderType::Phong, "shaders/phong.vert", "shaders/phong.frag");
-      shaders.add(ShaderType::Ship, "shaders/ship.vert", "shaders/ship.frag");
       shaders.add(ShaderType::Hemisphere, "shaders/hemisphere.vert", "shaders/default.frag");
       shaders.add(new HemisphereAOShaderProgram());
       CHECK_OPENGL_ERROR;
@@ -199,8 +198,15 @@ protected:
       m_cbuffer.draw(env);
       
       //Draw a sphere at the origin to test Phong
+      auto playerPos = glm::vec3(m_player.getOffset());
       mv.translateY(200.f);
-      shaders.preparePhong(env, glm::vec3(Sky::getSunPosition()), GL::BLACK, GL::BLUE, GL::WHITE);
+      shaders.preparePhong(env,
+                           glm::vec3(Sky::getSunPosition()),
+                           playerPos,
+                           m_player.getIsHeadlightOn(), 
+                           GL::color(178, 34, 34),
+                           GL::color(205, 92, 92),
+                           GL::WHITE);
       glutSolidSphere(100, 20, 20);
       
       m_rightArm.draw(env);
