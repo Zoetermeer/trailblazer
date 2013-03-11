@@ -2,29 +2,34 @@ uniform vec4 AmbientColor;
 uniform vec4 DiffuseColor;
 uniform vec4 SpecularColor;
 
-uniform vec3 LightPosition;
+varying vec3 VaryingNormal;
+varying vec3 VaryingLightDir;
 
-varying vec3 Normal;
-varying vec3 Vertex;
-
-void main (void)
+void main()
 {
-  vec3 L = normalize(LightPosition - Vertex);
+  float diff = max(0.0, dot(normalize(VaryingNormal), normalize(VaryingLightDir)));
+  vec4 color = diff * DiffuseColor;
+  color = color + AmbientColor;
   
-  vec3 E = normalize(-Vertex); // we are in eye coordinates, so EyePos is (0,0,0)
-  vec3 R = normalize(-reflect(L, Normal));
+  vec3 reflectVec = normalize(reflect(-normalize(VaryingLightDir), normalize(VaryingNormal)));
+  float spec = max(0.0, dot(normalize(VaryingNormal), reflectVec));
   
-  //Ambient term
-  vec4 amb = AmbientColor;
-  amb = clamp(amb, 0.0, 1.0);
+  if (diff != 0.0) {
+    float fspec = pow(spec, 128.0);
+    color.rgb += vec3(fspec, fspec, fspec);
+  }
   
-  //Diffuse term
-  vec4 diff = DiffuseColor * max(dot(Normal, L), 0.0);
-  
-  //Specular term
-  vec4 spec = SpecularColor * pow(max(dot(R, E), 0.0), 8.0);
-  spec = clamp(spec, 0.0, 1.0);
-
-  vec4 color = amb + diff + spec;
-  gl_FragColor = clamp(color, 0.3, 1.0);
+  gl_FragColor = color;
 }
+
+
+
+
+
+
+
+
+
+
+
+

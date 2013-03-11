@@ -65,7 +65,6 @@ private:
       shaders.add(ShaderType::Default, "shaders/default.vert", "shaders/default.frag");
       shaders.add(ShaderType::Phong, "shaders/phong.vert", "shaders/phong.frag");
       shaders.add(ShaderType::Ship, "shaders/ship.vert", "shaders/ship.frag");
-      shaders.add(ShaderType::Distortion, "shaders/distortion.vert", "shaders/phong.frag");
       shaders.add(ShaderType::Hemisphere, "shaders/hemisphere.vert", "shaders/default.frag");
       shaders.add(new HemisphereAOShaderProgram());
       CHECK_OPENGL_ERROR;
@@ -107,9 +106,11 @@ protected:
     
     Sky::init();
     
+#ifdef DRAW_ARMS
     //Generate the arm geometry
-    //m_rightArm.generateGeometry();
-    //m_leftArm.generateGeometry();
+    m_rightArm.generateGeometry();
+    m_leftArm.generateGeometry();
+#endif
     
     displayInstructions();
     
@@ -203,8 +204,15 @@ protected:
       //Draw the terrain
       m_cbuffer.draw(env);
       
+      //Draw a sphere at the origin to test Phong
+      mv.translateY(200.f);
+      shaders.preparePhong(env, glm::vec3(Sky::getSunPosition()), GL::BLACK, GL::BLUE, GL::WHITE);
+      glutSolidSphere(100, 20, 20);
+      
+#ifdef DRAW_ARMS
       m_rightArm.draw(env);
       m_leftArm.draw(env);
+#endif
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

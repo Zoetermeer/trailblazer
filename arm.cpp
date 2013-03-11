@@ -54,7 +54,7 @@ void Arm::draw(Env &env)
     mv.pushMatrix();
     {
       mv.scaleZ(m_armLength);
-      shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
+      shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
       GL::drawBox(GL_TRIANGLES);
     }
     mv.popMatrix();
@@ -81,7 +81,7 @@ void Arm::draw(Env &env)
     
     //Joint position
     mv.translateZ(-m_handRadius);
-    shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
+    shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
     glutSolidSphere(m_handRadius, 20, 20);
     
     //Draw fingers
@@ -101,7 +101,7 @@ void Arm::draw(Env &env)
           mv.pushMatrix();
           {
             mv.scale(0.2, 0.2, f.getLength() / 3.f);
-            shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
+            shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
             GL::drawBox(GL_TRIANGLES);
           }
           mv.popMatrix();
@@ -114,7 +114,7 @@ void Arm::draw(Env &env)
           mv.pushMatrix();
           {
             mv.scale(0.2, 0.2, f.getLength() / 3.f);
-            shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
+            shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
             GL::drawBox(GL_TRIANGLES);
           }
           mv.popMatrix();
@@ -126,7 +126,7 @@ void Arm::draw(Env &env)
           mv.pushMatrix();
           {
             mv.scale(0.2, 0.2, f.getLength() / 3.f);
-            shaders.preparePhong(env, sunPos, GL::BLUE, GL::BLACK, GL::WHITE);
+            shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
             GL::drawBox(GL_TRIANGLES);
           }
           mv.popMatrix();
