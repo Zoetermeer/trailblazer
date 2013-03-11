@@ -89,21 +89,30 @@ class Chunk : public SceneObject {
 private:
   bool m_generated;
   Voxel m_voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-  VertexBatch *m_vbo;
+  VertexBatch *m_voxelBatch;
+  VertexBatch *m_treeBatch;
   glm::ivec2 m_chunkIndex;
   bool m_containsPlayer;
   
 public:
   Chunk(int xIndex, int zIndex)
-  : SceneObject(), m_generated(false), m_chunkIndex(xIndex, zIndex), m_containsPlayer(false)
+  : SceneObject(),
+    m_generated(false),
+    m_chunkIndex(xIndex, zIndex),
+    m_containsPlayer(false),
+    m_voxelBatch(NULL),
+    m_treeBatch(NULL)
   {
     
   }
   
   ~Chunk()
   {
-    if (m_vbo)
-      delete m_vbo;
+    if (m_voxelBatch)
+      delete m_voxelBatch;
+    
+    if (m_treeBatch)
+      delete m_treeBatch;
   }
   
 public:

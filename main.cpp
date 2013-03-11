@@ -25,8 +25,6 @@
 const int DEFAULT_WIDTH = 1600;
 const int DEFAULT_HEIGHT = 1000;
 
-#define SHOW_CHUNKS 8
-
 class WorldSandboxApp : public OpenGLApp {
 private:
   std::vector<Ship*> m_ships;
@@ -39,7 +37,6 @@ private:
   Arm m_leftArm;
   
   ChunkBuffer m_cbuffer;
-  Chunk *m_chunks[SHOW_CHUNKS][SHOW_CHUNKS];
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
   
@@ -106,7 +103,7 @@ protected:
     
     Sky::init();
     
-#ifdef DRAW_ARMS
+#if defined(DRAW_ARMS)
     //Generate the arm geometry
     m_rightArm.generateGeometry();
     m_leftArm.generateGeometry();
@@ -209,7 +206,7 @@ protected:
       shaders.preparePhong(env, glm::vec3(Sky::getSunPosition()), GL::BLACK, GL::BLUE, GL::WHITE);
       glutSolidSphere(100, 20, 20);
       
-#ifdef DRAW_ARMS
+#if defined(DRAW_ARMS)
       m_rightArm.draw(env);
       m_leftArm.draw(env);
 #endif

@@ -242,11 +242,11 @@ void Chunk::generate()
     value is active and each one above is not active.
     Voxels are indexed starting at the bottom left corner of the chunk.
    */
-  m_vbo = new VertexBatch();
-  m_vbo->getVertexSpec().indexed = true;
-  m_vbo->getVertexSpec().use_ao = true;
-  m_vbo->getVertexSpec().use_color = true;
-  m_vbo->begin();
+  m_voxelBatch = new VertexBatch();
+  m_voxelBatch->getVertexSpec().indexed = true;
+  m_voxelBatch->getVertexSpec().use_ao = true;
+  m_voxelBatch->getVertexSpec().use_color = true;
+  m_voxelBatch->begin();
   
   //Translate to the bottom left
   MatrixStack stack;
@@ -290,6 +290,8 @@ void Chunk::generate()
                              m_chunkIndex.y,
                              m_chunkIndex.y + 1);
   heightMapBuilder.Build();
+  
+  //First pass - enable/disable voxels using the height map
   for (int i = 0; i < CHUNK_SIZE; i++) {
     for (int j = 0; j < CHUNK_SIZE; j++) {
       //Calculate how many voxels are active in this column
@@ -353,7 +355,7 @@ void Chunk::generate()
               stack.pushMatrix();
               {
                 stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
-                addVoxel(voxel, m_vbo, stack);
+                addVoxel(voxel, m_voxelBatch, stack);
               }
               stack.popMatrix();
             }
@@ -365,7 +367,7 @@ void Chunk::generate()
     stack.popMatrix();
   }
   
-  m_vbo->end();
+  m_voxelBatch->end();
   m_generated = true;
 }
 
@@ -384,7 +386,7 @@ void Chunk::draw(Env &env)
     
     glm::vec3 sunPos = glm::vec3(Sky::getSunPosition());
     shaders.prepareHemisphereAO(env, sunPos, glm::vec4(.8f, .8f, .8f, 1.f), groundColor);
-    m_vbo->draw(GL_TRIANGLES);
+    m_voxelBatch->draw(GL_TRIANGLES);
   }
   mv.popMatrix();
 }

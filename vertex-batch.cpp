@@ -138,7 +138,12 @@ void VertexBatch::end()
   CHECK_OPENGL_ERROR;
   glBindVertexArray(0);
   
+  //Free up client-side data
+  m_verts.clear();
+  m_norms.clear();
   m_indices.clear();
+  m_colors.clear();
+  m_aoAttribs.clear();
 }
 
 void VertexBatch::draw(GLenum drawMode)
