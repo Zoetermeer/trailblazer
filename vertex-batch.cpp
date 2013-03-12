@@ -160,7 +160,7 @@ void VertexBatch::end()
   CHECK_OPENGL_ERROR;
   glBindVertexArray(0);
   
-  //Free up client-side data
+  //Free up client-side memory
   m_verts.clear();
   m_norms.clear();
   m_indices.clear();

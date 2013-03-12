@@ -18,7 +18,7 @@ private:
   //GLFW wants callback functions for certain events,
   //so we need a way to handle these events statically but
   //communicate them to an OpenGLApp instance.  Because an app
-  //is essentially a singleton, we stash the current one here.
+  //is basically a singleton, we stash the current one here.
   static OpenGLApp *s_appInstance;
   
 public:

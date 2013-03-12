@@ -210,7 +210,7 @@ void Player::advance(int delta)
     //m_leftArm.lower();
   }
   
-  //TODO: Collision detection here
+  //TODO: Collision detection here?
   
   
   if (moved)

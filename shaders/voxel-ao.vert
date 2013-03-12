@@ -30,11 +30,6 @@ float cubicEaseOut(float start, float end, float t)
   return end * (t * t * t + 1.0) + start - 1.0;
 }
 
-float cubicEaseIn(float start, float end, float t)
-{
-  return end * t * t * t + start - 1.0;
-}
-
 vec3 cubicEaseOut(vec3 start, vec3 end, float t)
 {
   return vec3(cubicEaseOut(start.x, end.x, t),
@@ -73,6 +68,8 @@ void main()
   }
   
   vec4 eyePos = vec4(ModelViewMatrix * vec4(vtx, 1.0));
+  
+  //Defer AO to the frag shader to interpolate more smoothly
   VaryingNormal = NormalMatrix * gl_Normal;
   VaryingLightDir = LightPosition - eyePos.xyz;
   VaryingHeadlightDir = normalize(HeadlightPosition - eyePos.xyz);

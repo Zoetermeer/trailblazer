@@ -33,6 +33,9 @@ void main()
   vec4 mainLightColor = computePhong(VaryingLightDir, false);
   if (HeadlightOn) {
     vec4 headLightColor = computePhong(VaryingHeadlightDir, true);
+    
+    //Linear interp. between resulting colors.  Not quite right,
+    //causes dimming (especially for specular highlights)
     gl_FragColor = mix(mainLightColor, headLightColor, 0.5);
     return;
   }

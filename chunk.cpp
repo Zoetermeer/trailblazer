@@ -245,7 +245,7 @@ void Chunk::generate()
     [chunk.x, chunk.x + 1], [0,1], [chunk.y, chunk.y + 1], 
     where the 'y' is actually a z-index.
     We map the range of the noise function (which is in the interval 
-    [-1,1] to a value in the range [0,31], where each voxel below this
+    [-1,1]) to a value in the range [0,31], where each voxel below this
     value is active and each one above is not active.
     Voxels are indexed starting at the bottom left corner of the chunk.
    */
