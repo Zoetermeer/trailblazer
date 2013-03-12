@@ -178,10 +178,10 @@ protected:
   virtual void bindAttributes();
 };
 
-class HemisphereAOShaderProgram : public ShaderProgram {
+class VoxelAOShaderProgram : public ShaderProgram {
 public:
-  HemisphereAOShaderProgram()
-  : ShaderProgram(ShaderType::HemisphereAmbientOcclusion, "shaders/hem-ao.vert", "shaders/hem-ao.frag")
+  VoxelAOShaderProgram()
+  : ShaderProgram(ShaderType::HemisphereAmbientOcclusion, "shaders/voxel-ao.vert", "shaders/voxel-ao.frag")
   {
     
   }

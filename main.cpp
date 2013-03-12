@@ -62,7 +62,7 @@ private:
       shaders.add(ShaderType::Default, "shaders/default.vert", "shaders/default.frag");
       shaders.add(ShaderType::Phong, "shaders/phong.vert", "shaders/phong.frag");
       shaders.add(ShaderType::Hemisphere, "shaders/hemisphere.vert", "shaders/default.frag");
-      shaders.add(new HemisphereAOShaderProgram());
+      shaders.add(new VoxelAOShaderProgram());
       CHECK_OPENGL_ERROR;
     } catch (std::exception *ex) {
       std::cout << ex->what() << std::endl;

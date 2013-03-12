@@ -21,7 +21,7 @@ vec4 computePhong(vec3 lightDir, bool spotLight)
   float spec = max(0.0, dot(normalize(VaryingNormal), reflectVec));
   
   if (diff != 0.0) {
-    float fspec = pow(spec, 128.0);
+    float fspec = pow(spec, 32.0);
     color.rgb += vec3(fspec, fspec, fspec);
   }
   

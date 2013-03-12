@@ -72,8 +72,7 @@ void Arm::draw(Env &env)
     mv.pushMatrix();
     {
       mv.scaleZ(m_forearmLength);
-      //shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
-      shaders.prepareHemisphereAO(env, SILVER_SPEC, SILVER_AMB, false, 0.0);
+      shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
       m_foreVerts->draw(GL_TRIANGLES);
     }
     mv.popMatrix();

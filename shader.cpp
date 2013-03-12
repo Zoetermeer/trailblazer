@@ -155,7 +155,7 @@ bool ShaderSet::tryFindShader(GLenum type, const char *fileName, GLuint *id)
   return false;
 }
 
-void HemisphereAOShaderProgram::bindAttributes()
+void VoxelAOShaderProgram::bindAttributes()
 {
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::AOAccessibility, "AOAccessibility");
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::Color, "Color");
