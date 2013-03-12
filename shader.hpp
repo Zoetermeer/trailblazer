@@ -89,6 +89,11 @@ public:
     glUniformMatrix4fv(m_loc, 1, GL_FALSE, glmat);
   }
   
+  inline void operator=(GLfloat f)
+  {
+    glUniform1f(m_loc, f);
+  }
+  
   inline void operator=(bool b)
   {
     glUniform1i(m_loc, (GLint)b);
@@ -236,7 +241,7 @@ public:
                            const glm::vec4 &skyColor,
                            const glm::vec4 &groundColor,
                            const bool animating, 
-                           const GLclampf animationTime);
+                           const GLfloat animationTime);
 };
 
 #endif

@@ -81,6 +81,7 @@ private:
     std::cout << "a - left" << std::endl;
     std::cout << "spacebar - fly up" << std::endl;
     std::cout << "shift - fly down" << std::endl;
+    std::cout << "enter - blow it up" << std::endl;
   }
   
 protected:

@@ -440,12 +440,15 @@ void ChunkBuffer::init()
   }
 }
 
-void ChunkBuffer::removeChunksAtX(int xIndex)
+void ChunkBuffer::removeChunksAtX(int xIndex, GLfloat deltaX)
 {
   std::vector<Chunk*>::iterator iter = m_visibleQueue.begin();
+  bool under = deltaX > 0.f;
+  bool remove;
   while (iter != m_visibleQueue.end()) {
     Chunk *ch = *iter;
-    if (ch->getIndex().x == xIndex) {
+    remove = under ? ch->getIndex().x <= xIndex : ch->getIndex().x >= xIndex;
+    if (remove) {
       iter = m_visibleQueue.erase(iter);
       delete ch;
       continue;
@@ -455,12 +458,15 @@ void ChunkBuffer::removeChunksAtX(int xIndex)
   }
 }
 
-void ChunkBuffer::removeChunksAtZ(int zIndex)
+void ChunkBuffer::removeChunksAtZ(int zIndex, GLfloat deltaZ)
 {
   std::vector<Chunk*>::iterator iter = m_visibleQueue.begin();
+  bool under = deltaZ > 0.f;
+  bool remove;
   while (iter != m_visibleQueue.end()) {
     Chunk *ch = *iter;
-    if (ch->getIndex().y == zIndex) {
+    remove = under ? ch->getIndex().y <= zIndex : ch->getIndex().y >= zIndex;
+    if (remove) {
       iter = m_visibleQueue.erase(iter);
       delete ch;
       continue;
@@ -505,7 +511,7 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
     if (delta.x != 0) {
       //Remove in x dimension
       int x = chunkCoords.x - (delta.x * halfUp);
-      removeChunksAtX(x);
+      removeChunksAtX(x, delta.x);
       for (int i = chunkCoords.z - halfDown; i <= chunkCoords.z + halfDown; i++) {
         m_loadQueue.push_back(new Chunk(chunkCoords.x + (delta.x * halfDown), i));
       }
@@ -514,7 +520,7 @@ void ChunkBuffer::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_po
     if (delta.z != 0) {
       //Remove in z dimension
       int z = chunkCoords.z - (delta.z * halfUp);
-      removeChunksAtZ(z);
+      removeChunksAtZ(z, delta.z);
       for (int i = chunkCoords.x - halfDown; i <= chunkCoords.x + halfDown; i++) {
         m_loadQueue.push_back(new Chunk(i, chunkCoords.z + (delta.z * halfDown)));
       }
@@ -539,6 +545,15 @@ void ChunkBuffer::advance(int delta)
     ch->generate();
     m_visibleQueue.push_back(ch);
   }
+  
+  //If animating a voxel explosion, advance the time counter
+  if (m_exploding) {
+    m_explosionTime += .005;
+    if (m_explosionTime > 1.f) {
+      m_exploding = false;
+      m_explosionTime = 0.f;
+    }
+  }
 }
 
 bool ChunkBuffer::isDone()
@@ -555,6 +570,8 @@ void ChunkBuffer::draw(Env &env)
              m_isPlayerHeadlightOn,
              m_exploding,
              m_explosionTime);
+    
+    CHECK_OPENGL_ERROR;
   }
 }
 

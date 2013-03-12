@@ -67,6 +67,7 @@ void VertexBatch::add(vertex_t &vertex)
 
 void VertexBatch::end()
 {
+  CHECK_OPENGL_ERROR;
   GLfloat *verts = m_verts.data();
   GLfloat *norms = m_norms.data();
   
@@ -88,8 +89,8 @@ void VertexBatch::end()
   m_vertsSize = m_verts.size() * sizeof(GLfloat);
   m_normsSize = m_norms.size() * sizeof(GLfloat);
   m_indexSize = m_indices.size() * sizeof(GLuint);
-  m_aoAttribsSize = m_aoAttribs.size() * sizeof(float);
-  m_vcAttribsSize = m_vcAttribs.size() * sizeof(GLuint);
+  m_aoAttribsSize = m_aoAttribs.size() * sizeof(GLfloat);
+  m_vcAttribsSize = m_vcAttribs.size() * sizeof(GLfloat);
   m_colorSize = m_colors.size() * sizeof(GLfloat);
   m_vertPtr = 0;
   m_normPtr = m_vertPtr + m_vertsSize;
@@ -144,7 +145,7 @@ void VertexBatch::end()
     glVertexAttribPointer((GLuint)VertexAttrib::VoxelCoordinate,
                           3,
                           GL_FLOAT,
-                          GL_TRUE, 
+                          GL_FALSE,
                           0,
                           (const GLvoid*)m_vcPtr);
   }

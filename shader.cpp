@@ -281,7 +281,7 @@ void ShaderSet::prepareHemisphereAO(Env &env,
                                     const glm::vec4 &skyColor,
                                     const glm::vec4 &groundColor,
                                     const bool animating,
-                                    const GLclampf animationTime)
+                                    const GLfloat animationTime)
 {
   ShaderProgram &sh = use(ShaderType::HemisphereAmbientOcclusion);
   sh.uniform(Uniform::MODELVIEW_MATRIX) = env.getMV().getCurrent();

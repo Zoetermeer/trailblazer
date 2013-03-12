@@ -63,7 +63,7 @@ OpenGLException::OpenGLException(const char *fileName, int lineNum, GLenum error
 
 const char *OpenGLException::what() const throw()
 {
-  std::stringstream str;
-  str << m_fileName << ": " << m_lineNum << ": " << m_details;
-  return str.str().c_str();
+  std::stringstream *str = new std::stringstream();
+  *str << m_fileName << ": " << m_lineNum << ": " << m_details;
+  return str->str().c_str();
 }

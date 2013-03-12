@@ -165,6 +165,7 @@ public:
   {
     Events::addListener((IPlayerMoveListener*)this);
     Events::addListener((IPlayerLookListener*)this);
+    Events::addListener((IKeyDownListener*)this);
     ProcessList::add(this);
   }
   
@@ -175,8 +176,8 @@ public:
   }
   
 private:
-  void removeChunksAtX(int xIndex);
-  void removeChunksAtZ(int zIndex);
+  void removeChunksAtX(int xIndex, GLfloat deltaX);
+  void removeChunksAtZ(int zIndex, GLfloat deltaZ);
   
 public:
   void init();
