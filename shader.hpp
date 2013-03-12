@@ -223,10 +223,6 @@ public:
            const char *fragShader) throw (ShaderCompileException*, OpenGLException*, FileNotFoundException*);
   void prepareDefault(Env &env, const glm::vec4 &color);
   void preparePhong(Env &env,
-                    const glm::vec3 &lightPos,
-                    const glm::vec3 &headlightPos,
-                    const glm::vec3 &headlightDir,
-                    const bool headlightOn,
                     const glm::vec4 &amb,
                     const glm::vec4 &diff,
                     const glm::vec4 &spec);

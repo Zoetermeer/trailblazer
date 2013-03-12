@@ -173,6 +173,10 @@ protected:
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glm::ivec2 winSz = this->getWindowSize();
     glViewport(0, 0, winSz.x, winSz.y);
+    
+    //Environment vars
+    env.setPlayer(&m_player);
+    env.setSunPos(Sky::getSunPosition());
     try {
       MatrixStack &mv = env.getMV();
       ShaderSet &shaders = env.getShaders();
@@ -202,10 +206,6 @@ protected:
       auto playerPos = glm::vec3(m_player.getOffset());
       mv.translateY(200.f);
       shaders.preparePhong(env,
-                           glm::vec3(Sky::getSunPosition()),
-                           playerPos,
-                           m_player.getLookVector(),
-                           m_player.getIsHeadlightOn(), 
                            GL::color(178, 34, 34),
                            GL::color(205, 92, 92),
                            GL::WHITE);
