@@ -32,6 +32,7 @@ private:
   FirstPersonCamera m_camera;
   Sky *m_sky;
   
+  bool m_hideArms;
   Arm m_rightArm;
   Arm m_leftArm;
   
@@ -43,7 +44,7 @@ public:
   WorldSandboxApp()
   : m_rightArm(ArmType::Right, 5.0, 5.0, 2.0),
     m_leftArm(ArmType::Left, 5.0, 5.0, 2.0),
-    m_moveDir(Direction::Idle)
+    m_moveDir(Direction::Idle), m_hideArms(true)
   {
     
   }
@@ -81,6 +82,8 @@ private:
     std::cout << "a - left" << std::endl;
     std::cout << "spacebar - fly up" << std::endl;
     std::cout << "shift - fly down" << std::endl;
+    std::cout << "h - hide/show arms" << std::endl;
+    std::cout << "<period> - headlight on/off" << std::endl;
     std::cout << "enter - blow it up" << std::endl;
   }
   
@@ -103,8 +106,8 @@ protected:
     Sky::init();
     
     //Generate the arm geometry
-    //m_rightArm.generateGeometry();
-    //m_leftArm.generateGeometry();
+    m_rightArm.generateGeometry();
+    m_leftArm.generateGeometry();
     
     displayInstructions();
     
@@ -155,6 +158,13 @@ protected:
   
   virtual void onKeyDown(int key)
   {
+    switch (key)
+    {
+        case 'h':
+        case 'H':
+          m_hideArms = !m_hideArms;
+          break;
+    }
     Events::keyDownEvent(key, false);
   }
   
@@ -203,16 +213,17 @@ protected:
       m_cbuffer.draw(env);
       
       //Draw a sphere at the origin to test Phong
-      auto playerPos = glm::vec3(m_player.getOffset());
-      mv.translateY(200.f);
-      shaders.preparePhong(env,
-                           GL::color(178, 34, 34),
-                           GL::color(205, 92, 92),
-                           GL::WHITE);
-      glutSolidSphere(100, 20, 20);
+      //mv.translateY(200.f);
+      //shaders.preparePhong(env,
+      //                     GL::color(178, 34, 34),
+      //                     GL::color(205, 92, 92),
+      //                     GL::WHITE);
+      //glutSolidSphere(100, 32, 32);
       
-      //m_rightArm.draw(env);
-      //m_leftArm.draw(env);
+      if (!m_hideArms) {
+        m_rightArm.draw(env);
+        m_leftArm.draw(env);
+      }
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

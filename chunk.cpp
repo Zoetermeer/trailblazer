@@ -397,13 +397,7 @@ void Chunk::draw(Env &env,
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.y * offset);
     glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
-    
-    glm::vec3 sunPos = glm::vec3(Sky::getSunPosition());
     shaders.prepareHemisphereAO(env,
-                                sunPos,
-                                glm::vec3(playerPos),
-                                playerLookVec,
-                                isHeadlightOn,
                                 glm::vec4(.8f, .8f, .8f, 1.f),
                                 groundColor,
                                 exploding,

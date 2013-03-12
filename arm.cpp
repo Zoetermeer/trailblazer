@@ -10,10 +10,11 @@
 
 void Arm::onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos)
 {
+  swimForward();
   this->m_pos = new_pos;
-  m_world = glm::translate(m_world, glm::vec3(-m_pos.x, m_pos.y, -m_pos.z));
-  m_world = glm::rotate(m_world, -m_playerAttitude.yaw, glm::vec3(0.f, 1.f, 0.f));
-  m_world = glm::rotate(m_world, -m_playerAttitude.pitch, glm::vec3(1.f, 0.f, 1.f));
+  m_world = glm::translate(m_world, glm::vec3(m_pos.x, m_pos.y, m_pos.z));
+  m_world = glm::rotate(m_world, m_playerAttitude.yaw.getValue(), glm::vec3(0.f, 1.f, 0.f));
+  m_world = glm::rotate(m_world, m_playerAttitude.pitch.getValue(), glm::vec3(1.f, 0.f, 1.f));
   m_world = glm::translate(m_world, glm::vec3(0.f, 0.f, -BODY_OFFSET));
 }
 
@@ -33,110 +34,111 @@ void Arm::generateGeometry()
 
 void Arm::draw(Env &env)
 {
-//  MatrixStack &mv = env.getMV();
-//  ShaderSet &shaders = env.getShaders();
-//  auto sunPos = glm::vec3(Sky::getSunPosition());
-//  mv.pushMatrix();
-//  {
-//    mv.translate(m_pos.x, m_pos.y, m_pos.z);
-//    mv.rotateZ(m_playerAttitude.roll);
-//    mv.rotateX(m_playerAttitude.pitch);
-//    mv.rotateY(m_playerAttitude.yaw);
-//    
-//    mv.translateZ(-BODY_OFFSET);
-//    //mv.current() = m_world;
-//    mv.translateX(m_type == ArmType::Right ? BODY_OFFSET : -BODY_OFFSET);
-//    
-//    //Draw the upper arm
-//    mv.rotateY(armAttitude.yaw);
-//    mv.rotateX(armAttitude.pitch);
-//    mv.translateZ(-m_armLength);
-//    mv.pushMatrix();
-//    {
-//      mv.scaleZ(m_armLength);
-//      shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
-//      GL::drawBox(GL_TRIANGLES);
-//    }
-//    mv.popMatrix();
-//    
-//    //Draw the forearm
-//    mv.translateZ(-m_armLength);
-//    mv.rotateY(forearmAttitude.yaw);
-//    mv.rotateZ(forearmAttitude.roll);
-//    mv.translateZ(-m_forearmLength);
-//    mv.pushMatrix();
-//    {
-//      mv.scaleZ(m_forearmLength);
-//      shaders.preparePhong(env,
-//                           sunPos, 
-//                           glm::vec4(0.329412, 0.223529, 0.027451, 1.0),
-//                           glm::vec4(0.780392, 0.568627, 0.113725, 1.0),
-//                           glm::vec4(0.992157, 0.941176, 0.807843, 1.0));
-//      m_foreVerts->draw(GL_TRIANGLES);
-//    }
-//    mv.popMatrix();
-//    
-//    //Draw the hand (a sphere)
-//    mv.translateZ(-m_forearmLength);
-//    
-//    //Joint position
-//    mv.translateZ(-m_handRadius);
-//    shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
-//    glutSolidSphere(m_handRadius, 20, 20);
-//    
-//    //Draw fingers
-//    mv.pushMatrix();
-//    {
-//      mv.rotateY(120.f);
-//      for (int i = 0; i < 4; i++) {
-//        Finger &f = this->m_fingers[i];
-//        mv.rotateY(-40.f);
-//        
-//        mv.pushMatrix();
-//        {
-//          //Upper
-//          mv.translateZ(-m_handRadius);
-//          mv.rotateX(f.upper.pitch);
-//          mv.translateZ(-f.getLength() / 3.f);
-//          mv.pushMatrix();
-//          {
-//            mv.scale(0.2, 0.2, f.getLength() / 3.f);
-//            shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
-//            GL::drawBox(GL_TRIANGLES);
-//          }
-//          mv.popMatrix();
-//          
-//          //Mid
-//          mv.translateZ(-f.getLength() / 3.f);
-//          mv.rotateX(f.middle.pitch);
-//          mv.translateZ(-f.getLength() / 3.f);
-//          
-//          mv.pushMatrix();
-//          {
-//            mv.scale(0.2, 0.2, f.getLength() / 3.f);
-//            shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
-//            GL::drawBox(GL_TRIANGLES);
-//          }
-//          mv.popMatrix();
-//          
-//          //Lower
-//          mv.translateZ(-f.getLength() / 3.f);
-//          mv.rotateX(f.lower.pitch);
-//          mv.translateZ(-f.getLength() / 3.f);
-//          mv.pushMatrix();
-//          {
-//            mv.scale(0.2, 0.2, f.getLength() / 3.f);
-//            shaders.preparePhong(env, sunPos, GL::BLACK, GL::BLUE, GL::WHITE);
-//            GL::drawBox(GL_TRIANGLES);
-//          }
-//          mv.popMatrix();
-//        }
-//        mv.popMatrix();
-//      }
-//    }
-//    mv.popMatrix();
-//  }
-//  mv.popMatrix();
+  MatrixStack &mv = env.getMV();
+  ShaderSet &shaders = env.getShaders();
+  const glm::vec4 SILVER_AMB(.19225, .19225, .19225, 1.f);
+  const glm::vec4 SILVER_DIFF(.50754, .50754, .50754, 1.f);
+  const glm::vec4 SILVER_SPEC(.508273, .508273, .508273, 1.f);
+  mv.pushMatrix();
+  {
+    mv.translate(m_pos.x, m_pos.y, m_pos.z);
+    //mv.translate(0.f, 200.f, 0.f);
+    mv.rotateZ(m_playerAttitude.roll);
+    mv.rotateY(m_playerAttitude.yaw);
+    mv.rotateX(m_playerAttitude.pitch);
+    mv.translate(0.f, -10.f, 6.f);
+    
+    mv.translateZ(-BODY_OFFSET);
+    //mv.current() = m_world;
+    mv.translateX(m_type == ArmType::Right ? BODY_OFFSET : -BODY_OFFSET);
+    
+    //Draw the upper arm
+    mv.rotateY(armAttitude.yaw);
+    mv.rotateX(armAttitude.pitch);
+    mv.translateZ(-m_armLength);
+    mv.pushMatrix();
+    {
+      mv.scaleZ(m_armLength);
+      shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
+      GL::drawBox(GL_TRIANGLES);
+    }
+    mv.popMatrix();
+    
+    //Draw the forearm
+    mv.translateZ(-m_armLength);
+    mv.rotateY(forearmAttitude.yaw);
+    mv.rotateZ(forearmAttitude.roll);
+    mv.translateZ(-m_forearmLength);
+    mv.pushMatrix();
+    {
+      mv.scaleZ(m_forearmLength);
+      //shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
+      shaders.prepareHemisphereAO(env, SILVER_SPEC, SILVER_AMB, false, 0.0);
+      m_foreVerts->draw(GL_TRIANGLES);
+    }
+    mv.popMatrix();
+    
+    //Draw the hand (a sphere)
+    mv.translateZ(-m_forearmLength);
+    
+    //Joint position
+    mv.translateZ(-m_handRadius);
+    shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
+    glutSolidSphere(m_handRadius, 20, 20);
+    
+    //Draw fingers
+    mv.pushMatrix();
+    {
+      mv.rotateY(120.f);
+      for (int i = 0; i < 4; i++) {
+        Finger &f = this->m_fingers[i];
+        mv.rotateY(-40.f);
+        
+        mv.pushMatrix();
+        {
+          //Upper
+          mv.translateZ(-m_handRadius);
+          mv.rotateX(f.upper.pitch);
+          mv.translateZ(-f.getLength() / 3.f);
+          mv.pushMatrix();
+          {
+            mv.scale(0.2, 0.2, f.getLength() / 3.f);
+            shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
+            GL::drawBox(GL_TRIANGLES);
+          }
+          mv.popMatrix();
+          
+          //Mid
+          mv.translateZ(-f.getLength() / 3.f);
+          mv.rotateX(f.middle.pitch);
+          mv.translateZ(-f.getLength() / 3.f);
+          
+          mv.pushMatrix();
+          {
+            mv.scale(0.2, 0.2, f.getLength() / 3.f);
+            shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
+            GL::drawBox(GL_TRIANGLES);
+          }
+          mv.popMatrix();
+          
+          //Lower
+          mv.translateZ(-f.getLength() / 3.f);
+          mv.rotateX(f.lower.pitch);
+          mv.translateZ(-f.getLength() / 3.f);
+          mv.pushMatrix();
+          {
+            mv.scale(0.2, 0.2, f.getLength() / 3.f);
+            shaders.preparePhong(env, SILVER_AMB, SILVER_DIFF, SILVER_SPEC);
+            GL::drawBox(GL_TRIANGLES);
+          }
+          mv.popMatrix();
+        }
+        mv.popMatrix();
+      }
+    }
+    mv.popMatrix();
+  }
+  mv.popMatrix();
 }
 
 void Arm::swimForward()

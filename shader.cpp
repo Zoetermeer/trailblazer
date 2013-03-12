@@ -270,10 +270,6 @@ void ShaderSet::prepareHemisphere(Env &env, const glm::vec3 &lightPos, const glm
 }
 
 void ShaderSet::prepareHemisphereAO(Env &env,
-                                    const glm::vec3 &lightPos,
-                                    const glm::vec3 &headlightPos,
-                                    const glm::vec3 &headlightDir,
-                                    const bool headlightOn,
                                     const glm::vec4 &skyColor,
                                     const glm::vec4 &groundColor,
                                     const bool animating,
@@ -283,10 +279,10 @@ void ShaderSet::prepareHemisphereAO(Env &env,
   sh.uniform(Uniform::MODELVIEW_MATRIX) = env.getMV().getCurrent();
   sh.uniform(Uniform::PROJECTION_MATRIX) = env.getProj().getCurrent();
   sh.uniform(Uniform::NORMAL_MATRIX) = env.getMV().getNormalMatrix();
-  sh.uniform("LightPosition") = lightPos;
-  sh.uniform("HeadlightPosition") = headlightPos;
-  sh.uniform("HeadlightOn") = headlightOn;
-  sh.uniform("HeadlightDir") = headlightDir;
+  sh.uniform("LightPosition") = glm::vec3(env.getSunPos());
+  sh.uniform("HeadlightPosition") = glm::vec3(env.getPlayer().getOffset());
+  sh.uniform("HeadlightOn") = env.getPlayer().getIsHeadlightOn();
+  sh.uniform("HeadlightDir") = env.getPlayer().getLookVector();
   sh.uniform("SkyColor") = skyColor;
   sh.uniform("GroundColor") = groundColor;
   sh.uniform("Animating") = animating;
