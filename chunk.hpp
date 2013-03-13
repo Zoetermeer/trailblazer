@@ -8,6 +8,7 @@
 #include "events.hpp"
 #include "process.hpp"
 #include <vector>
+#include <future>
 
 //Number of voxels per chunk face
 #define CHUNK_SIZE 32
@@ -93,13 +94,17 @@ private:
   glm::ivec2 m_chunkIndex;
   bool m_containsPlayer;
   
+  bool m_generatingAsync;
+  std::future<void> m_generatingFuture;
+  
 public:
   Chunk(int xIndex, int zIndex)
   : m_generated(false),
     m_chunkIndex(xIndex, zIndex),
     m_containsPlayer(false),
     m_voxelBatch(NULL),
-    m_treeBatch(NULL)
+    m_treeBatch(NULL),
+    m_generatingAsync(false)
   {
     
   }
@@ -137,7 +142,11 @@ private:
   GLclampf accessibilityAt(int x, int y, int z);
   void addVoxel(Voxel &voxel, VertexBatch *batch, MatrixStack &stack);
   
+  void generateData();
+  
 public:
+  static void doGenerate(Chunk *chunk);
+  bool generateDataAsync();
   void generate();
   void draw(Env &env,
             const glm::vec4 &playerPos,

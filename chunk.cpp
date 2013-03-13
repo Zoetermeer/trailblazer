@@ -6,6 +6,7 @@
 #include <noise.h>
 #include "noiseutils.h"
 #include <GL/glfw.h>
+#include <chrono>
 
 #define VERT(m,x,y,z) (new_vertex((m * glm::vec4(x,y,z,1.f))))
 #define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b.position - a.position), glm::vec3(c.position - a.position))))
@@ -422,6 +423,172 @@ GLclampf Chunk::accessibilityAt(int x, int y, int z)
   return 1.f;
 }
 
+//Safe to invoke on a worker thread
+void Chunk::generateData()
+{
+  /* Generation strategy:
+   We use the chunk's indices as bounds.
+   So for any given chunk, we use noise values in the interval
+   [chunk.x, chunk.x + 1], [0,1], [chunk.y, chunk.y + 1],
+   where the 'y' is actually a z-index.
+   We map the range of the noise function (which is in the interval
+   [-1,1]) to a value in the range [0,31], where each voxel below this
+   value is active and each one above is not active.
+   Voxels are indexed starting at the bottom left corner of the chunk.
+   */
+  m_voxelBatch = new VertexBatch();
+  vertex_spec_t &spec = m_voxelBatch->getVertexSpec();
+  spec.indexed = true;
+  spec.use_ao = true;
+  spec.use_color = true;
+  spec.use_voxel_coordinates = true;
+  m_voxelBatch->begin();
+  
+  //Translate to the bottom left
+  MatrixStack stack;
+  GLfloat offset = CHUNK_SIZE * .5f - VOXEL_SIZE * .5f;
+  stack.translate(-offset, -offset, offset);
+  //Should now be at the origin of voxel (0,0,0)
+  
+  noise::module::RidgedMulti mountain;
+  noise::module::Billow baseFlat;
+  baseFlat.SetFrequency(2.0);
+  noise::module::ScaleBias flatTerrain;
+  flatTerrain.SetSourceModule(0, baseFlat);
+  flatTerrain.SetScale(0.125);
+  flatTerrain.SetBias(-0.75);
+  
+  //Perlin to control which type of terrain to generate
+  noise::module::Perlin terrainType;
+  terrainType.SetOctaveCount(1);
+  terrainType.SetFrequency(0.2);
+  terrainType.SetPersistence(0.25);
+  
+  noise::module::Select terrainSelector;
+  terrainSelector.SetSourceModule(0, flatTerrain);
+  terrainSelector.SetSourceModule(1, mountain);
+  terrainSelector.SetControlModule(terrainType);
+  terrainSelector.SetBounds(0.0, 1000.0);
+  terrainSelector.SetEdgeFalloff(0.6);
+  
+  //noise::module::Turbulence finalTerrain;
+  //finalTerrain.SetSourceModule(0, terrainSelector);
+  //finalTerrain.SetFrequency(4.0);
+  //finalTerrain.SetPower(0.125);
+  
+  utils::NoiseMap heightMap;
+  utils::NoiseMapBuilderPlane heightMapBuilder;
+  heightMapBuilder.SetSourceModule(terrainSelector);
+  heightMapBuilder.SetDestNoiseMap(heightMap);
+  heightMapBuilder.SetDestSize(32, 32);
+  heightMapBuilder.SetBounds(m_chunkIndex.x,
+                             m_chunkIndex.x + 1,
+                             m_chunkIndex.y,
+                             m_chunkIndex.y + 1);
+  heightMapBuilder.Build();
+  
+  //First pass - enable/disable voxels using the height map
+  for (int i = 0; i < CHUNK_SIZE; i++) {
+    for (int j = 0; j < CHUNK_SIZE; j++) {
+      //Calculate how many voxels are active in this column
+      GLfloat noise = heightMap.GetValue(i, j);
+      int ht = (CHUNK_SIZE * .5) * noise;
+      ht += CHUNK_SIZE * .5;
+      if (!ht) ht = 1;
+      
+      //Set voxels active/inactive
+      for (int v = 0; v < CHUNK_SIZE; v++) {
+        Voxel &voxel = m_voxels[i][v][j];
+        voxel.setIndex(i, v, j);
+        if (v < ht)
+          voxel.setIsActive(true);
+        else
+          voxel.setIsActive(false);
+      }
+    }
+  }
+  
+  //Second pass -- figure out neighbors so
+  //we can avoid drawing unnecessary vertices,
+  //and assign voxel types
+  for (int i = 0; i < CHUNK_SIZE; i++) {
+    stack.translateX(VOXEL_SIZE);
+    stack.pushMatrix();
+    {
+      for (int j = 0; j < CHUNK_SIZE; j++) {
+        stack.translateZ(VOXEL_SIZE);
+        
+        //Calculate neighbors
+        stack.pushMatrix();
+        {
+          for (int v = 0; v < CHUNK_SIZE; v++) {
+            stack.translateY(VOXEL_SIZE);
+            Voxel &voxel = m_voxels[i][v][j];
+            voxel.setNeighbors(Neighbors::Bottom);
+            if (voxel.getIsActive()) {
+              Neighbors ns = voxel.getNeighbors();
+              ns = ns | Neighbors::Bottom;
+              if (v < CHUNK_SIZE - 1 && m_voxels[i][v + 1][j].getIsActive()) {
+                ns = ns | Neighbors::Top;
+                voxel.setTerrainType(TerrainType::Dirt);
+              } else if (v > 0) {
+                //Grass, unless we are at a low enough altitude
+                voxel.setTerrainType(TerrainType::Grass);
+              } else {
+                voxel.setTerrainType(TerrainType::Water);
+              }
+              
+              if (i > 0 && m_voxels[i - 1][v][j].getIsActive())
+                ns = ns | Neighbors::Left;
+              if (i < CHUNK_SIZE - 1 && m_voxels[i + 1][v][j].getIsActive())
+                ns = ns | Neighbors::Right;
+              if (j > 0 && m_voxels[i][v][j - 1].getIsActive())
+                ns = ns | Neighbors::Back;
+              if (j < CHUNK_SIZE - 1 && m_voxels[i][v][j + 1].getIsActive())
+                ns = ns | Neighbors::Front;
+              
+              voxel.setNeighbors(ns);
+              stack.pushMatrix();
+              {
+                stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
+                addVoxel(voxel, m_voxelBatch, stack);
+              }
+              stack.popMatrix();
+            }
+          }
+        }
+        stack.popMatrix();
+      }
+    }
+    stack.popMatrix();
+  }
+}
+
+void Chunk::doGenerate(Chunk *chunk)
+{
+  chunk->generateData();
+}
+
+bool Chunk::generateDataAsync()
+{
+  if (!m_generatingAsync) {
+    m_generatingAsync = true;
+    m_generatingFuture = std::async(std::launch::async, Chunk::doGenerate, this);
+    return false;
+  }
+  
+  //Otherwise, check the status of the future
+  std::future_status status = m_generatingFuture.wait_for(std::chrono::seconds(0));
+  if (status != std::future_status::ready)
+    return false;
+  
+  //Async work finished, generate the vertex buffer
+  m_generatingAsync = false;
+  m_voxelBatch->end();
+  m_generated = true;
+  return true;
+}
+
 void ChunkBuffer::init()
 {
   //Load a 5x5 grid, centered on the world-space origin
@@ -535,9 +702,10 @@ void ChunkBuffer::advance(int delta)
   //If the load list is non-empty, load 1 chunk
   if (m_loadQueue.size() > 0) {
     Chunk *ch = m_loadQueue.back();
-    m_loadQueue.pop_back();
-    ch->generate();
-    m_visibleQueue.push_back(ch);
+    if (ch->generateDataAsync()) {
+      m_loadQueue.pop_back();
+      m_visibleQueue.push_back(ch);
+    }
   }
   
   //If animating a voxel explosion, advance the time counter
