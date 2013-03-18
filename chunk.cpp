@@ -10,16 +10,19 @@
 
 #define VERT(m,x,y,z) (new_vertex((m * glm::vec4(x,y,z,1.f))))
 #define NORMAL(a,b,c) (glm::normalize(glm::cross(glm::vec3(b.position - a.position), glm::vec3(c.position - a.position))))
-void Chunk::addVoxel(Voxel &voxel,
+void Chunk::addVoxel(const glm::vec3 &ind,
+                     const Neighbors &ns,
+                     const TerrainType &type,
                      VertexBatch *batch,
                      MatrixStack &stack)
-{
+{  
+  //Don't bother with totally occluded voxels
+  if (ns == Neighbors::All)
+    return;
+  
   glm::mat4 &m = stack.current();
-  glm::ivec3 ind = voxel.getIndex();
-  int x = ind.x, y = ind.y, z = ind.z;
-  Neighbors ns = voxel.getNeighbors();
   glm::vec4 color;
-  switch (voxel.getTerrainType())
+  switch (type)
   {
     case TerrainType::Grass:
       color = GL::color(0, 100, 0);
@@ -235,152 +238,6 @@ void Chunk::addVoxel(Voxel &voxel,
   }
 }
 
-void Chunk::generate()
-{
-  if (m_generated)
-    return;
-  
-  /* Generation strategy:
-    We use the chunk's indices as bounds.
-    So for any given chunk, we use noise values in the interval 
-    [chunk.x, chunk.x + 1], [0,1], [chunk.y, chunk.y + 1], 
-    where the 'y' is actually a z-index.
-    We map the range of the noise function (which is in the interval 
-    [-1,1]) to a value in the range [0,31], where each voxel below this
-    value is active and each one above is not active.
-    Voxels are indexed starting at the bottom left corner of the chunk.
-   */
-  m_voxelBatch = new VertexBatch();
-  vertex_spec_t &spec = m_voxelBatch->getVertexSpec();
-  spec.indexed = true;
-  spec.use_ao = true;
-  spec.use_color = true;
-  spec.use_voxel_coordinates = true;
-  m_voxelBatch->begin();
-  
-  //Translate to the bottom left
-  MatrixStack stack;
-  GLfloat offset = CHUNK_SIZE * .5f - VOXEL_SIZE * .5f;
-  stack.translate(-offset, -offset, offset);
-  //Should now be at the origin of voxel (0,0,0)
-  
-  noise::module::RidgedMulti mountain;
-  noise::module::Billow baseFlat;
-  baseFlat.SetFrequency(2.0);
-  noise::module::ScaleBias flatTerrain;
-  flatTerrain.SetSourceModule(0, baseFlat);
-  flatTerrain.SetScale(0.125);
-  flatTerrain.SetBias(-0.75);
-  
-  //Perlin to control which type of terrain to generate
-  noise::module::Perlin terrainType;
-  terrainType.SetOctaveCount(1);
-  terrainType.SetFrequency(0.2);
-  terrainType.SetPersistence(0.25);
-  
-  noise::module::Select terrainSelector;
-  terrainSelector.SetSourceModule(0, flatTerrain);
-  terrainSelector.SetSourceModule(1, mountain);
-  terrainSelector.SetControlModule(terrainType);
-  terrainSelector.SetBounds(0.0, 1000.0);
-  terrainSelector.SetEdgeFalloff(0.6);
-  
-  //noise::module::Turbulence finalTerrain;
-  //finalTerrain.SetSourceModule(0, terrainSelector);
-  //finalTerrain.SetFrequency(4.0);
-  //finalTerrain.SetPower(0.125);
-  
-  utils::NoiseMap heightMap;
-  utils::NoiseMapBuilderPlane heightMapBuilder;
-  heightMapBuilder.SetSourceModule(terrainSelector);
-  heightMapBuilder.SetDestNoiseMap(heightMap);
-  heightMapBuilder.SetDestSize(32, 32);
-  heightMapBuilder.SetBounds(m_chunkIndex.x,
-                             m_chunkIndex.x + 1,
-                             m_chunkIndex.y,
-                             m_chunkIndex.y + 1);
-  heightMapBuilder.Build();
-  
-  //First pass - enable/disable voxels using the height map
-  for (int i = 0; i < CHUNK_SIZE; i++) {
-    for (int j = 0; j < CHUNK_SIZE; j++) {
-      //Calculate how many voxels are active in this column
-      GLfloat noise = heightMap.GetValue(i, j);
-      int ht = (CHUNK_SIZE * .5) * noise;
-      ht += CHUNK_SIZE * .5;
-      if (!ht) ht = 1;
-      
-      //Set voxels active/inactive
-      for (int v = 0; v < CHUNK_SIZE; v++) {
-        Voxel &voxel = m_voxels[i][v][j];
-        voxel.setIndex(i, v, j);
-        if (v < ht)
-          voxel.setIsActive(true);
-        else
-          voxel.setIsActive(false);
-      }
-    }
-  }
-  
-  //Second pass -- figure out neighbors so
-  //we can avoid drawing unnecessary vertices,
-  //and assign voxel types
-  for (int i = 0; i < CHUNK_SIZE; i++) {
-    stack.translateX(VOXEL_SIZE);
-    stack.pushMatrix();
-    {
-      for (int j = 0; j < CHUNK_SIZE; j++) {
-        stack.translateZ(VOXEL_SIZE);
-        
-        //Calculate neighbors
-        stack.pushMatrix();
-        {
-          for (int v = 0; v < CHUNK_SIZE; v++) {
-            stack.translateY(VOXEL_SIZE);
-            Voxel &voxel = m_voxels[i][v][j];
-            voxel.setNeighbors(Neighbors::Bottom);
-            if (voxel.getIsActive()) {
-              Neighbors ns = voxel.getNeighbors();
-              ns = ns | Neighbors::Bottom;
-              if (v < CHUNK_SIZE - 1 && m_voxels[i][v + 1][j].getIsActive()) {
-                ns = ns | Neighbors::Top;
-                voxel.setTerrainType(TerrainType::Dirt);
-              } else if (v > 0) {
-                //Grass, unless we are at a low enough altitude
-                voxel.setTerrainType(TerrainType::Grass);
-              } else {
-                voxel.setTerrainType(TerrainType::Water);
-              }
-              
-              if (i > 0 && m_voxels[i - 1][v][j].getIsActive())
-                ns = ns | Neighbors::Left;
-              if (i < CHUNK_SIZE - 1 && m_voxels[i + 1][v][j].getIsActive())
-                ns = ns | Neighbors::Right;
-              if (j > 0 && m_voxels[i][v][j - 1].getIsActive())
-                ns = ns | Neighbors::Back;
-              if (j < CHUNK_SIZE - 1 && m_voxels[i][v][j + 1].getIsActive())
-                ns = ns | Neighbors::Front;
-              
-              voxel.setNeighbors(ns);
-              stack.pushMatrix();
-              {
-                stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
-                addVoxel(voxel, m_voxelBatch, stack);
-              }
-              stack.popMatrix();
-            }
-          }
-        }
-        stack.popMatrix();
-      }
-    }
-    stack.popMatrix();
-  }
-  
-  m_voxelBatch->end();
-  m_generated = true;
-}
-
 void Chunk::draw(Env &env,
                  const glm::vec4 &playerPos,
                  const glm::vec3 &playerLookVec,
@@ -408,7 +265,14 @@ void Chunk::draw(Env &env,
   mv.popMatrix();
 }
 
-GLclampf Chunk::accessibilityAt(int x, int y, int z)
+bool Chunk::isVoxelActiveAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
+{
+  voxel_key_type key = hashCoords(x, y, z);
+  std::map<voxel_key_type, bool>::iterator it = m_voxelMap.find(key);
+  return it != m_voxelMap.end();
+}
+
+GLclampf Chunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
 {
   if (x < 0 || x > CHUNK_SIZE - 1)
     return 1.f;
@@ -417,10 +281,37 @@ GLclampf Chunk::accessibilityAt(int x, int y, int z)
   if (z < 0 || z > CHUNK_SIZE - 1)
     return 1.f;
   
-  if (m_voxels[x][y][z].getIsActive())
+  if (isVoxelActiveAt(x, y, z))
     return .9f;
   
   return 1.f;
+}
+
+//Hash using a z-order curve, where we interleave the bits of each
+//coordinate value
+voxel_key_type Chunk::hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
+{
+  size_t coordBitSz = sizeof(voxel_coord_type) * 8;
+  voxel_key_type hashed = 0;
+  int hashPos = coordBitSz * 3 - 1;
+  voxel_coord_type testVal;
+  for (int pos = coordBitSz - 1; pos >= 0; pos--) {
+    testVal = 1 << pos;
+    if ((x & testVal) > 0)
+      hashed |= 1 << hashPos;
+    
+    hashPos--;
+    if ((y & testVal) > 0)
+      hashed |= 1 << hashPos;
+    
+    hashPos--;
+    if ((z & testVal) > 0)
+      hashed |= 1 << hashPos;
+    
+    hashPos--;
+  }
+  
+  return hashed;
 }
 
 //Safe to invoke on a worker thread
@@ -435,7 +326,11 @@ void Chunk::generateData()
    [-1,1]) to a value in the range [0,31], where each voxel below this
    value is active and each one above is not active.
    Voxels are indexed starting at the bottom left corner of the chunk.
-   */
+   In most cases, we only need a fraction of the total capacity of the chunk -- 
+   all of the empty voxels can be discarded, as well as the totally occluded 
+   ones.  How do we initially store them, however (before determining which ones
+   can be discarded)?
+  */
   m_voxelBatch = new VertexBatch();
   vertex_spec_t &spec = m_voxelBatch->getVertexSpec();
   spec.indexed = true;
@@ -480,7 +375,7 @@ void Chunk::generateData()
   utils::NoiseMapBuilderPlane heightMapBuilder;
   heightMapBuilder.SetSourceModule(terrainSelector);
   heightMapBuilder.SetDestNoiseMap(heightMap);
-  heightMapBuilder.SetDestSize(32, 32);
+  heightMapBuilder.SetDestSize(CHUNK_SIZE, CHUNK_SIZE);
   heightMapBuilder.SetBounds(m_chunkIndex.x,
                              m_chunkIndex.x + 1,
                              m_chunkIndex.y,
@@ -498,12 +393,12 @@ void Chunk::generateData()
       
       //Set voxels active/inactive
       for (int v = 0; v < CHUNK_SIZE; v++) {
-        Voxel &voxel = m_voxels[i][v][j];
-        voxel.setIndex(i, v, j);
-        if (v < ht)
-          voxel.setIsActive(true);
-        else
-          voxel.setIsActive(false);
+        if (v < ht) {
+          //Enable
+          m_voxelMap[hashCoords(i, v, j)] = true;
+        } else {
+          break;
+        }
       }
     }
   }
@@ -511,49 +406,57 @@ void Chunk::generateData()
   //Second pass -- figure out neighbors so
   //we can avoid drawing unnecessary vertices,
   //and assign voxel types
-  for (int i = 0; i < CHUNK_SIZE; i++) {
+  Neighbors ns = Neighbors::Bottom;
+  TerrainType type;
+  GLfloat noise;
+  unsigned ht;
+  for (voxel_coord_type i = 0; i < CHUNK_SIZE; i++) {
     stack.translateX(VOXEL_SIZE);
     stack.pushMatrix();
     {
-      for (int j = 0; j < CHUNK_SIZE; j++) {
+      for (voxel_coord_type j = 0; j < CHUNK_SIZE; j++) {
         stack.translateZ(VOXEL_SIZE);
         
         //Calculate neighbors
         stack.pushMatrix();
         {
-          for (int v = 0; v < CHUNK_SIZE; v++) {
+          for (voxel_coord_type v = 0; v < CHUNK_SIZE; v++) {
             stack.translateY(VOXEL_SIZE);
-            Voxel &voxel = m_voxels[i][v][j];
-            voxel.setNeighbors(Neighbors::Bottom);
-            if (voxel.getIsActive()) {
-              Neighbors ns = voxel.getNeighbors();
-              ns = ns | Neighbors::Bottom;
-              if (v < CHUNK_SIZE - 1 && m_voxels[i][v + 1][j].getIsActive()) {
+            noise = heightMap.GetValue(i, j);
+            ht = (CHUNK_SIZE * .5) * noise;
+            ht += CHUNK_SIZE * .5;
+            if (!ht) ht = 1;
+            if (isVoxelActiveAt(i, v, j)) {
+              ns = Neighbors::Bottom;
+              if (v < CHUNK_SIZE - 1 && isVoxelActiveAt(i, v + 1, j)) {
                 ns = ns | Neighbors::Top;
-                voxel.setTerrainType(TerrainType::Dirt);
+                type = TerrainType::Dirt;
               } else if (v > 0) {
                 //Grass, unless we are at a low enough altitude
-                voxel.setTerrainType(TerrainType::Grass);
+                type = TerrainType::Grass;
               } else {
-                voxel.setTerrainType(TerrainType::Water);
+                type = TerrainType::Water;
               }
               
-              if (i > 0 && m_voxels[i - 1][v][j].getIsActive())
+              if (i > 0 && isVoxelActiveAt(i - 1, v, j))
                 ns = ns | Neighbors::Left;
-              if (i < CHUNK_SIZE - 1 && m_voxels[i + 1][v][j].getIsActive())
+              if (i < CHUNK_SIZE - 1 && isVoxelActiveAt(i + 1, v, j))
                 ns = ns | Neighbors::Right;
-              if (j > 0 && m_voxels[i][v][j - 1].getIsActive())
+              if (j > 0 && isVoxelActiveAt(i, v, j - 1))
                 ns = ns | Neighbors::Back;
-              if (j < CHUNK_SIZE - 1 && m_voxels[i][v][j + 1].getIsActive())
+              if (j < CHUNK_SIZE - 1 && isVoxelActiveAt(i, v, j + 1))
                 ns = ns | Neighbors::Front;
-              
-              voxel.setNeighbors(ns);
+
               stack.pushMatrix();
               {
                 stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
-                addVoxel(voxel, m_voxelBatch, stack);
+                addVoxel(glm::vec3(i, v, j), ns, type, m_voxelBatch, stack);
               }
               stack.popMatrix();
+            } else {
+              //We can't currently have any active voxels above an inactive
+              //one, so break
+              break;
             }
           }
         }
@@ -571,6 +474,9 @@ void Chunk::doGenerate(Chunk *chunk)
 
 bool Chunk::generateDataAsync()
 {
+  if (m_generated)
+    return true;
+  
   if (!m_generatingAsync) {
     m_generatingAsync = true;
     m_generatingFuture = std::async(std::launch::async, Chunk::doGenerate, this);
@@ -585,6 +491,7 @@ bool Chunk::generateDataAsync()
   //Async work finished, generate the vertex buffer
   m_generatingAsync = false;
   m_voxelBatch->end();
+  m_voxelMap.clear();
   m_generated = true;
   return true;
 }

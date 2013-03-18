@@ -47,7 +47,6 @@ void Events::removeListener(EventType type, void *listener)
 
 void Events::playerMoveEvent(const glm::vec4 &old_pos, const glm::vec4 &new_pos)
 {
-  pml_iterator it;
   IPlayerMoveListener *listener;
   for (IPlayerMoveListener *listener : Events::m_pmListeners) {
     listener->onPlayerMove(old_pos, new_pos);

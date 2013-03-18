@@ -33,17 +33,15 @@ private:
   Sky *m_sky;
   
   bool m_hideArms;
-  Arm m_rightArm;
-  Arm m_leftArm;
   
-  ChunkBuffer m_cbuffer;
+  //ChunkBuffer m_cbuffer;
   GLfloat m_heightMap[32][32];
   const int NUM_VOXELS = 32;
   
 public:
   WorldSandboxApp()
-  : m_rightArm(ArmType::Right, 5.0, 5.0, 2.0),
-    m_leftArm(ArmType::Left, 5.0, 5.0, 2.0),
+  : //m_rightArm(ArmType::Right, 5.0, 5.0, 2.0),
+    //m_leftArm(ArmType::Left, 5.0, 5.0, 2.0),
     m_moveDir(Direction::Idle), m_hideArms(true)
   {
     
@@ -88,6 +86,7 @@ private:
   }
   
 protected:
+  Chunk *m_testChunk;
   virtual void init(Env &env)
   {
     OpenGLApp::init(env);
@@ -106,13 +105,15 @@ protected:
     Sky::init();
     
     //Generate the arm geometry
-    m_rightArm.generateGeometry();
-    m_leftArm.generateGeometry();
+    //m_rightArm.generateGeometry();
+    //m_leftArm.generateGeometry();
     
     displayInstructions();
     
     //Generate the initial state of the world
-    m_cbuffer.init();
+    //m_cbuffer.init();
+    m_testChunk = new Chunk(0, 0);
+    m_testChunk->generateDataAsync();
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -210,19 +211,13 @@ protected:
       Sky::getInstance().draw(env);
       
       //Draw the terrain
-      m_cbuffer.draw(env);
-      
-      //Draw a sphere at the origin to test Phong
-      //mv.translateY(200.f);
-      //shaders.preparePhong(env,
-      //                     GL::color(178, 34, 34),
-      //                     GL::color(205, 92, 92),
-      //                     GL::WHITE);
-      //glutSolidSphere(100, 32, 32);
+      //m_cbuffer.draw(env);
+      if (m_testChunk->generateDataAsync())
+        m_testChunk->draw(env, glm::vec4(0,0,0,0), glm::vec3(0,0,0), false, false, 0.f);
       
       if (!m_hideArms) {
-        m_rightArm.draw(env);
-        m_leftArm.draw(env);
+        //m_rightArm.draw(env);
+        //m_leftArm.draw(env);
       }
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
@@ -248,7 +243,7 @@ int main(int argc, char **argv)
 
   return success ? 0 : 1;
   
-#else 
+#else     
   
   WorldSandboxApp app;
   app.setConfineMouseCursor(true);

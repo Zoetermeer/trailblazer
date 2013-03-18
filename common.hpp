@@ -17,6 +17,8 @@
 #define DEG_TO_RAD(d) (d * 0.0174532925)
 #define RAD_TO_DEG(r) (r * (180.0 / M_PI))
 
+typedef unsigned char byte;
+
 #define INIT(type, ptr) \
 ptr = (type*)malloc(sizeof(type)); \
 memset(ptr, 0, sizeof(type));
