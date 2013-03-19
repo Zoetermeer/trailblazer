@@ -15,10 +15,10 @@ glm::vec4 GL::GRAY = glm::vec4(0.5, 0.5, 0.5, 1.0);
 glm::vec4 GL::BLACK = glm::vec4(0.0, 0.0, 0.0, 1.0);
 glm::vec4 GL::YELLOW = glm::vec4(1.0, 1.0, 0.0, 1.0);
 
-void GL::drawText(double x, double y, const char *str)
+void GL::drawText(float x, float y, float z, const char *str)
 {
   int i, imax;
-  glRasterPos2d(x, y);
+  glRasterPos3f(x, y, z);
   imax = 1023;
   for (i = 0; str[i] != '\0' && i < imax; i++) {
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, str[i]);
@@ -114,7 +114,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
         shaders.current().uniform(Uniform::MODELVIEW_MATRIX) = mv.current();
         char str[12];
         sprintf(str, "X = %d", 20 * i);
-        GL::drawText(0.0, 0.0, str);
+        GL::drawText(0.0, 0.0, 0.0, str);
       }
       mv.popMatrix();
       mv.translateX(20.f);
@@ -141,7 +141,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
         shaders.current().uniform(Uniform::MODELVIEW_MATRIX) = mv.current();
         char str[12];
         sprintf(str, "Z = %d", 20 * i);
-        GL::drawText(0.0, 0.0, str);
+        GL::drawText(0.0, 0.0, 0.0, str);
       }
       mv.popMatrix();
       mv.translateZ(20.f);

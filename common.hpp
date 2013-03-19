@@ -187,6 +187,17 @@ public:
   Property z;
 };
 
+typedef struct debug_stats {
+  float fps;
+  unsigned vertices;
+  unsigned chunks;
+  unsigned load_queue_size;
+  unsigned render_queue_size;
+  unsigned voxels;
+  unsigned active_voxels;
+  unsigned drawn_voxels;
+} debug_stats_t;
+
 /* A random real between 0 and 1 */
 double random1();
 double randBetween(double min, double max);

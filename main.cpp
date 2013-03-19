@@ -1,5 +1,6 @@
 #include <string.h>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include "common.hpp"
 #include "matrix-stack.hpp"
@@ -14,6 +15,7 @@
 #include "env.hpp"
 #include "opengl-app.hpp"
 #include "chunk.hpp"
+#include "chunk-buffer.hpp"
 #include "sky.hpp"
 
 #if defined(TEST)
@@ -34,15 +36,11 @@ private:
   
   bool m_hideArms;
   
-  //ChunkBuffer m_cbuffer;
-  GLfloat m_heightMap[32][32];
-  const int NUM_VOXELS = 32;
+  ChunkBuffer m_cbuffer;
   
 public:
   WorldSandboxApp()
-  : //m_rightArm(ArmType::Right, 5.0, 5.0, 2.0),
-    //m_leftArm(ArmType::Left, 5.0, 5.0, 2.0),
-    m_moveDir(Direction::Idle), m_hideArms(true)
+  : m_moveDir(Direction::Idle), m_hideArms(true)
   {
     
   }
@@ -111,9 +109,9 @@ protected:
     displayInstructions();
     
     //Generate the initial state of the world
-    //m_cbuffer.init();
-    m_testChunk = new Chunk(0, 0);
-    m_testChunk->generateDataAsync();
+    m_cbuffer.init();
+    //m_testChunk = new Chunk(0, 0);
+    //m_testChunk->generateDataAsync();
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -211,14 +209,41 @@ protected:
       Sky::getInstance().draw(env);
       
       //Draw the terrain
-      //m_cbuffer.draw(env);
-      if (m_testChunk->generateDataAsync())
-        m_testChunk->draw(env, glm::vec4(0,0,0,0), glm::vec3(0,0,0), false, false, 0.f);
+      m_cbuffer.draw(env);
+      //if (m_testChunk->generateDataAsync())
+      //  m_testChunk->draw(env, glm::vec4(0,0,0,0), glm::vec3(0,0,0), false, false, 0.f);
       
-      if (!m_hideArms) {
-        //m_rightArm.draw(env);
-        //m_leftArm.draw(env);
+      //Draw status text
+      mv.pushMatrix();
+      proj.pushMatrix();
+      {
+        proj.loadIdentity();
+        proj.ortho2d(0, winSz.x, 0, winSz.y, -1, 1);
+        
+        std::stringstream str;
+        debug_stats &stats = env.getStats();
+        double pctActive = ((double)stats.active_voxels / (double)stats.voxels) * 100.0;
+        double pctDrawn = ((double)stats.drawn_voxels / (double)stats.voxels) * 100.0;
+        double vsPerVoxel = ((double)stats.vertices / (double)stats.drawn_voxels);
+        str << "Vertices: " << stats.vertices;
+        str << " Voxels: " << stats.voxels;
+        str << " Active voxels: " << stats.active_voxels << " (" << pctActive << "%)";
+        str << " Drawn voxels: " << stats.drawn_voxels << " (" << pctDrawn << "%)";
+        str << " Avg. verts per voxel: " << vsPerVoxel;
+        shaders.prepareDefault(env, GL::WHITE);
+        GL::drawText(10.f, 20.f, -.5f, str.str().c_str());
+        
+        std::stringstream str2;
+        str2 << "Load queue size: " << stats.load_queue_size;
+        str2 << " Render queue size: " << stats.render_queue_size;
+        GL::drawText(10.f, 40.f, -.5f, str2.str().c_str());
+        
+        std::stringstream fpsStr;
+        fpsStr << "Frames per second: " << stats.fps;
+        GL::drawText(10.f, 60.f, -.5f, fpsStr.str().c_str());
       }
+      proj.popMatrix();
+      mv.popMatrix();
     } catch (OpenGLException *ex) {
       std::cout << "OpenGL Exception: " << ex->what() << std::endl;
       delete ex;

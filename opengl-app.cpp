@@ -94,8 +94,10 @@ void OpenGLApp::run(int winSizeX, int winSizeY, const char *windowTitle)
     }
     
     if (ddelt >= m_msBetweenDraw) {
+      double fps = 1.0 / (t - drawLast);
       drawLast = t;
       Env env(m_shaders);
+      env.getStats().fps = fps;
       draw(env);
     }
   }

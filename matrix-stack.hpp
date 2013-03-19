@@ -139,6 +139,11 @@ public:
   {
     m_cur = glm::perspective(fovy, aspect, zNear, zFar) * m_cur;
   }
+  
+  void ortho2d(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far)
+  {
+    m_cur = glm::ortho(left, right, bottom, top, near, far) * m_cur;
+  }
 };
 
 #endif

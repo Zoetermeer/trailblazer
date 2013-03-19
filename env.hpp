@@ -1,6 +1,7 @@
 #ifndef ENV_H
 #define ENV_H
 
+#include "common.hpp"
 #include "matrix-stack.hpp"
 #include "player.hpp"
 class ShaderSet;
@@ -12,6 +13,7 @@ private:
   ShaderSet *m_shaders;
   Player *m_player;
   glm::vec4 m_sunPos;
+  debug_stats m_stats;
   
 public:
   Env(ShaderSet &shaders)
@@ -22,6 +24,7 @@ public:
     m_proj->loadIdentity();
     
     m_shaders = &shaders;
+    memset(&m_stats, 0, sizeof(debug_stats));
   }
   
   ~Env()
@@ -35,6 +38,7 @@ public:
   MatrixStack &getProj() const { return *m_proj; }
   ShaderSet &getShaders() const { return *m_shaders; }
   Player &getPlayer() const { return *m_player; }
+  debug_stats &getStats() { return m_stats; }
   void setPlayer(Player *p) { m_player = p; };
   glm::vec4 getSunPos() const { return m_sunPos; }
   void setSunPos(glm::vec4 p) { m_sunPos = p; }

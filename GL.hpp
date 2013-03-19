@@ -74,7 +74,7 @@ public:
   
   static void drawBox(GLenum mode) throw (OpenGLException*);
   static void drawFilledWireframeBox(const vec3_t<GLfloat> &lineColor, const vec3_t<GLfloat> &faceColor);
-  static void drawText(double x, double y, const char *str);
+  static void drawText(float x, float y, float z, const char *str);
   static void drawCircle(unsigned segments);
   static void drawSphere(unsigned stacks, unsigned slices) throw (OpenGLException*);
   static void drawPlane() throw (OpenGLException*);
