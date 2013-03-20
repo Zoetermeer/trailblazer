@@ -65,6 +65,10 @@ private:
   size_t m_aoAttribsSize;
   size_t m_vcAttribsSize;
   
+  //Cache the largest index, in
+  //case we need to combine with another vertex batch
+  GLuint m_maxIndex;
+  
 public:
   VertexBatch()
   : m_vaoId(0),
@@ -81,7 +85,8 @@ public:
     m_indexSize(0),
     m_colorSize(0), 
     m_aoAttribsSize(0),
-    m_vcAttribsSize(0)
+    m_vcAttribsSize(0),
+    m_maxIndex(0)
   {
     memset(&m_vertexSpec, 0, sizeof(vertex_spec_t));
   }
@@ -104,6 +109,11 @@ public:
     return m_vertexSpec;
   }
   
+  void setVertexSpec(vertex_spec_t &spec)
+  {
+    m_vertexSpec = spec;
+  }
+  
   GLuint getVaoId() const { return m_vaoId; }
   GLuint getVboId() const { return m_vboId; }
   GLuint getIboId() const { return m_iboId; }
@@ -118,6 +128,8 @@ public:
   void addAOAccessibilityAttrib(float val);
   void end();
   void draw(GLenum drawMode);
+  
+  void combineWith(const VertexBatch &b2);
 };
 
 

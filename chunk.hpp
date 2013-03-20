@@ -13,6 +13,10 @@
 
 //Number of voxels per chunk face
 #define CHUNK_SIZE 128
+
+//Number of parallel tasks we use when generating
+//chunk data
+#define PARALLEL_GENERATORS 4
 //Use a z-order curve to hash active voxels,
 //so we can build up a sparse matrix (using a dictionary
 //of keys).  The key type

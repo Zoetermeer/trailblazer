@@ -4,7 +4,7 @@
 
 void ChunkBuffer::init()
 {
-  //Load a 5x5 grid, centered on the world-space origin
+  //Load a VISIBLE_CHUNKS * VISIBLE_CHUNKS grid, centered on the world-space origin
   int halfDown = floor((GLfloat)VISIBLE_CHUNKS * .5);
   for (int i = -halfDown; i <= halfDown; i++) {
     for (int j = -halfDown; j <= halfDown; j++) {

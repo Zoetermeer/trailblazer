@@ -18,6 +18,12 @@ public:
     
   }
   
+  MatrixStack(const MatrixStack &other)
+  {
+    m_stack = other.m_stack;
+    m_cur = other.m_cur;
+  }
+  
   //Assignable
   glm::mat4 &current()
   {

@@ -85,6 +85,7 @@ private:
   
 protected:
   Chunk *m_testChunk;
+  Chunk *m_testChunk2;
   virtual void init(Env &env)
   {
     OpenGLApp::init(env);
@@ -110,8 +111,10 @@ protected:
     
     //Generate the initial state of the world
     m_cbuffer.init();
-    //m_testChunk = new Chunk(0, 0);
-    //m_testChunk->generateDataAsync();
+//    m_testChunk = new Chunk(0, 0);
+//    m_testChunk->generateDataAsync();
+//    m_testChunk2 = new Chunk(1, 0);
+//    m_testChunk2->generateDataAsync();
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -210,8 +213,11 @@ protected:
       
       //Draw the terrain
       m_cbuffer.draw(env);
-      //if (m_testChunk->generateDataAsync())
-      //  m_testChunk->draw(env, glm::vec4(0,0,0,0), glm::vec3(0,0,0), false, false, 0.f);
+//      if (m_testChunk->generateDataAsync())
+//        m_testChunk->draw(env, glm::vec4(0,0,0,0), glm::vec3(0,0,0), false, false, 0.f);
+//      
+//      if (m_testChunk2->generateDataAsync())
+//        m_testChunk2->draw(env, glm::vec4(0, 0, 0, 0), glm::vec3(0, 0, 0), false, false, 0.f);
       
       //Draw status text
       mv.pushMatrix();

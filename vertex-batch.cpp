@@ -30,6 +30,8 @@ void VertexBatch::add(GLfloat x, GLfloat y, GLfloat z, GLfloat normX, GLfloat no
 void VertexBatch::addIndex(GLuint index)
 {
   m_indices.push_back(index);
+  if (index > m_maxIndex)
+    m_maxIndex = index;
 }
 
 void VertexBatch::addAOAccessibilityAttrib(float val)
@@ -63,6 +65,28 @@ void VertexBatch::add(vertex_t &vertex)
     m_vcAttribs.push_back(vertex.voxel_coordinate.y);
     m_vcAttribs.push_back(vertex.voxel_coordinate.z);
   }
+}
+
+void VertexBatch::combineWith(const VertexBatch &b2)
+{
+  m_verts.insert(m_verts.end(), b2.m_verts.begin(), b2.m_verts.end());
+  m_norms.insert(m_norms.end(), b2.m_norms.begin(), b2.m_norms.end());
+  m_aoAttribs.insert(m_aoAttribs.end(), b2.m_aoAttribs.begin(), b2.m_aoAttribs.end());
+  m_colors.insert(m_colors.end(), b2.m_colors.begin(), b2.m_colors.end());
+  
+  //Increment the indices from b2
+  GLuint max = m_maxIndex;
+  GLuint ind;
+  GLuint offset = m_maxIndex ? m_maxIndex + 1 : 0;
+  for (GLuint bi : b2.m_indices) {
+    ind = bi + offset;
+    m_indices.push_back(ind);
+    if (ind > max)
+      max = ind;
+  }
+  
+  if (max > m_maxIndex)
+    m_maxIndex = max;
 }
 
 void VertexBatch::end()
@@ -179,6 +203,7 @@ void VertexBatch::draw(GLenum drawMode)
   else
     glDrawArrays(drawMode, 0, (m_vertsSize / sizeof(GLfloat)) / 4);
   
+  CHECK_OPENGL_ERROR;
   glBindVertexArray(0);
   glDisableClientState(GL_VERTEX_ARRAY);
 }

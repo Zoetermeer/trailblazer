@@ -292,6 +292,7 @@ void Chunk::draw(Env &env,
   mv.popMatrix();
 }
 
+//This function should be thread-safe
 bool Chunk::isVoxelActiveAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
 {
   voxel_key_type key = hashCoords(x, y, z);
@@ -410,8 +411,9 @@ void Chunk::generateData()
   heightMapBuilder.Build();
   
   //First pass - enable/disable voxels using the height map
-  for (int i = 0; i < CHUNK_SIZE; i++) {
-    for (int j = 0; j < CHUNK_SIZE; j++) {
+  //Can be parallelized if necessary
+  for (voxel_coord_type i = 0; i < CHUNK_SIZE; i++) {
+    for (voxel_coord_type j = 0; j < CHUNK_SIZE; j++) {
       //Calculate how many voxels are active in this column
       GLfloat noise = heightMap.GetValue(i, j);
       int ht = (CHUNK_SIZE * .5) * noise;
@@ -419,7 +421,7 @@ void Chunk::generateData()
       if (!ht) ht = 1;
       
       //Set voxels active/inactive
-      for (int v = 0; v < CHUNK_SIZE; v++) {
+      for (voxel_coord_type v = 0; v < CHUNK_SIZE; v++) {
         if (v < ht) {
           //Enable
           m_activeVoxels++;
@@ -434,65 +436,92 @@ void Chunk::generateData()
   //Second pass -- figure out neighbors so
   //we can avoid drawing unnecessary vertices,
   //and assign voxel types
-  Neighbors ns = Neighbors::Bottom;
-  TerrainType type;
-  GLfloat noise;
-  unsigned ht;
-  for (voxel_coord_type i = 0; i < CHUNK_SIZE; i++) {
-    stack.translateX(VOXEL_SIZE);
-    stack.pushMatrix();
+  const unsigned SEGMENT_SIZE = CHUNK_SIZE / PARALLEL_GENERATORS;
+  std::vector<std::future<VertexBatch*>> tasks;
+  for (unsigned p = 0; p < PARALLEL_GENERATORS; p++) {
+    auto thunk = [=,&heightMap]() -> VertexBatch*
     {
-      for (voxel_coord_type j = 0; j < CHUNK_SIZE; j++) {
-        stack.translateZ(VOXEL_SIZE);
-        
-        //Calculate neighbors
-        stack.pushMatrix();
+      Neighbors ns = Neighbors::Bottom;
+      TerrainType type;
+      GLfloat noise;
+      MatrixStack pstack(stack);
+      VertexBatch *pbatch = new VertexBatch();
+      pbatch->setVertexSpec(m_voxelBatch->getVertexSpec());
+      pbatch->begin();
+      unsigned ht;
+      voxel_coord_type start = SEGMENT_SIZE * p;
+      voxel_coord_type end = (SEGMENT_SIZE * p) + SEGMENT_SIZE;
+      for (voxel_coord_type i = start; i < end; i++) {
+        pstack.pushMatrix();
         {
-          for (voxel_coord_type v = 0; v < CHUNK_SIZE; v++) {
-            stack.translateY(VOXEL_SIZE);
-            noise = heightMap.GetValue(i, j);
-            ht = (CHUNK_SIZE * .5) * noise;
-            ht += CHUNK_SIZE * .5;
-            if (!ht) ht = 1;
-            if (isVoxelActiveAt(i, v, j)) {
-              ns = Neighbors::Bottom;
-              if (v < CHUNK_SIZE - 1 && isVoxelActiveAt(i, v + 1, j)) {
-                ns = ns | Neighbors::Top;
-                type = TerrainType::Dirt;
-              } else if (v > 0) {
-                //Grass, unless we are at a low enough altitude
-                type = TerrainType::Grass;
-              } else {
-                type = TerrainType::Water;
+          pstack.translateX(VOXEL_SIZE * i);
+          for (voxel_coord_type j = 0; j < CHUNK_SIZE; j++) {
+            //Calculate neighbors
+            pstack.pushMatrix();
+            {
+              pstack.translateZ(VOXEL_SIZE * j);
+              for (voxel_coord_type v = 0; v < CHUNK_SIZE; v++) {
+                pstack.translateY(VOXEL_SIZE);
+                noise = heightMap.GetValue(i, j);
+                ht = (CHUNK_SIZE * .5) * noise;
+                ht += CHUNK_SIZE * .5;
+                if (!ht) ht = 1;
+                if (isVoxelActiveAt(i, v, j)) {
+                  ns = Neighbors::Bottom;
+                  if (v < CHUNK_SIZE - 1 && isVoxelActiveAt(i, v + 1, j)) {
+                    ns = ns | Neighbors::Top;
+                    type = TerrainType::Dirt;
+                  } else if (v > 0) {
+                    //Grass, unless we are at a low enough altitude
+                    type = TerrainType::Grass;
+                  } else {
+                    type = TerrainType::Water;
+                  }
+                  
+                  if (i > 0 && isVoxelActiveAt(i - 1, v, j))
+                    ns = ns | Neighbors::Left;
+                  if (i < CHUNK_SIZE - 1 && isVoxelActiveAt(i + 1, v, j))
+                    ns = ns | Neighbors::Right;
+                  if (j > 0 && isVoxelActiveAt(i, v, j - 1))
+                    ns = ns | Neighbors::Back;
+                  if (j < CHUNK_SIZE - 1 && isVoxelActiveAt(i, v, j + 1))
+                    ns = ns | Neighbors::Front;
+                  
+                  pstack.pushMatrix();
+                  {
+                    pstack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
+                    addVoxel(glm::vec3(i, v, j), ns, type, pbatch, pstack);
+                  }
+                  pstack.popMatrix();
+                } else {
+                  //We can't currently have any active voxels above an inactive
+                  //one, so break
+                  break;
+                }
               }
-              
-              if (i > 0 && isVoxelActiveAt(i - 1, v, j))
-                ns = ns | Neighbors::Left;
-              if (i < CHUNK_SIZE - 1 && isVoxelActiveAt(i + 1, v, j))
-                ns = ns | Neighbors::Right;
-              if (j > 0 && isVoxelActiveAt(i, v, j - 1))
-                ns = ns | Neighbors::Back;
-              if (j < CHUNK_SIZE - 1 && isVoxelActiveAt(i, v, j + 1))
-                ns = ns | Neighbors::Front;
-
-              stack.pushMatrix();
-              {
-                stack.scale(VOXEL_SIZE * .5f, VOXEL_SIZE * .5f, VOXEL_SIZE * .5f);
-                addVoxel(glm::vec3(i, v, j), ns, type, m_voxelBatch, stack);
-              }
-              stack.popMatrix();
-            } else {
-              //We can't currently have any active voxels above an inactive
-              //one, so break
-              break;
             }
+            pstack.popMatrix();
           }
         }
-        stack.popMatrix();
+        pstack.popMatrix();
       }
-    }
-    stack.popMatrix();
+      
+      return pbatch;
+    };
+    
+    //Spawn a future for this task
+    auto task = std::async(std::launch::async, thunk);
+    tasks.push_back(std::move(task));
   }
+  
+  //Combine results
+  std::for_each(tasks.begin(), tasks.end(), [this](std::future<VertexBatch*> &ft)
+    {
+      ft.wait();
+      VertexBatch *taskBatch = ft.get();
+      m_voxelBatch->combineWith(*taskBatch);
+      delete taskBatch;
+    });
 }
 
 void Chunk::doGenerate(Chunk *chunk)
