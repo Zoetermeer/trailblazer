@@ -1,15 +1,6 @@
 #ifndef VOXEL_CHUNK_H
 #define VOXEL_CHUNK_H
 
-#include <glm/glm.hpp>
-#include <vector>
-#include <future>
-#include <map>
-#include "scene-object.hpp"
-#include "env.hpp"
-#include "vertex-batch.hpp"
-#include "events.hpp"
-#include "process.hpp"
 #include "chunk.hpp"
 
 class CubeChunk : public Chunk {

@@ -7,6 +7,7 @@
 #include "vertex-batch.hpp"
 #include "events.hpp"
 #include "process.hpp"
+#include "noiseutils.h"
 #include <vector>
 #include <future>
 #include <map>
@@ -70,6 +71,7 @@ inline Neighbors operator|(Neighbors a, Neighbors b)
 //Abstract class
 class Chunk {
 private:
+  utils::NoiseMap m_heightMap;
   bool m_generated;
   std::map<voxel_key_type, bool> m_voxelMap;
   VertexBatch *m_vertexBuffer;
@@ -140,8 +142,9 @@ public:
   
 protected:
   virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);  
-  virtual void generateData() = 0;
+  virtual void generateData();
   voxel_key_type hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
+  GLfloat heightAt(int x, int z);
   
 public:
   static void doGenerate(Chunk *chunk);

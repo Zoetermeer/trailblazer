@@ -281,7 +281,7 @@ void CubeChunk::draw(Env &env,
   GLfloat offset = VOXELS_PER_CHUNK * VOXEL_SIZE;
   mv.pushMatrix();
   {
-    mv.translate(index.x * offset, 0.f, index.y * offset);
+    mv.translate(index.x * offset, 0.f, index.z * offset);
     glm::vec4 groundColor = containsPlayer() ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
     shaders.prepareHemisphereAO(env,
                                 glm::vec4(.8f, .8f, .8f, 1.f),
@@ -311,6 +311,9 @@ GLclampf CubeChunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxe
 //Safe to invoke on a worker thread
 void CubeChunk::generateData()
 {
+  //Generate the height map
+  Chunk::generateData();
+  
   /* Generation strategy:
    We use the chunk's indices as bounds.
    So for any given chunk, we use noise values in the interval
@@ -341,44 +344,12 @@ void CubeChunk::generateData()
   stack.translate(-offset, -offset, offset);
   //Should now be at the origin of voxel (0,0,0)
   
-  noise::module::RidgedMulti mountain;
-  noise::module::Billow baseFlat;
-  baseFlat.SetFrequency(2.0);
-  noise::module::ScaleBias flatTerrain;
-  flatTerrain.SetSourceModule(0, baseFlat);
-  flatTerrain.SetScale(0.125);
-  flatTerrain.SetBias(-0.75);
-  
-  //Perlin to control which type of terrain to generate
-  noise::module::Perlin terrainType;
-  terrainType.SetOctaveCount(1);
-  terrainType.SetFrequency(0.2);
-  terrainType.SetPersistence(0.25);
-  
-  noise::module::Select terrainSelector;
-  terrainSelector.SetSourceModule(0, flatTerrain);
-  terrainSelector.SetSourceModule(1, mountain);
-  terrainSelector.SetControlModule(terrainType);
-  terrainSelector.SetBounds(0.0, 1000.0);
-  terrainSelector.SetEdgeFalloff(0.6);
-  
-  utils::NoiseMap heightMap;
-  utils::NoiseMapBuilderPlane heightMapBuilder;
-  heightMapBuilder.SetSourceModule(terrainSelector);
-  heightMapBuilder.SetDestNoiseMap(heightMap);
-  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK);
-  heightMapBuilder.SetBounds(index.x,
-                             index.x + 1,
-                             index.y,
-                             index.y + 1);
-  heightMapBuilder.Build();
-  
   //First pass - enable/disable voxels using the height map
   //Can be parallelized if necessary
   for (voxel_coord_type i = 0; i < VOXELS_PER_CHUNK; i++) {
     for (voxel_coord_type j = 0; j < VOXELS_PER_CHUNK; j++) {
       //Calculate how many voxels are active in this column
-      GLfloat noise = heightMap.GetValue(i, j);
+      GLfloat noise = this->heightAt(i, j);
       int ht = (VOXELS_PER_CHUNK * .5) * noise;
       ht += VOXELS_PER_CHUNK * .5;
       if (!ht) ht = 1;
@@ -402,7 +373,7 @@ void CubeChunk::generateData()
   const unsigned SEGMENT_SIZE = VOXELS_PER_CHUNK / PARALLEL_GENERATORS;
   std::vector<std::future<VertexBatch*>> tasks;
   for (unsigned p = 0; p < PARALLEL_GENERATORS; p++) {
-    auto thunk = [=,&heightMap]() -> VertexBatch*
+    auto thunk = [=]() -> VertexBatch*
     {
       Neighbors ns = Neighbors::Bottom;
       TerrainType type;
@@ -425,7 +396,7 @@ void CubeChunk::generateData()
               pstack.translateZ(VOXEL_SIZE * j);
               for (voxel_coord_type v = 0; v < VOXELS_PER_CHUNK; v++) {
                 pstack.translateY(VOXEL_SIZE);
-                noise = heightMap.GetValue(i, j);
+                noise = this->heightAt(i, j);
                 ht = (VOXELS_PER_CHUNK * .5) * noise;
                 ht += VOXELS_PER_CHUNK * .5;
                 if (!ht) ht = 1;

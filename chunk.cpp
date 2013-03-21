@@ -4,7 +4,6 @@
 #include "GL.hpp"
 #include "sky.hpp"
 #include <noise.h>
-#include "noiseutils.h"
 #include <chrono>
 
 //This function should be thread-safe
@@ -55,6 +54,46 @@ voxel_key_type Chunk::hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_c
   }
   
   return hashed;
+}
+
+GLfloat Chunk::heightAt(int x, int z)
+{
+  return m_heightMap.GetValue(x, z);
+}
+
+//Generate the height map and stash
+void Chunk::generateData()
+{
+  noise::module::RidgedMulti mountain;
+  noise::module::Billow baseFlat;
+  baseFlat.SetFrequency(2.0);
+  noise::module::ScaleBias flatTerrain;
+  flatTerrain.SetSourceModule(0, baseFlat);
+  flatTerrain.SetScale(0.125);
+  flatTerrain.SetBias(-0.75);
+  
+  //Perlin to control which type of terrain to generate
+  noise::module::Perlin terrainType;
+  terrainType.SetOctaveCount(1);
+  terrainType.SetFrequency(0.2);
+  terrainType.SetPersistence(0.25);
+  
+  noise::module::Select terrainSelector;
+  terrainSelector.SetSourceModule(0, flatTerrain);
+  terrainSelector.SetSourceModule(1, mountain);
+  terrainSelector.SetControlModule(terrainType);
+  terrainSelector.SetBounds(0.0, 1000.0);
+  terrainSelector.SetEdgeFalloff(0.6);
+  
+  utils::NoiseMapBuilderPlane heightMapBuilder;
+  heightMapBuilder.SetSourceModule(terrainSelector);
+  heightMapBuilder.SetDestNoiseMap(m_heightMap);
+  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK);
+  heightMapBuilder.SetBounds(m_chunkIndex.x,
+                             m_chunkIndex.x + 1,
+                             m_chunkIndex.z,
+                             m_chunkIndex.z + 1);
+  heightMapBuilder.Build();
 }
 
 void Chunk::doGenerate(Chunk *chunk)
