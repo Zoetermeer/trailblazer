@@ -16,7 +16,7 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 128
+#define VOXELS_PER_CHUNK 240
 
 //Size (in GL units) of a voxel face
 #define VOXEL_SIZE 5.f
@@ -146,6 +146,7 @@ protected:
   voxel_key_type hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
   GLfloat heightAt(int x, int z);
   
+  
 public:
   static void doGenerate(Chunk *chunk);
   bool generateDataAsync();
@@ -154,7 +155,7 @@ public:
                     const glm::vec3 &playerLookVec,
                     bool isHeadlightOn,
                     bool exploding,
-                    GLclampf explosionTime) = 0;
+                    GLclampf explosionTime);
 };
 
 #endif

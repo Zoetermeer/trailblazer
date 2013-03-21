@@ -258,41 +258,6 @@ void CubeChunk::addCube(const glm::vec3 &ind,
   }
 }
 
-void CubeChunk::draw(Env &env,
-                     const glm::vec4 &playerPos,
-                     const glm::vec3 &playerLookVec,
-                     bool isHeadlightOn,
-                     bool exploding,
-                     GLclampf explosionTime)
-{
-  if (!isGenerated())
-    return;
-  
-  //Update environment stats
-  debug_stats &stats = env.getStats();
-  stats.vertices += getVertexCount();
-  stats.voxels += VOXELS_PER_CHUNK * VOXELS_PER_CHUNK * VOXELS_PER_CHUNK;
-  stats.active_voxels += getActiveVoxels();
-  stats.drawn_voxels += getDrawnVoxels();
-  
-  glm::ivec3 index = getIndex();
-  MatrixStack &mv = env.getMV();
-  ShaderSet &shaders = env.getShaders();
-  GLfloat offset = VOXELS_PER_CHUNK * VOXEL_SIZE;
-  mv.pushMatrix();
-  {
-    mv.translate(index.x * offset, 0.f, index.z * offset);
-    glm::vec4 groundColor = containsPlayer() ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
-    shaders.prepareHemisphereAO(env,
-                                glm::vec4(.8f, .8f, .8f, 1.f),
-                                groundColor,
-                                exploding,
-                                explosionTime);
-    getVertexBuffer()->draw(GL_TRIANGLES);
-  }
-  mv.popMatrix();
-}
-
 GLclampf CubeChunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
 {
   if (x < 0 || x > VOXELS_PER_CHUNK - 1)
@@ -349,10 +314,7 @@ void CubeChunk::generateData()
   for (voxel_coord_type i = 0; i < VOXELS_PER_CHUNK; i++) {
     for (voxel_coord_type j = 0; j < VOXELS_PER_CHUNK; j++) {
       //Calculate how many voxels are active in this column
-      GLfloat noise = this->heightAt(i, j);
-      int ht = (VOXELS_PER_CHUNK * .5) * noise;
-      ht += VOXELS_PER_CHUNK * .5;
-      if (!ht) ht = 1;
+      int ht = this->heightAt(i, j);
       
       //Set voxels active/inactive
       for (voxel_coord_type v = 0; v < VOXELS_PER_CHUNK; v++) {

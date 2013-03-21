@@ -16,6 +16,7 @@
 #include "opengl-app.hpp"
 #include "chunk-buffer.hpp"
 #include "cube-chunk.hpp"
+#include "poly-chunk.hpp"
 #include "sky.hpp"
 
 #if defined(TEST)
@@ -36,7 +37,7 @@ private:
   
   bool m_hideArms;
   
-  ChunkBuffer<CubeChunk> m_cbuffer;
+  ChunkBuffer<PolyChunk> m_cbuffer;
   
 public:
   WorldSandboxApp()
@@ -205,7 +206,7 @@ protected:
       mv.syncToGlStack(GL_MODELVIEW);
       
       shaders.prepareDefault(env, GL::GRAY);
-      GL::drawPlane();
+      //GL::drawPlane();
       shaders.current().uniform(Uniform::COLOR) = GL::RED;
       GL::drawAxes(env);
       

@@ -58,7 +58,12 @@ voxel_key_type Chunk::hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_c
 
 GLfloat Chunk::heightAt(int x, int z)
 {
-  return m_heightMap.GetValue(x, z);
+  GLfloat noise = m_heightMap.GetValue(x, z);
+  int ht = (VOXELS_PER_CHUNK * .5) * noise;
+  ht += VOXELS_PER_CHUNK * .5;
+  if (!ht) ht = 1;
+  
+  return ht;
 }
 
 //Generate the height map and stash
@@ -123,6 +128,40 @@ bool Chunk::generateDataAsync()
   m_voxelMap.clear();
   m_generated = true;
   return true;
+}
+
+void Chunk::draw(Env &env,
+                 const glm::vec4 &playerPos,
+                 const glm::vec3 &playerLookVec,
+                 bool isHeadlightOn,
+                 bool exploding,
+                 GLclampf explosionTime)
+{
+  if (!isGenerated())
+    return;
+  
+  //Update environment stats
+  debug_stats &stats = env.getStats();
+  stats.vertices += m_vertexCount;
+  stats.voxels += VOXELS_PER_CHUNK * VOXELS_PER_CHUNK * VOXELS_PER_CHUNK;
+  stats.active_voxels += m_activeVoxels;
+  stats.drawn_voxels += m_drawnVoxels;
+  
+  MatrixStack &mv = env.getMV();
+  ShaderSet &shaders = env.getShaders();
+  GLfloat offset = VOXELS_PER_CHUNK * VOXEL_SIZE;
+  mv.pushMatrix();
+  {
+    mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.z * offset);
+    glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
+    shaders.prepareHemisphereAO(env,
+                                glm::vec4(.8f, .8f, .8f, 1.f),
+                                groundColor,
+                                exploding,
+                                explosionTime);
+    getVertexBuffer()->draw(GL_TRIANGLES);
+  }
+  mv.popMatrix();
 }
 
 

@@ -25,14 +25,6 @@ protected:
                MatrixStack &stack);
   
   virtual void generateData();
-  
-public:
-  virtual void draw(Env &env,
-                    const glm::vec4 &playerPos,
-                    const glm::vec3 &playerLookVec,
-                    bool isHeadlightOn,
-                    bool exploding,
-                    GLclampf explosionTime);
 };
 
 #endif
