@@ -37,16 +37,15 @@ glm::vec3 PolyChunk::vertexNormal(byte localIndex, glm::vec3 quadNorm, voxel_coo
                             normalForQuad(vx, vz + 1) +
                             quadNorm);
     case 3:
-      return glm::normalize(quadNorm +
-                            normalForQuad(vx, vz + 1) +
-                            normalForQuad(vx + 1, vz + 1) +
-                            normalForQuad(vx + 1, vz));
-    default:
       return glm::normalize(normalForQuad(vx, vz - 1) +
                             quadNorm +
                             normalForQuad(vx + 1, vz) +
                             normalForQuad(vx + 1, vz - 1));
-      break;
+    default:
+      return glm::normalize(quadNorm +
+                            normalForQuad(vx, vz + 1) +
+                            normalForQuad(vx + 1, vz + 1) +
+                            normalForQuad(vx + 1, vz));
   }
 }
 
@@ -77,6 +76,9 @@ void PolyChunk::generateData()
   //Do the naive thing first (vertex repetition without indexing)
   for (voxel_coord_type i = 0; i < VOXELS_PER_CHUNK; i++) {
     for (voxel_coord_type j = 0; j < VOXELS_PER_CHUNK; j++) {
+      incrActiveVoxels(1);
+      incrDrawnVoxels(1);
+      
       glm::vec3 vc(i, 0, j);
       GLfloat ht1 = heightAt(i, j);
       GLfloat ht2 = heightAt(i, j + 1);

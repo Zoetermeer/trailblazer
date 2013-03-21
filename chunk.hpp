@@ -16,15 +16,15 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 250
+#define VOXELS_PER_CHUNK 64
 
 //Size (in GL units) of a voxel face
-#define VOXEL_SIZE 5.f
+#define VOXEL_SIZE 25.f
 
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side, 2 in front, 2 behind.
-#define VISIBLE_CHUNKS 3
+#define VISIBLE_CHUNKS 9
 
 //Use a z-order curve to hash active voxels,
 //so we can build up a sparse matrix (using a dictionary
