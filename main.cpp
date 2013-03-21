@@ -14,8 +14,8 @@
 #include "exception.hpp"
 #include "env.hpp"
 #include "opengl-app.hpp"
-#include "chunk.hpp"
 #include "chunk-buffer.hpp"
+#include "cube-chunk.hpp"
 #include "sky.hpp"
 
 #if defined(TEST)
@@ -36,7 +36,7 @@ private:
   
   bool m_hideArms;
   
-  ChunkBuffer m_cbuffer;
+  ChunkBuffer<CubeChunk> m_cbuffer;
   
 public:
   WorldSandboxApp()
