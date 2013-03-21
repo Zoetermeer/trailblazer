@@ -14,6 +14,42 @@ void PolyChunk::addCube(const glm::vec3 &ind,
   
 }
 
+glm::vec3 PolyChunk::normalForQuad(voxel_coord_type x, voxel_coord_type z)
+{
+  glm::vec4 v1(x * VOXEL_SIZE, heightAt(x, z), z * VOXEL_SIZE, 1.f);
+  glm::vec4 v2(x * VOXEL_SIZE, heightAt(x, z + 1), (z + 1) * VOXEL_SIZE, 1.f);
+  glm::vec4 v3((x + 1) * VOXEL_SIZE, heightAt(x + 1, z + 1), (z + 1) * VOXEL_SIZE, 1.f);
+  return calc_normal(v1, v2, v3);
+}
+
+glm::vec3 PolyChunk::vertexNormal(byte localIndex, glm::vec3 quadNorm, voxel_coord_type vx, voxel_coord_type vz)
+{
+  switch (localIndex)
+  {
+    case 1:
+      return glm::normalize(normalForQuad(vx - 1, vz - 1) +
+                            normalForQuad(vx - 1, vz) +
+                            quadNorm +
+                            normalForQuad(vx, vz - 1));
+    case 2:
+      return glm::normalize(normalForQuad(vx - 1, vz) +
+                            normalForQuad(vx - 1, vz + 1) +
+                            normalForQuad(vx, vz + 1) +
+                            quadNorm);
+    case 3:
+      return glm::normalize(quadNorm +
+                            normalForQuad(vx, vz + 1) +
+                            normalForQuad(vx + 1, vz + 1) +
+                            normalForQuad(vx + 1, vz));
+    default:
+      return glm::normalize(normalForQuad(vx, vz - 1) +
+                            quadNorm +
+                            normalForQuad(vx + 1, vz) +
+                            normalForQuad(vx + 1, vz - 1));
+      break;
+  }
+}
+
 void PolyChunk::generateData()
 {
   Chunk::generateData();
@@ -32,7 +68,7 @@ void PolyChunk::generateData()
   auto vb = new VertexBatch();
   setVertexBuffer(vb);
   vertex_spec_t &spec = vb->getVertexSpec();
-  spec.indexed = false;
+  spec.indexed = true;
   spec.use_ao = true;
   spec.use_color = true;
   spec.use_voxel_coordinates = true;
@@ -46,36 +82,35 @@ void PolyChunk::generateData()
       GLfloat ht2 = heightAt(i, j + 1);
       GLfloat ht3 = heightAt(i + 1, j);
       GLfloat ht4 = heightAt(i + 1, j + 1);
-      //std::cout << "Height for (" << i << "," << j << ":" << ht1 << "," << ht2 << "," << ht3 << "," << ht4 << std::endl;
       
       vertex_t v1 = new_vertex(i * VOXEL_SIZE, ht1, j * VOXEL_SIZE);
-      vertex_t v2a = new_vertex(i * VOXEL_SIZE, ht2, (j + 1) * VOXEL_SIZE);
-      vertex_t v2b = new_vertex();
-      v2b.position = v2a.position;
-      vertex_t v3a = new_vertex((i + 1) * VOXEL_SIZE, ht3, j * VOXEL_SIZE);
-      vertex_t v3b = new_vertex();
-      v3b.position = v3a.position;
+      vertex_t v2 = new_vertex(i * VOXEL_SIZE, ht2, (j + 1) * VOXEL_SIZE);
+      vertex_t v3 = new_vertex((i + 1) * VOXEL_SIZE, ht3, j * VOXEL_SIZE);
       vertex_t v4 = new_vertex((i + 1) * VOXEL_SIZE, ht4, (j + 1) * VOXEL_SIZE);
       
-      glm::vec3 anormal = calc_normal(v1, v2a, v3a);
-      glm::vec3 bnormal = calc_normal(v2b, v4, v3b);
-      v1.normal = v2a.normal = v3a.normal = anormal;
-      v2b.normal = v4.normal = v3b.normal = bnormal;
+      //Calculate each vertex's normal as a function of its neighboring quads
+      glm::vec3 quadNorm = calc_normal(v1, v2, v3);
+      v1.normal = vertexNormal(1, quadNorm, i, j);
+      v2.normal = vertexNormal(2, quadNorm, i, j);
+      v3.normal = vertexNormal(3, quadNorm, i, j);
+      v4.normal = vertexNormal(4, quadNorm, i, j);
       
-      //For now, make the land a uniform muted green
-      v1.color = v2a.color = v3a.color = v2b.color = v4.color = v3b.color = GL::color(0, 100, 0);
-      v1.ao_accessibility = v2a.ao_accessibility = v3a.ao_accessibility = 1.f;
-      v2b.ao_accessibility = v4.ao_accessibility = v3b.ao_accessibility = 1.f;
-      v1.voxel_coordinate = v2a.voxel_coordinate = v3a.voxel_coordinate = vc;
-      v2b.voxel_coordinate = v4.voxel_coordinate = v3b.voxel_coordinate = vc;
+      v1.color = v2.color = v3.color = v4.color = GL::color(0, 100, 0);
+      v1.ao_accessibility = v2.ao_accessibility = v3.ao_accessibility = v4.ao_accessibility = 1.f;
+      v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = vc;
       
       vb->add(v1);
-      vb->add(v2a);
-      vb->add(v3a);
-      vb->add(v2b);
+      vb->add(v2);
+      vb->add(v3);
       vb->add(v4);
-      vb->add(v3b);
-      incrVertexCount(6);
+      
+      vb->addIndex(v1.index);
+      vb->addIndex(v2.index);
+      vb->addIndex(v3.index);
+      vb->addIndex(v2.index);
+      vb->addIndex(v4.index);
+      vb->addIndex(v3.index);
+      incrVertexCount(4);
     }
   }
 }

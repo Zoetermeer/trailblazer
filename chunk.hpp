@@ -16,7 +16,7 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 240
+#define VOXELS_PER_CHUNK 250
 
 //Size (in GL units) of a voxel face
 #define VOXEL_SIZE 5.f

@@ -16,6 +16,10 @@ public:
     
   }
   
+private:
+  glm::vec3 normalForQuad(voxel_coord_type x, voxel_coord_type z);
+  glm::vec3 vertexNormal(byte localIndex, glm::vec3 quadNorm, voxel_coord_type vx, voxel_coord_type vz);
+  
 protected:
   virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
   void addCube(const glm::vec3 &ind,

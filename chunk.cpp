@@ -93,7 +93,7 @@ void Chunk::generateData()
   utils::NoiseMapBuilderPlane heightMapBuilder;
   heightMapBuilder.SetSourceModule(terrainSelector);
   heightMapBuilder.SetDestNoiseMap(m_heightMap);
-  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK);
+  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK + 1, VOXELS_PER_CHUNK + 1);
   heightMapBuilder.SetBounds(m_chunkIndex.x,
                              m_chunkIndex.x + 1,
                              m_chunkIndex.z,

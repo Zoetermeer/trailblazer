@@ -43,9 +43,14 @@ inline vertex_t new_vertex(GLfloat x, GLfloat y, GLfloat z, const glm::mat4 &m)
   return new_vertex(m * glm::vec4(x, y, z, 1.f));
 }
 
+inline glm::vec3 calc_normal(const glm::vec4 &a, const glm::vec4 &b, const glm::vec4 &c)
+{
+  return glm::normalize(glm::cross(glm::vec3(b - a), glm::vec3(c - a)));
+}
+
 inline glm::vec3 calc_normal(const vertex_t &a, const vertex_t &b, const vertex_t &c)
 {
-  return glm::normalize(glm::cross(glm::vec3(b.position - a.position), glm::vec3(c.position - a.position)));
+  return calc_normal(a.position, b.position, c.position);
 }
 
 #endif
