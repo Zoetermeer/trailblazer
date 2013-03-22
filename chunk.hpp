@@ -16,10 +16,10 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 64
+#define VOXELS_PER_CHUNK 128
 
 //Size (in GL units) of a voxel face
-#define VOXEL_SIZE 25.f
+#define VOXEL_SIZE .5f
 
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
@@ -137,15 +137,14 @@ public:
     const GLfloat FACTOR = VOXELS_PER_CHUNK * VOXELS_PER_CHUNK;
     glm::vec3 v(wc.x / FACTOR, wc.y / FACTOR, wc.z / FACTOR);
     
-    return glm::ivec3(ceil(wc.x / FACTOR) - 1, ceil(wc.y / FACTOR) - 1, ceil(wc.z / FACTOR) - 1);
+    return glm::ivec3(ceil(v.x) - 1, ceil(v.y) - 1, ceil(v.z) - 1);
   }
   
 protected:
   virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);  
   virtual void generateData();
   voxel_key_type hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
-  GLfloat heightAt(int x, int z);
-  
+  virtual GLfloat heightAt(int x, int z);
   
 public:
   static void doGenerate(Chunk *chunk);

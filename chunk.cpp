@@ -59,11 +59,14 @@ voxel_key_type Chunk::hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_c
 GLfloat Chunk::heightAt(int x, int z)
 {
   GLfloat noise = m_heightMap.GetValue(x, z);
-  int ht = (VOXELS_PER_CHUNK * .5) * noise;
-  ht += VOXELS_PER_CHUNK * .5;
-  if (!ht) ht = 1;
-  
-  return ht;
+  noise += 1.f;
+  return noise * VOXELS_PER_CHUNK * .04;
+//  int ht = (VOXELS_PER_CHUNK * .5) * noise;
+//  ht += VOXELS_PER_CHUNK * .5;
+//  if (!ht) ht = 1;
+//  
+//  return ht;
+  return noise;
 }
 
 //Generate the height map and stash

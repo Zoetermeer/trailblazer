@@ -6,9 +6,9 @@ TESTOBJS = $(OBJS) $(patsubst %.cpp, %.o, $(wildcard tests/*.cpp))
 GLFW = ./glfw-2.7.7
 LIBNOISE_SRCS = ./libnoise-1.0.0/noise/src
 CXX = c++
-CPPFLAGS = -g -O0 -I./glm-0.9.4.2 -I./glfw-2.7.7/include -I./libnoise-1.0.0/noise/src -std=c++11 -stdlib=libc++
-TESTFLAGS = -DTEST
-LDFLAGS = -L. -stdlib=libc++ -lglfw -lnoise -framework GLUT -framework Cocoa -framework OpenGL -framework IOKit
+CPPFLAGS = -g -O0 -DRUN_TESTS -DGTEST_USE_OWN_TR1_TUPLE=1 -I$(GTEST)/include -I./glm-0.9.4.2 -I./glfw-2.7.7/include -I./libnoise-1.0.0/noise/src -std=c++11 -stdlib=libc++
+LDFLAGS = -L. -L./$(GTEST)/ -stdlib=libc++ -lgtest -lglfw -lnoise -framework GLUT -framework Cocoa -framework OpenGL -framework IOKit
+GTEST = ./gtest-1.6.0
 
 all: $(OBJS)
 	make cocoa --directory=$(GLFW)
@@ -18,10 +18,18 @@ all: $(OBJS)
 	$(CXX) $(LDFLAGS) -o world $(OBJS)
 
 test_compile: $(SRCS) $(TESTSRCS)
+	make cocoa --directory=$(GLFW)
+	cp $(GLFW)/lib/cocoa/libglfw.a .;
+	make --directory=$(LIBNOISE_SRCS)
+	cp $(LIBNOISE_SRCS)/libnoise.a .;
 	$(CXX) -c $(CPPFLAGS) $(TESTFLAGS) $^
 
-test: test_compile $(TESTOBJS)
-	$(CXX) $(LDFLAGS) -ldl -lcppunit -o test $(TESTOBJS)
+test: $(TESTOBJS)
+	make cocoa --directory=$(GLFW)
+	cp $(GLFW)/lib/cocoa/libglfw.a .;
+	make --directory=$(LIBNOISE_SRCS)
+	cp $(LIBNOISE_SRCS)/libnoise.a .;
+	$(CXX) $(LDFLAGS) -lgtest -o test $(TESTOBJS)
 
 check:
 	${MAKE} test

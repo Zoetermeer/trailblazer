@@ -106,6 +106,7 @@ public:
   {
     m_playerPos = new_pos;
     glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(new_pos));
+    std::cout << "Player in chunk: " << chunkCoords.x << "<" << chunkCoords.y << "<" << chunkCoords.z << std::endl;
     if (chunkCoords.x != m_curPlayerChunkCoords.x || chunkCoords.z != m_curPlayerChunkCoords.z) {
       //Set the new chunk as the player's 'current' one
       TChunk *newCh = this->chunkAt(chunkCoords.x, chunkCoords.z);

@@ -19,10 +19,8 @@
 #include "poly-chunk.hpp"
 #include "sky.hpp"
 
-#if defined(TEST)
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#if defined(RUN_TESTS)
+#include "tests/chunk-tests.hpp"
 #endif
 
 const int DEFAULT_WIDTH = 1600;
@@ -263,23 +261,14 @@ protected:
 
 int main(int argc, char **argv)
 {
-#if defined(TEST)
-  
-  printf("RUNNING TESTS\n");
-  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
-  CppUnit::TextUi::TestRunner runner;
-  runner.addTest(suite);
-  
-  runner.setOutputter(new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool success = runner.run();
-
-  return success ? 0 : 1;
-  
-#else     
+#if defined(RUN_TESTS)
+  ::testing::InitGoogleTest(&argc, argv);
+  if (RUN_ALL_TESTS()) {
+    return 1;
+  }
+#endif
   
   WorldSandboxApp app;
   app.setConfineMouseCursor(true);
   app.run(DEFAULT_WIDTH, DEFAULT_HEIGHT, "World Sandbox");
-
-#endif
 }

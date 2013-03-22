@@ -5,15 +5,6 @@ GLclampf PolyChunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxe
   return 1.f;
 }
 
-void PolyChunk::addCube(const glm::vec3 &ind,
-                        const Neighbors &ns,
-                        const TerrainType &type,
-                        VertexBatch *batch,
-                        MatrixStack &stack)
-{
-  
-}
-
 glm::vec3 PolyChunk::normalForQuad(voxel_coord_type x, voxel_coord_type z)
 {
   glm::vec4 v1(x * VOXEL_SIZE, heightAt(x, z), z * VOXEL_SIZE, 1.f);
@@ -97,7 +88,8 @@ void PolyChunk::generateData()
       v3.normal = vertexNormal(3, quadNorm, i, j);
       v4.normal = vertexNormal(4, quadNorm, i, j);
       
-      v1.color = v2.color = v3.color = v4.color = GL::color(0, 100, 0);
+      glm::vec4 color = containsPlayer() ? GL::RED : GL::color(0, 100, 0);
+      v1.color = v2.color = v3.color = v4.color = color;
       v1.ao_accessibility = v2.ao_accessibility = v3.ao_accessibility = v4.ao_accessibility = 1.f;
       v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = vc;
       

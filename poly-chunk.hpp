@@ -21,13 +21,7 @@ private:
   glm::vec3 vertexNormal(byte localIndex, glm::vec3 quadNorm, voxel_coord_type vx, voxel_coord_type vz);
   
 protected:
-  virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
-  void addCube(const glm::vec3 &ind,
-               const Neighbors &ns,
-               const TerrainType &type,
-               VertexBatch *batch,
-               MatrixStack &stack);
-  
+  virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);  
   virtual void generateData();
 };
 
