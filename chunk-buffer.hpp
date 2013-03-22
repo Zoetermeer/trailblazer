@@ -12,6 +12,7 @@
 template <class TChunk>
 class ChunkBuffer : public IPlayerMoveListener, public IPlayerLookListener, public IKeyDownListener, public Process, public SceneObject {
 private:
+  bool m_initialLoad;
   glm::ivec3 m_curPlayerChunkCoords;
   std::vector<TChunk*> m_loadQueue;
   std::vector<TChunk*> m_visibleQueue;
@@ -24,7 +25,7 @@ private:
   
 public:
   ChunkBuffer()
-  : m_curPlayerChunk(NULL), m_exploding(false), m_explosionTime(0.f)
+  : m_initialLoad(false), m_curPlayerChunk(NULL), m_exploding(false), m_explosionTime(0.f)
   {
     Events::addListener((IPlayerMoveListener*)this);
     Events::addListener((IPlayerLookListener*)this);
@@ -35,8 +36,16 @@ public:
   ~ChunkBuffer()
   {
     ProcessList::remove(this);
-    Events::removeListener(EventPlayerMove, this);
+//    Events::removeListener(EventPlayerMove, this);
+//    Events::removeListener(EventPlayerLook, this);
+    Events::removeListener((IPlayerMoveListener*)this);
+    Events::removeListener((IPlayerLookListener*)this);
+    Events::removeListener((IKeyDownListener*)this);
   }
+  
+public:
+  size_t getLoadQueueSize() const { return m_loadQueue.size(); }
+  size_t getRenderQueueSize() const { return m_visibleQueue.size(); }
   
 private:
   void removeChunksAtX(int xIndex, GLfloat deltaX)
@@ -78,6 +87,8 @@ private:
 public:
   void init()
   {
+    m_initialLoad = true;
+    
     //Load a VISIBLE_CHUNKS * VISIBLE_CHUNKS grid, centered on the world-space origin
     int halfDown = floor((GLfloat)VISIBLE_CHUNKS * .5);
     for (int i = -halfDown; i <= halfDown; i++) {
@@ -105,8 +116,10 @@ public:
   virtual void onPlayerMove(const glm::vec4 &old_pos, const glm::vec4 &new_pos)
   {
     m_playerPos = new_pos;
+    if (m_initialLoad)
+      return;
+    
     glm::ivec3 chunkCoords = Chunk::worldToChunkSpace(glm::vec3(new_pos));
-    std::cout << "Player in chunk: " << chunkCoords.x << "<" << chunkCoords.y << "<" << chunkCoords.z << std::endl;
     if (chunkCoords.x != m_curPlayerChunkCoords.x || chunkCoords.z != m_curPlayerChunkCoords.z) {
       //Set the new chunk as the player's 'current' one
       TChunk *newCh = this->chunkAt(chunkCoords.x, chunkCoords.z);
@@ -177,7 +190,8 @@ public:
         m_loadQueue.pop_back();
         m_visibleQueue.push_back(ch);
       }
-    }
+    } else
+      m_initialLoad = false;
     
     //If animating a voxel explosion, advance the time counter
     if (m_exploding) {

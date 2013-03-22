@@ -24,7 +24,7 @@
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side, 2 in front, 2 behind.
-#define VISIBLE_CHUNKS 9
+#define VISIBLE_CHUNKS 5
 
 //Use a z-order curve to hash active voxels,
 //so we can build up a sparse matrix (using a dictionary
@@ -132,13 +132,7 @@ public:
   bool containsPlayer() const { return m_containsPlayer; }
   void setContainsPlayer(bool v) { m_containsPlayer = v; }
   
-  static glm::ivec3 worldToChunkSpace(glm::vec3 wc)
-  {
-    const GLfloat FACTOR = VOXELS_PER_CHUNK * VOXELS_PER_CHUNK;
-    glm::vec3 v(wc.x / FACTOR, wc.y / FACTOR, wc.z / FACTOR);
-    
-    return glm::ivec3(ceil(v.x) - 1, ceil(v.y) - 1, ceil(v.z) - 1);
-  }
+  static glm::ivec3 worldToChunkSpace(glm::vec3 wc);
   
 protected:
   virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);  

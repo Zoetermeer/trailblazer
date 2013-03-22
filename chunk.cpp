@@ -6,6 +6,14 @@
 #include <noise.h>
 #include <chrono>
 
+glm::ivec3 Chunk::worldToChunkSpace(glm::vec3 wc)
+{
+  const GLfloat FACTOR = VOXELS_PER_CHUNK * VOXEL_SIZE;
+  glm::vec3 v(wc.x / FACTOR, 0, -(wc.z / FACTOR));
+  
+  return glm::ivec3(ceil(v.x) - 1, v.y, ceil(v.z) - 1);
+}
+
 //This function should be thread-safe
 bool Chunk::isVoxelActiveAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
 {

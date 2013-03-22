@@ -27,6 +27,7 @@ void Events::addListener(IKeyUpListener *listener)
 
 
 typedef std::vector<IPlayerMoveListener*>::iterator pml_iterator;
+typedef std::vector<IPlayerLookListener*>::iterator pll_iterator;
 void Events::removeListener(EventType type, void *listener)
 {
   //TODO: Fix this!!!!
@@ -43,6 +44,21 @@ void Events::removeListener(EventType type, void *listener)
 
   if (remove_it != Events::m_pmListeners.end())
     Events::m_pmListeners.erase(remove_it);
+}
+
+void Events::removeListener(IPlayerMoveListener *listener)
+{
+  removeListenerFrom<IPlayerMoveListener>(m_pmListeners, listener);
+}
+
+void Events::removeListener(IPlayerLookListener *listener)
+{
+  removeListenerFrom<IPlayerLookListener>(m_plListeners, listener);
+}
+
+void Events::removeListener(IKeyDownListener *listener)
+{
+  removeListenerFrom<IKeyDownListener>(m_keyDownListeners, listener);
 }
 
 void Events::playerMoveEvent(const glm::vec4 &old_pos, const glm::vec4 &new_pos)

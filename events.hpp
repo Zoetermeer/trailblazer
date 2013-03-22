@@ -47,6 +47,26 @@ public:
   static void addListener(IKeyDownListener *listener);
   static void addListener(IKeyUpListener *listener);
   static void removeListener(EventType type, void *listener);
+  
+  static void removeListener(IPlayerMoveListener *listener);
+  static void removeListener(IPlayerLookListener *listener);
+  static void removeListener(IKeyDownListener *listener);
+  
+  template <class TListener>
+  static void removeListenerFrom(typename std::vector<TListener*> &vec, TListener *listener)
+  {
+    typename std::vector<TListener*>::iterator it;
+    typename std::vector<TListener*>::iterator remove_it = vec.end();
+    for (it = vec.begin(); it != vec.end(); ++it) {
+      if (listener == *it) {
+        remove_it = it;
+        break;
+      }
+    }
+    
+    if (remove_it != vec.end())
+      vec.erase(remove_it);
+  }
 
   static void playerMoveEvent(const glm::vec4 &old_pos, const glm::vec4 &new_pos);
   static void playerLookEvent(const Attitude &att, const glm::vec3 &lookVector, bool headlightOn);
