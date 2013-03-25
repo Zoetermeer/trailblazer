@@ -3,6 +3,7 @@
 #include "shader.hpp"
 #include "GL.hpp"
 #include "sky.hpp"
+#include "units.hpp"
 #include <noise.h>
 #include <chrono>
 
@@ -12,6 +13,13 @@ glm::ivec3 Chunk::worldToChunkSpace(glm::vec3 wc)
   glm::vec3 v(wc.x / FACTOR, 0, -(wc.z / FACTOR));
   
   return glm::ivec3(ceil(v.x) - 1, v.y, ceil(v.z) - 1);
+}
+
+glm::ivec3 Chunk::getMinimumAbsVoxelCoord() const
+{
+  return glm::ivec3(m_chunkIndex.x * VOXELS_PER_CHUNK,
+                    m_chunkIndex.y * VOXELS_PER_CHUNK,
+                    m_chunkIndex.z * VOXELS_PER_CHUNK);
 }
 
 //This function should be thread-safe
@@ -67,14 +75,11 @@ voxel_key_type Chunk::hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_c
 GLfloat Chunk::heightAt(int x, int z)
 {
   GLfloat noise = m_heightMap.GetValue(x, z);
-  noise += 1.f;
-  return noise * VOXELS_PER_CHUNK * .04;
-//  int ht = (VOXELS_PER_CHUNK * .5) * noise;
-//  ht += VOXELS_PER_CHUNK * .5;
-//  if (!ht) ht = 1;
+  return Units::noiseToFeet(noise);
 //  
-//  return ht;
-  return noise;
+//  noise += 1.f;
+//  return noise * VOXELS_PER_CHUNK * .04;
+
 }
 
 //Generate the height map and stash
@@ -105,11 +110,27 @@ void Chunk::generateData()
   heightMapBuilder.SetSourceModule(terrainSelector);
   heightMapBuilder.SetDestNoiseMap(m_heightMap);
   heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK + 1, VOXELS_PER_CHUNK + 1);
+  
+  //Use the lat/lon range as the range of the noise function
+  glm::vec2 minLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord());
+  glm::vec2 maxLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord() +
+                                             glm::ivec3(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK, VOXELS_PER_CHUNK));
+  //heightMapBuilder.SetBounds(minLatLon.x, maxLatLon.x, minLatLon.y, maxLatLon.y);
+  
   heightMapBuilder.SetBounds(m_chunkIndex.x,
                              m_chunkIndex.x + 1,
                              m_chunkIndex.z,
                              m_chunkIndex.z + 1);
+  
   heightMapBuilder.Build();
+}
+
+void Chunk::generateBuffers()
+{
+  if (m_vertexBuffer)
+    m_vertexBuffer->end();
+  
+  m_voxelMap.clear();
 }
 
 void Chunk::doGenerate(Chunk *chunk)
@@ -117,7 +138,17 @@ void Chunk::doGenerate(Chunk *chunk)
   chunk->generateData();
 }
 
-bool Chunk::generateDataAsync()
+void Chunk::generate()
+{
+  if (m_generated)
+    return;
+  
+  generateData();
+  generateBuffers();
+  m_generated = true;
+}
+
+bool Chunk::generateAsync()
 {
   if (m_generated)
     return true;
@@ -135,8 +166,7 @@ bool Chunk::generateDataAsync()
   
   //Async work finished, generate the vertex buffer
   m_generatingAsync = false;
-  m_vertexBuffer->end();
-  m_voxelMap.clear();
+  generateBuffers();
   m_generated = true;
   return true;
 }

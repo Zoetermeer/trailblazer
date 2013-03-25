@@ -18,6 +18,7 @@
 #include "cube-chunk.hpp"
 #include "poly-chunk.hpp"
 #include "sky.hpp"
+#include "units.hpp"
 
 #if defined(RUN_TESTS)
 #include "tests/chunk-tests.hpp"
@@ -246,6 +247,19 @@ protected:
         std::stringstream fpsStr;
         fpsStr << "Frames per second: " << stats.fps;
         GL::drawText(10.f, 60.f, -.5f, fpsStr.str().c_str());
+        
+        std::stringstream posStr;
+        std::stringstream vStr;
+        std::stringstream lStr;
+        glm::vec4 ppos = m_player.getOffset();
+        glm::ivec3 vc = Units::worldToVoxel(ppos);
+        glm::vec2 ll = Units::worldToLatLon(ppos);
+        posStr << "World: (" << ppos.x << ", " << ppos.y << ", " << ppos.z << ")  ";
+        vStr << "Voxel: (" << vc.x << ", " << vc.y << ", " << vc.z << ")";
+        lStr << "Lat/lon: " << ll.x << "°, " << ll.y << "°";
+        GL::drawText(10.f, 80.f, -.5f, posStr.str().c_str());
+        GL::drawText(10.f, 100.f, -.5f, vStr.str().c_str());
+        GL::drawText(10.f, 120.f, -.5f, lStr.str().c_str());
       }
       proj.popMatrix();
       mv.popMatrix();

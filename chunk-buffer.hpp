@@ -9,8 +9,12 @@
 #include "chunk.hpp"
 #include <GL/glfw.h>
 
+class ChunkTests;
+
 template <class TChunk>
 class ChunkBuffer : public IPlayerMoveListener, public IPlayerLookListener, public IKeyDownListener, public Process, public SceneObject {
+  friend class ChunkTests;
+  
 private:
   bool m_initialLoad;
   glm::ivec3 m_curPlayerChunkCoords;
@@ -36,14 +40,14 @@ public:
   ~ChunkBuffer()
   {
     ProcessList::remove(this);
-//    Events::removeListener(EventPlayerMove, this);
-//    Events::removeListener(EventPlayerLook, this);
     Events::removeListener((IPlayerMoveListener*)this);
     Events::removeListener((IPlayerLookListener*)this);
     Events::removeListener((IKeyDownListener*)this);
   }
   
 public:
+  std::vector<TChunk*> &getLoadQueue() { return m_loadQueue; }
+  std::vector<TChunk*> &getRenderQueue() { return m_visibleQueue; }
   size_t getLoadQueueSize() const { return m_loadQueue.size(); }
   size_t getRenderQueueSize() const { return m_visibleQueue.size(); }
   
@@ -186,7 +190,7 @@ public:
     //If the load list is non-empty, load 1 chunk
     if (m_loadQueue.size() > 0) {
       TChunk *ch = m_loadQueue.back();
-      if (ch->generateDataAsync()) {
+      if (ch->generateAsync()) {
         m_loadQueue.pop_back();
         m_visibleQueue.push_back(ch);
       }
@@ -224,6 +228,16 @@ public:
     //TODO: Look in the load queue -- if not there,
     //then we need to create it
     return NULL;
+  }
+  
+  void finishLoadingChunks()
+  {
+    while (m_loadQueue.size() > 0) {
+      TChunk *ch = m_loadQueue.back();
+      ch->generate();
+      m_loadQueue.pop_back();
+      m_visibleQueue.push_back(ch);
+    }
   }
 };
 

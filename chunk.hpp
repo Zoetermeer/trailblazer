@@ -137,12 +137,15 @@ public:
 protected:
   virtual GLclampf accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);  
   virtual void generateData();
+  virtual void generateBuffers();
   voxel_key_type hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
   virtual GLfloat heightAt(int x, int z);
   
 public:
+  glm::ivec3 getMinimumAbsVoxelCoord() const;
   static void doGenerate(Chunk *chunk);
-  bool generateDataAsync();
+  bool generateAsync();
+  void generate();
   virtual void draw(Env &env,
                     const glm::vec4 &playerPos,
                     const glm::vec3 &playerLookVec,
