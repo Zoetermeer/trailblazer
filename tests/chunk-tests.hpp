@@ -85,7 +85,7 @@ TEST(ChunkTests, InterpolatesNoiseInputsCorrectly) {
 TEST(ChunkTests, InterpolatesNoiseInputsForSeams) {
   DummyChunk cha(0, 0, 0);
   DummyChunk chb(1, 0, 0);
-  glm::vec3 a300(cha.getNoiseModuleInput(glm::vec3(7, 0, 0)));
+  glm::vec3 a300(cha.getNoiseModuleInput(glm::vec3(8	, 0, 0)));
   glm::vec3 b000(chb.getNoiseModuleInput(glm::vec3(0, 0, 0)));
   
   EXPECT_EQ(a300, b000);
@@ -100,7 +100,7 @@ TEST(ChunkTests, HeightValuesMatchAcrossChunks) {
   ch2.generate();
   ch3.generate();
   
-  EXPECT_EQ(ch1.heightAt(VOXELS_PER_CHUNK - 1, 0), ch2.heightAt(0, 0));
+  EXPECT_EQ(ch1.heightAt(VOXELS_PER_CHUNK, 0), ch2.heightAt(0, 0));
 }
 
 
