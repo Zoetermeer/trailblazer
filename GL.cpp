@@ -6,6 +6,7 @@
 #include "matrix-stack.hpp"
 #include "env.hpp"
 #include "chunk.hpp"
+#include "units.hpp"
 
 glm::vec4 GL::WHITE = glm::vec4(1.0, 1.0, 1.0, 1.0);
 glm::vec4 GL::GREEN = glm::vec4(0.0, 1.0, 0.0, 1.0);
@@ -50,7 +51,7 @@ void GL::drawPlane() throw (OpenGLException*)
     //Same normal for all
     const glm::vec3 nrm = glm::vec3(0.0f, 1.0f, 0.0f);
     batch.begin();
-    for (i = -999.0; i < 1000.0; i += VOXEL_SIZE) {
+    for (i = -999.0; i < 1000.0; i += Units::voxelToGl(1)) {
       batch.add(i, 0.0, -1000.0, nrm.x, nrm.y, nrm.z);
       batch.add(i, 0.0, 1000.0, nrm.x, nrm.y, nrm.z);
       batch.add(-1000.0, 0.0, i, nrm.x, nrm.y, nrm.z);
@@ -94,6 +95,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
   ShaderSet &shaders = env.getShaders();
   
   //Label axes
+  const GLfloat VOXEL_SIZE = Units::voxelToGl(1);
   const GLfloat TICK_HEIGHT = VOXELS_PER_CHUNK * VOXEL_SIZE + VOXEL_SIZE;
   mv.pushMatrix();
   {

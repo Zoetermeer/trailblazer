@@ -3,6 +3,7 @@
 #include "shader.hpp"
 #include "GL.hpp"
 #include "sky.hpp"
+#include "units.hpp"
 #include <noise.h>
 #include "noiseutils.h"
 #include <chrono>
@@ -302,6 +303,8 @@ void CubeChunk::generateData()
   spec.use_color = true;
   spec.use_voxel_coordinates = true;
   vb->begin();
+  
+  const GLfloat VOXEL_SIZE = Units::voxelToGl(1);
   
   //Translate to the bottom left
   MatrixStack stack;

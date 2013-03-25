@@ -1,14 +1,14 @@
 #ifndef UNITS_H
 #define UNITS_H
 
-#define MAX_HEIGHT_IN_FEET 5000.f
+#define MAX_HEIGHT_IN_FEET 500.f
 
 class Units {
 public:
   static float noiseToFeet(GLclampf noise)
   {
-    return noise + 10.f;
-    //return (noise + 1.f) * MAX_HEIGHT_IN_FEET;
+    //return noise + 10.f;
+    return (noise + 1.f) * MAX_HEIGHT_IN_FEET;
   }
   
   static float glToFeet(GLfloat glDistance)
@@ -17,6 +17,12 @@ public:
     //and feet (i.e. 1.0 in OGL coordinates is 1 foot).
     //Subject to change.
     return glDistance;
+  }
+  
+  static float voxelToGl(unsigned voxels)
+  {
+    return voxels * 100.f;
+    //return (float)voxels;
   }
   
   static float feetToLat(float feet)

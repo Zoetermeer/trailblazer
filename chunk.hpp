@@ -16,15 +16,12 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 128
-
-//Size (in GL units) of a voxel face
-#define VOXEL_SIZE .5f
+#define VOXELS_PER_CHUNK 8
 
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side, 2 in front, 2 behind.
-#define VISIBLE_CHUNKS 5
+#define VISIBLE_CHUNKS 29
 
 //Use a z-order curve to hash active voxels,
 //so we can build up a sparse matrix (using a dictionary
@@ -72,6 +69,9 @@ inline Neighbors operator|(Neighbors a, Neighbors b)
 class Chunk {
 private:
   utils::NoiseMap m_heightMap;
+  
+  std::vector<noise::module::Module*> m_modules;
+  noise::module::Select m_noiseModule;
   bool m_generated;
   std::map<voxel_key_type, bool> m_voxelMap;
   VertexBatch *m_vertexBuffer;
@@ -104,6 +104,9 @@ protected:
   {
     if (m_vertexBuffer)
       delete m_vertexBuffer;
+    
+    for (noise::module::Module *mod : m_modules)
+      delete mod;
   }
   
 protected:
@@ -139,10 +142,11 @@ protected:
   virtual void generateData();
   virtual void generateBuffers();
   voxel_key_type hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z);
-  virtual GLfloat heightAt(int x, int z);
   
 public:
   glm::ivec3 getMinimumAbsVoxelCoord() const;
+  glm::vec3 getNoiseModuleInput(const glm::vec3 &voxelRelativeCoords);
+  virtual GLfloat heightAt(int x, int z);
   static void doGenerate(Chunk *chunk);
   bool generateAsync();
   void generate();

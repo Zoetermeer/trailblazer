@@ -9,7 +9,7 @@
 
 glm::ivec3 Chunk::worldToChunkSpace(glm::vec3 wc)
 {
-  const GLfloat FACTOR = VOXELS_PER_CHUNK * VOXEL_SIZE;
+  const GLfloat FACTOR = VOXELS_PER_CHUNK * Units::voxelToGl(1);
   glm::vec3 v(wc.x / FACTOR, 0, -(wc.z / FACTOR));
   
   return glm::ivec3(ceil(v.x) - 1, v.y, ceil(v.z) - 1);
@@ -72,57 +72,78 @@ voxel_key_type Chunk::hashCoords(voxel_coord_type x, voxel_coord_type y, voxel_c
   return hashed;
 }
 
+glm::vec3 Chunk::getNoiseModuleInput(const glm::vec3 &voxelRelativeCoords)
+{
+  const float INTERP = 1.f / (float)VOXELS_PER_CHUNK;
+  return glm::vec3(m_chunkIndex.x + (voxelRelativeCoords.x * INTERP),
+                   m_chunkIndex.y + (voxelRelativeCoords.y * INTERP),
+                   m_chunkIndex.z + (voxelRelativeCoords.z * INTERP));
+}
+
 GLfloat Chunk::heightAt(int x, int z)
 {
-  GLfloat noise = m_heightMap.GetValue(x, z);
+  const float INTERP = 1 / VOXELS_PER_CHUNK;
+  float inx = m_chunkIndex.x + (x * INTERP);
+  float inz = m_chunkIndex.z + (z * INTERP);
+  
+  glm::vec3 input = getNoiseModuleInput(glm::vec3(x, 0, z));
+  float noise = m_noiseModule.GetValue(input.x, input.y, input.z);
+  
   return Units::noiseToFeet(noise);
-//  
-//  noise += 1.f;
-//  return noise * VOXELS_PER_CHUNK * .04;
-
 }
 
 //Generate the height map and stash
 void Chunk::generateData()
 {
-  noise::module::RidgedMulti mountain;
-  noise::module::Billow baseFlat;
-  baseFlat.SetFrequency(2.0);
-  noise::module::ScaleBias flatTerrain;
-  flatTerrain.SetSourceModule(0, baseFlat);
-  flatTerrain.SetScale(0.125);
-  flatTerrain.SetBias(-0.75);
+  auto mountain = new noise::module::RidgedMulti();
+  auto baseFlat = new noise::module::Billow();
+  baseFlat->SetFrequency(2.0);
+  auto flatTerrain = new noise::module::ScaleBias();
+  flatTerrain->SetSourceModule(0, *baseFlat);
+  flatTerrain->SetScale(0.125);
+  flatTerrain->SetBias(-0.75);
   
   //Perlin to control which type of terrain to generate
-  noise::module::Perlin terrainType;
-  terrainType.SetOctaveCount(1);
-  terrainType.SetFrequency(0.2);
-  terrainType.SetPersistence(0.25);
+  auto terrainType = new noise::module::Perlin();
+  terrainType->SetOctaveCount(1);
+  terrainType->SetFrequency(0.2);
+  terrainType->SetPersistence(0.25);
   
-  noise::module::Select terrainSelector;
-  terrainSelector.SetSourceModule(0, flatTerrain);
-  terrainSelector.SetSourceModule(1, mountain);
-  terrainSelector.SetControlModule(terrainType);
-  terrainSelector.SetBounds(0.0, 1000.0);
-  terrainSelector.SetEdgeFalloff(0.6);
+  m_noiseModule.SetSourceModule(0, *flatTerrain);
+  m_noiseModule.SetSourceModule(1, *mountain);
+  m_noiseModule.SetControlModule(*terrainType);
+  m_noiseModule.SetBounds(0.0, 1000.0);
+  m_noiseModule.SetEdgeFalloff(0.6);
   
-  utils::NoiseMapBuilderPlane heightMapBuilder;
-  heightMapBuilder.SetSourceModule(terrainSelector);
-  heightMapBuilder.SetDestNoiseMap(m_heightMap);
-  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK + 1, VOXELS_PER_CHUNK + 1);
+  m_modules.push_back(mountain);
+  m_modules.push_back(baseFlat);
+  m_modules.push_back(flatTerrain);
+  m_modules.push_back(terrainType);
   
-  //Use the lat/lon range as the range of the noise function
-  glm::vec2 minLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord());
-  glm::vec2 maxLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord() +
-                                             glm::ivec3(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK, VOXELS_PER_CHUNK));
-  //heightMapBuilder.SetBounds(minLatLon.x, maxLatLon.x, minLatLon.y, maxLatLon.y);
-  
-  heightMapBuilder.SetBounds(m_chunkIndex.x,
-                             m_chunkIndex.x + 1,
-                             m_chunkIndex.z,
-                             m_chunkIndex.z + 1);
-  
-  heightMapBuilder.Build();
+//  noise::module::Select terrainSelector;
+//  terrainSelector.SetSourceModule(0, flatTerrain);
+//  terrainSelector.SetSourceModule(1, mountain);
+//  terrainSelector.SetControlModule(terrainType);
+//  terrainSelector.SetBounds(0.0, 1000.0);
+//  terrainSelector.SetEdgeFalloff(0.6);
+//  
+//  utils::NoiseMapBuilderPlane heightMapBuilder;
+//  heightMapBuilder.SetSourceModule(terrainSelector);
+//  heightMapBuilder.SetDestNoiseMap(m_heightMap);
+//  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK + 1, VOXELS_PER_CHUNK + 1);
+//  
+//  //Use the lat/lon range as the range of the noise function
+//  glm::vec2 minLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord());
+//  glm::vec2 maxLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord() +
+//                                             glm::ivec3(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK, VOXELS_PER_CHUNK));
+//  //heightMapBuilder.SetBounds(minLatLon.x, maxLatLon.x, minLatLon.y, maxLatLon.y);
+//  
+//  heightMapBuilder.SetBounds(m_chunkIndex.x,
+//                             m_chunkIndex.x + 1,
+//                             m_chunkIndex.z,
+//                             m_chunkIndex.z + 1);
+//  
+//  heightMapBuilder.Build();
 }
 
 void Chunk::generateBuffers()
@@ -190,7 +211,7 @@ void Chunk::draw(Env &env,
   
   MatrixStack &mv = env.getMV();
   ShaderSet &shaders = env.getShaders();
-  GLfloat offset = VOXELS_PER_CHUNK * VOXEL_SIZE;
+  GLfloat offset = VOXELS_PER_CHUNK * Units::voxelToGl(1);
   mv.pushMatrix();
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.z * offset);

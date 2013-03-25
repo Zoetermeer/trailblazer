@@ -1,4 +1,5 @@
 #include "poly-chunk.hpp"
+#include "units.hpp"
 
 GLclampf PolyChunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
 {
@@ -7,9 +8,10 @@ GLclampf PolyChunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxe
 
 glm::vec3 PolyChunk::normalForQuad(voxel_coord_type x, voxel_coord_type z)
 {
-  glm::vec4 v1(x * VOXEL_SIZE, heightAt(x, z), z * VOXEL_SIZE, 1.f);
-  glm::vec4 v2(x * VOXEL_SIZE, heightAt(x, z + 1), (z + 1) * VOXEL_SIZE, 1.f);
-  glm::vec4 v3((x + 1) * VOXEL_SIZE, heightAt(x + 1, z + 1), (z + 1) * VOXEL_SIZE, 1.f);
+  const GLfloat VSZ = Units::voxelToGl(1);
+  glm::vec4 v1(x * VSZ, heightAt(x, z), z * VSZ, 1.f);
+  glm::vec4 v2(x * VSZ, heightAt(x, z + 1), (z + 1) * VSZ, 1.f);
+  glm::vec4 v3((x + 1) * VSZ, heightAt(x + 1, z + 1), (z + 1) * VSZ, 1.f);
   return calc_normal(v1, v2, v3);
 }
 
@@ -65,6 +67,7 @@ void PolyChunk::generateData()
   vb->begin();
   
   //Do the naive thing first (vertex repetition without indexing)
+  const GLfloat VSZ = Units::voxelToGl(1);
   for (voxel_coord_type i = 0; i < VOXELS_PER_CHUNK; i++) {
     for (voxel_coord_type j = 0; j < VOXELS_PER_CHUNK; j++) {
       incrActiveVoxels(1);
@@ -76,10 +79,10 @@ void PolyChunk::generateData()
       GLfloat ht3 = heightAt(i + 1, j);
       GLfloat ht4 = heightAt(i + 1, j + 1);
       
-      vertex_t v1 = new_vertex(i * VOXEL_SIZE, ht1, j * VOXEL_SIZE);
-      vertex_t v2 = new_vertex(i * VOXEL_SIZE, ht2, (j + 1) * VOXEL_SIZE);
-      vertex_t v3 = new_vertex((i + 1) * VOXEL_SIZE, ht3, j * VOXEL_SIZE);
-      vertex_t v4 = new_vertex((i + 1) * VOXEL_SIZE, ht4, (j + 1) * VOXEL_SIZE);
+      vertex_t v1 = new_vertex(i * VSZ, ht1, j * VSZ);
+      vertex_t v2 = new_vertex(i * VSZ, ht2, (j + 1) * VSZ);
+      vertex_t v3 = new_vertex((i + 1) * VSZ, ht3, j * VSZ);
+      vertex_t v4 = new_vertex((i + 1) * VSZ, ht4, (j + 1) * VSZ);
       
       //Calculate each vertex's normal as a function of its neighboring quads
       glm::vec3 quadNorm = calc_normal(v1, v2, v3);
