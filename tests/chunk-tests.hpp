@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include "printer.hpp"
 #include "../chunk.hpp"
+#include "../units.hpp"
 
 //Use a mock chunk class to test the chunk buffer
 class DummyChunk : public Chunk {
@@ -78,14 +79,14 @@ TEST(ChunkTests, InterpolatesNoiseInputsCorrectly) {
   glm::vec3 v200(ch1.getNoiseModuleInput(glm::vec3(2, 0, 0)));
   
   EXPECT_EQ(glm::vec3(0.0, 0.0, 0.0), v000);
-  EXPECT_EQ(glm::vec3(.125, 0.0, 0.0), v100);
-  EXPECT_EQ(glm::vec3(.25, 0.0, 0.0), v200);
+  EXPECT_EQ(glm::vec3(1.f / (float)VOXELS_PER_CHUNK, 0.0, 0.0), v100);
+  EXPECT_EQ(glm::vec3((1.f / (float)VOXELS_PER_CHUNK) * 2, 0.0, 0.0), v200);
 }
 
 TEST(ChunkTests, InterpolatesNoiseInputsForSeams) {
   DummyChunk cha(0, 0, 0);
   DummyChunk chb(1, 0, 0);
-  glm::vec3 a300(cha.getNoiseModuleInput(glm::vec3(8	, 0, 0)));
+  glm::vec3 a300(cha.getNoiseModuleInput(glm::vec3(VOXELS_PER_CHUNK, 0, 0)));
   glm::vec3 b000(chb.getNoiseModuleInput(glm::vec3(0, 0, 0)));
   
   EXPECT_EQ(a300, b000);
@@ -103,6 +104,27 @@ TEST(ChunkTests, HeightValuesMatchAcrossChunks) {
   EXPECT_EQ(ch1.heightAt(VOXELS_PER_CHUNK, 0), ch2.heightAt(0, 0));
 }
 
+TEST(ChunkTests, NoiseIsAlwaysUnit) {
+  DummyChunk ch1(randBetween(0, 100), randBetween(0, 100), randBetween(0, 100));
+  ch1.generate();
+  for (int i = 0; i < VOXELS_PER_CHUNK; i++) {
+    for (int j = 0; j < VOXELS_PER_CHUNK; j++) {
+      float n = ch1.noiseAt(i, j);
+      EXPECT_LE(n, 2.0);
+      EXPECT_GE(n, -1.0);
+    }
+  }
+}
+
+TEST(ChunkTests, HeightNeverExceedsMaximum) {
+  DummyChunk ch1(randBetween(0, 100), randBetween(0, 100), randBetween(0, 100));
+  ch1.generate();
+  for (int i = 0; i < VOXELS_PER_CHUNK; i++) {
+    for (int j = 0; j < VOXELS_PER_CHUNK; j++) {
+      EXPECT_LE(ch1.heightAt(i, j), MAX_HEIGHT_IN_FEET);
+    }
+  }
+}
 
 
 

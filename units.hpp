@@ -1,14 +1,15 @@
 #ifndef UNITS_H
 #define UNITS_H
 
-#define MAX_HEIGHT_IN_FEET 500.f
+#define MAX_HEIGHT_IN_FEET 1000.f
 
 class Units {
 public:
   static float noiseToFeet(GLclampf noise)
   {
     //return noise + 10.f;
-    return (noise + 1.f) * MAX_HEIGHT_IN_FEET;
+    //return (noise + 1.f) * MAX_HEIGHT_IN_FEET;
+    return noise * MAX_HEIGHT_IN_FEET;
   }
   
   static float glToFeet(GLfloat glDistance)

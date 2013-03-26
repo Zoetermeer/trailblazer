@@ -22,6 +22,7 @@
 
 #if defined(RUN_TESTS)
 #include "tests/chunk-tests.hpp"
+#include "tests/units-tests.hpp"
 #endif
 
 const int DEFAULT_WIDTH = 1600;

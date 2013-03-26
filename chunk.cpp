@@ -80,6 +80,11 @@ glm::vec3 Chunk::getNoiseModuleInput(const glm::vec3 &voxelRelativeCoords)
                    m_chunkIndex.z + (voxelRelativeCoords.z * INTERP));
 }
 
+float Chunk::noiseAt(int x, int z)
+{
+  return m_noiseModule.GetValue(x, 0.0, z);
+}
+
 GLfloat Chunk::heightAt(int x, int z)
 {
   const float INTERP = 1 / VOXELS_PER_CHUNK;
@@ -119,31 +124,6 @@ void Chunk::generateData()
   m_modules.push_back(baseFlat);
   m_modules.push_back(flatTerrain);
   m_modules.push_back(terrainType);
-  
-//  noise::module::Select terrainSelector;
-//  terrainSelector.SetSourceModule(0, flatTerrain);
-//  terrainSelector.SetSourceModule(1, mountain);
-//  terrainSelector.SetControlModule(terrainType);
-//  terrainSelector.SetBounds(0.0, 1000.0);
-//  terrainSelector.SetEdgeFalloff(0.6);
-//  
-//  utils::NoiseMapBuilderPlane heightMapBuilder;
-//  heightMapBuilder.SetSourceModule(terrainSelector);
-//  heightMapBuilder.SetDestNoiseMap(m_heightMap);
-//  heightMapBuilder.SetDestSize(VOXELS_PER_CHUNK + 1, VOXELS_PER_CHUNK + 1);
-//  
-//  //Use the lat/lon range as the range of the noise function
-//  glm::vec2 minLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord());
-//  glm::vec2 maxLatLon = Units::voxelToLatLon(getMinimumAbsVoxelCoord() +
-//                                             glm::ivec3(VOXELS_PER_CHUNK, VOXELS_PER_CHUNK, VOXELS_PER_CHUNK));
-//  //heightMapBuilder.SetBounds(minLatLon.x, maxLatLon.x, minLatLon.y, maxLatLon.y);
-//  
-//  heightMapBuilder.SetBounds(m_chunkIndex.x,
-//                             m_chunkIndex.x + 1,
-//                             m_chunkIndex.z,
-//                             m_chunkIndex.z + 1);
-//  
-//  heightMapBuilder.Build();
 }
 
 void Chunk::generateBuffers()
