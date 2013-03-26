@@ -179,7 +179,7 @@ void Player::advance(int delta)
 {
   glm::vec4 old_pos = m_offset;
   bool moved = false;
-  const int MOVE_INTERVAL = 1.f;
+  const int MOVE_INTERVAL = 10.f;
   if ((m_moveDir & Direction::Forward) > Direction::Idle) {
     move(MOVE_INTERVAL, Direction::Forward);
     moved = true;

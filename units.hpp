@@ -1,7 +1,7 @@
 #ifndef UNITS_H
 #define UNITS_H
 
-#define MAX_HEIGHT_IN_FEET 1000.f
+#define MAX_HEIGHT_IN_FEET 2000.f
 
 class Units {
 public:

@@ -16,12 +16,12 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 128
+#define VOXELS_PER_CHUNK 254
 
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side, 2 in front, 2 behind.
-#define VISIBLE_CHUNKS 7
+#define VISIBLE_CHUNKS 5
 
 //Use a z-order curve to hash active voxels,
 //so we can build up a sparse matrix (using a dictionary

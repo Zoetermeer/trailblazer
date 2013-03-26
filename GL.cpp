@@ -99,7 +99,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
   const GLfloat TICK_HEIGHT = VOXELS_PER_CHUNK * VOXEL_SIZE + VOXEL_SIZE;
   mv.pushMatrix();
   {
-    mv.translateX(-1000.f);
+    mv.translateX(-100.f * (VOXELS_PER_CHUNK * VOXEL_SIZE));
     for (int i = -50; i < 50; i++) {
       mv.pushMatrix();
       {
@@ -119,14 +119,14 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
         GL::drawText(0.0, 0.0, 0.0, str);
       }
       mv.popMatrix();
-      mv.translateX(20.f);
+      mv.translateX(VOXELS_PER_CHUNK * VOXEL_SIZE);
     }
   }
   mv.popMatrix();
   
   mv.pushMatrix();
   {
-    mv.translateZ(-1000.f);
+    mv.translateZ(-100.f * (VOXELS_PER_CHUNK * VOXEL_SIZE));
     for (int i = -50; i < 50; i++) {
       mv.pushMatrix();
       {
@@ -146,7 +146,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
         GL::drawText(0.0, 0.0, 0.0, str);
       }
       mv.popMatrix();
-      mv.translateZ(20.f);
+      mv.translateZ(VOXELS_PER_CHUNK * VOXEL_SIZE);
     }
   }
   mv.popMatrix();

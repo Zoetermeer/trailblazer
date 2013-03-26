@@ -1,5 +1,7 @@
 #include "sky.hpp"
 #include "shader.hpp"
+#include "chunk.hpp"
+#include "units.hpp"
 
 Sky *Sky::s_instance = NULL;
 
@@ -31,9 +33,8 @@ void Sky::draw(Env &env)
     
     glm::vec4 sunPos = toWorld();
     glm::vec4 skyColor = glm::mix(GL::BLACK, GL::color(135, 206, 250), (sunPos.y + SUN_HEIGHT) / (SUN_HEIGHT * 2));
-    //shaders.prepareDefault(env, GL::color(135, 206, 250));
-    shaders.prepareDefault(env, skyColor);
-    glutSolidSphere(SUN_HEIGHT + 1000, 20, 20);
+    //shaders.prepareDefault(env, skyColor);
+    //glutSolidSphere(SUN_HEIGHT + ((VISIBLE_CHUNKS * 20) * VOXELS_PER_CHUNK * Units::voxelToFeet(1)), 20, 20);
     
     mv.translateY(SUN_HEIGHT);
     

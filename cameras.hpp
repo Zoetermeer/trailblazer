@@ -68,7 +68,7 @@ public:
   glm::vec3 getUpVector() const { return m_upVector; }
   GLfloat getFOV() const { return 45.f; }
   GLfloat getNearClippingPlaneDist() const { return 1.f; }
-  GLfloat getFarClippingPlaneDist() const { return 10000.f; }
+  GLfloat getFarClippingPlaneDist() const { return 50000.f; }
   void setPos(glm::vec4 &v) { m_pos = v; }
   void setPos(GLfloat x, GLfloat y, GLfloat z)
   {
