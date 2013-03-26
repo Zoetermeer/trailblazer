@@ -110,8 +110,8 @@ void Chunk::generateData()
   
   //Perlin to control which type of terrain to generate
   auto terrainType = new noise::module::Perlin();
-  terrainType->SetOctaveCount(1);
-  terrainType->SetFrequency(0.2);
+  terrainType->SetOctaveCount(9);
+  terrainType->SetFrequency(0.03);
   terrainType->SetPersistence(0.25);
   
   m_noiseModule.SetSourceModule(0, *flatTerrain);

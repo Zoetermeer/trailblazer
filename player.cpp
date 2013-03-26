@@ -178,30 +178,34 @@ void Player::onKeyUp(int key, bool special)
 void Player::advance(int delta)
 {
   glm::vec4 old_pos = m_offset;
-  bool moved = false;
+  
+  //Make sure we move at the same rate regardless of frame/update rate
   const int MOVE_INTERVAL = 10.f;
+  float distMult = delta / DEFAULT_UPDATE_INTERVAL;
+  float interval = MOVE_INTERVAL * distMult;
+  bool moved = false;
   if ((m_moveDir & Direction::Forward) > Direction::Idle) {
-    move(MOVE_INTERVAL, Direction::Forward);
+    move(interval, Direction::Forward);
     moved = true;
   }
   if ((m_moveDir & Direction::Backward) > Direction::Idle) {
-    move(MOVE_INTERVAL, Direction::Backward);
+    move(interval, Direction::Backward);
     moved = true;
   }
   if ((m_moveDir & Direction::Right) > Direction::Idle) {
-    move(MOVE_INTERVAL, Direction::Right);
+    move(interval, Direction::Right);
     moved = true;
   }
   if ((m_moveDir & Direction::Left) > Direction::Idle) {
-    move(MOVE_INTERVAL, Direction::Left);
+    move(interval, Direction::Left);
     moved = true;
   }
   if ((m_moveDir & Direction::Up) > Direction::Idle) {
-    move(MOVE_INTERVAL, Direction::Up);
+    move(interval, Direction::Up);
     moved = true;
   }
   if ((m_moveDir & Direction::Down) > Direction::Idle) {
-    move(MOVE_INTERVAL, Direction::Down);
+    move(interval, Direction::Down);
     moved = true;
   }
   

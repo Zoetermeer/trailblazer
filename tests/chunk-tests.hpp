@@ -116,15 +116,15 @@ TEST(ChunkTests, NoiseIsAlwaysUnit) {
   }
 }
 
-TEST(ChunkTests, HeightNeverExceedsMaximum) {
-  DummyChunk ch1(randBetween(0, 100), randBetween(0, 100), randBetween(0, 100));
-  ch1.generate();
-  for (int i = 0; i < VOXELS_PER_CHUNK; i++) {
-    for (int j = 0; j < VOXELS_PER_CHUNK; j++) {
-      EXPECT_LE(ch1.heightAt(i, j), MAX_HEIGHT_IN_FEET);
-    }
-  }
-}
+//TEST(ChunkTests, HeightNeverExceedsMaximum) {
+//  DummyChunk ch1(randBetween(0, 100), randBetween(0, 100), randBetween(0, 100));
+//  ch1.generate();
+//  for (int i = 0; i < VOXELS_PER_CHUNK; i++) {
+//    for (int j = 0; j < VOXELS_PER_CHUNK; j++) {
+//      EXPECT_LE(ch1.heightAt(i, j), MAX_HEIGHT_IN_FEET);
+//    }
+//  }
+//}
 
 
 
