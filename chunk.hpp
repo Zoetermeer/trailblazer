@@ -16,19 +16,17 @@
 //chunk data
 #define PARALLEL_GENERATORS 4
 
-#define VOXELS_PER_CHUNK 254
-
 //The number of chunks visible in a given dimension.
 //So with 5, we see the one we're currently in, plus 2 on
 //either side, 2 in front, 2 behind.
-#define VISIBLE_CHUNKS 5
+#define VISIBLE_CHUNKS 13
 
 //Use a z-order curve to hash active voxels,
 //so we can build up a sparse matrix (using a dictionary
 //of keys).  The key type
 //must be big enough (in bits) to fit the concatenation
 //of the x,y,z coordinates.
-typedef unsigned char voxel_coord_type;
+typedef unsigned short voxel_coord_type;
 typedef unsigned voxel_key_type;
 
 enum class TerrainType {
@@ -71,7 +69,7 @@ private:
   utils::NoiseMap m_heightMap;
   
   std::vector<noise::module::Module*> m_modules;
-  noise::module::Select m_noiseModule;
+  noise::module::Module *m_noiseModule;
   bool m_generated;
   std::map<voxel_key_type, bool> m_voxelMap;
   VertexBatch *m_vertexBuffer;
@@ -95,7 +93,8 @@ protected:
     m_generatingAsync(false),
     m_vertexCount(0),
     m_activeVoxels(0),
-    m_drawnVoxels(0)
+    m_drawnVoxels(0),
+    m_noiseModule(NULL)
   {
     
   }

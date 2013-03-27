@@ -68,6 +68,7 @@ void PolyChunk::generateData()
   
   //Do the naive thing first (vertex repetition without indexing)
   const GLfloat VSZ = Units::voxelToGl(1);
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   for (voxel_coord_type i = 0; i < VOXELS_PER_CHUNK; i++) {
     for (voxel_coord_type j = 0; j < VOXELS_PER_CHUNK; j++) {
       incrActiveVoxels(1);

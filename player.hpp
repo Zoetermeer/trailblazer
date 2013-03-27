@@ -42,10 +42,11 @@ private:
   Attitude m_attitude;
   Direction m_moveDir;
   bool m_headlightOn;
+  float m_movementSpeed;
   
 public:
   Player()
-  : m_moveDir(Direction::Idle), m_headlightOn(false)
+  : m_moveDir(Direction::Idle), m_headlightOn(false), m_movementSpeed(10.f)
   {
     ProcessList::add(this);
     Events::addListener((IKeyDownListener*)this);

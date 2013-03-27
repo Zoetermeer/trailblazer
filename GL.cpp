@@ -95,6 +95,7 @@ void GL::drawAxes(Env &env) throw (OpenGLException*)
   ShaderSet &shaders = env.getShaders();
   
   //Label axes
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   const GLfloat VOXEL_SIZE = Units::voxelToGl(1);
   const GLfloat TICK_HEIGHT = VOXELS_PER_CHUNK * VOXEL_SIZE + VOXEL_SIZE;
   mv.pushMatrix();

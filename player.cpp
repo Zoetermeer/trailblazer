@@ -172,6 +172,13 @@ void Player::onKeyUp(int key, bool special)
     case GLFW_KEY_SPACE:
       m_moveDir = m_moveDir ^ Direction::Up;
       break;
+    case GLFW_KEY_UP:
+      m_movementSpeed += 5.f;
+      break;
+    case GLFW_KEY_DOWN:
+      if (m_movementSpeed > 5.f)
+        m_movementSpeed -= 5.f;
+      break;
   }
 }
 
@@ -180,9 +187,8 @@ void Player::advance(int delta)
   glm::vec4 old_pos = m_offset;
   
   //Make sure we move at the same rate regardless of frame/update rate
-  const int MOVE_INTERVAL = 10.f;
   float distMult = delta / DEFAULT_UPDATE_INTERVAL;
-  float interval = MOVE_INTERVAL * distMult;
+  float interval = m_movementSpeed * distMult;
   bool moved = false;
   if ((m_moveDir & Direction::Forward) > Direction::Idle) {
     move(interval, Direction::Forward);

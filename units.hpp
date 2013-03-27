@@ -20,10 +20,29 @@ public:
     return glDistance;
   }
   
+  static float feetToGl(float feet)
+  {
+    return feet;
+  }
+  
+  static float chunkToFeet(unsigned chunks)
+  {
+    return 5096.f * chunks;
+  }
+  
+  static float chunkToGl(unsigned chunks)
+  {
+    return feetToGl(chunkToFeet(chunks));
+  }
+  
+  static unsigned chunkToVoxel(unsigned chunks)
+  {
+    return chunkToFeet(chunks) / voxelToFeet(1);
+  }
+  
   static float voxelToGl(unsigned voxels)
   {
-    return voxels * 100.f;
-    //return (float)voxels;
+    return 128.f;
   }
   
   static float feetToLat(float feet)
@@ -33,7 +52,7 @@ public:
   
   static float voxelToFeet(unsigned voxels)
   {
-    return (float)voxels;
+    return glToFeet(voxelToGl(voxels));
   }
   
   static glm::ivec3 worldToVoxel(const glm::vec4 &world)

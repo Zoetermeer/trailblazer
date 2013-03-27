@@ -26,7 +26,7 @@ TEST(ChunkTests, WorldToChunkCoordsTest1) {
 
 TEST(ChunkTests, WorldToChunkCoordsTest2) {
   const GLfloat VOXEL_SIZE = Units::voxelToGl(1);
-  glm::vec3 playerPos = glm::vec3(0.1, 0.0, -(VOXEL_SIZE * VOXELS_PER_CHUNK + (VOXEL_SIZE * .5)));
+  glm::vec3 playerPos = glm::vec3(0.1, 0.0, -(VOXEL_SIZE * Units::chunkToVoxel(1) + (VOXEL_SIZE * .5)));
   EXPECT_EQ(glm::ivec3(0, 0, 1), Chunk::worldToChunkSpace(playerPos));
 }
 
@@ -67,12 +67,14 @@ TEST(ChunkTests, BufferMaintainsProperSize) {
 }
 
 TEST(ChunkTests, ChunkReturnsCorrectMinVoxelCoords) {
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   DummyChunk ch1(3, 3, -3);
   glm::ivec3 minvc = ch1.getMinimumAbsVoxelCoord();
   EXPECT_EQ(glm::ivec3(3 * VOXELS_PER_CHUNK, 3 * VOXELS_PER_CHUNK, -3 * VOXELS_PER_CHUNK), minvc);
 }
 
 TEST(ChunkTests, InterpolatesNoiseInputsCorrectly) {
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   DummyChunk ch1(0, 0, 0);
   glm::vec3 v000(ch1.getNoiseModuleInput(glm::vec3(0, 0, 0)));
   glm::vec3 v100(ch1.getNoiseModuleInput(glm::vec3(1, 0, 0)));
@@ -84,6 +86,7 @@ TEST(ChunkTests, InterpolatesNoiseInputsCorrectly) {
 }
 
 TEST(ChunkTests, InterpolatesNoiseInputsForSeams) {
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   DummyChunk cha(0, 0, 0);
   DummyChunk chb(1, 0, 0);
   glm::vec3 a300(cha.getNoiseModuleInput(glm::vec3(VOXELS_PER_CHUNK, 0, 0)));
@@ -93,6 +96,7 @@ TEST(ChunkTests, InterpolatesNoiseInputsForSeams) {
 }
 
 TEST(ChunkTests, HeightValuesMatchAcrossChunks) {
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   DummyChunk ch1(0, 0, 0);
   DummyChunk ch2(1, 0, 0);
   DummyChunk ch3(0, 0, 1);
@@ -104,24 +108,15 @@ TEST(ChunkTests, HeightValuesMatchAcrossChunks) {
   EXPECT_EQ(ch1.heightAt(VOXELS_PER_CHUNK, 0), ch2.heightAt(0, 0));
 }
 
-TEST(ChunkTests, NoiseIsAlwaysUnit) {
-  DummyChunk ch1(randBetween(0, 100), randBetween(0, 100), randBetween(0, 100));
-  ch1.generate();
-  for (int i = 0; i < VOXELS_PER_CHUNK; i++) {
-    for (int j = 0; j < VOXELS_PER_CHUNK; j++) {
-      float n = ch1.noiseAt(i, j);
-      EXPECT_LE(n, 2.0);
-      EXPECT_GE(n, -1.0);
-    }
-  }
-}
-
-//TEST(ChunkTests, HeightNeverExceedsMaximum) {
+//TEST(ChunkTests, NoiseIsAlwaysUnit) {
+//  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
 //  DummyChunk ch1(randBetween(0, 100), randBetween(0, 100), randBetween(0, 100));
 //  ch1.generate();
 //  for (int i = 0; i < VOXELS_PER_CHUNK; i++) {
 //    for (int j = 0; j < VOXELS_PER_CHUNK; j++) {
-//      EXPECT_LE(ch1.heightAt(i, j), MAX_HEIGHT_IN_FEET);
+//      float n = ch1.noiseAt(i, j);
+//      EXPECT_LE(n, 2.0);
+//      EXPECT_GE(n, -1.0);
 //    }
 //  }
 //}

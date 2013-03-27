@@ -261,6 +261,7 @@ void CubeChunk::addCube(const glm::vec3 &ind,
 
 GLclampf CubeChunk::accessibilityAt(voxel_coord_type x, voxel_coord_type y, voxel_coord_type z)
 {
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   if (x < 0 || x > VOXELS_PER_CHUNK - 1)
     return 1.f;
   if (y < 0 || y > VOXELS_PER_CHUNK - 1)
@@ -294,6 +295,7 @@ void CubeChunk::generateData()
    ones.  How do we initially store them, however (before determining which ones
    can be discarded)?
    */
+  const unsigned VOXELS_PER_CHUNK = Units::chunkToVoxel(1);
   glm::ivec3 index = getIndex();
   auto vb = new VertexBatch();
   setVertexBuffer(vb);

@@ -73,15 +73,17 @@ private:
   {
     std::cout << "INSTRUCTIONS:" << std::endl;
     std::cout << "mouse - look around" << std::endl;
-    std::cout << "w - forward" << std::endl;
-    std::cout << "s - backward" << std::endl;
-    std::cout << "d - right" << std::endl;
-    std::cout << "a - left" << std::endl;
-    std::cout << "spacebar - fly up" << std::endl;
-    std::cout << "shift - fly down" << std::endl;
-    std::cout << "h - hide/show arms" << std::endl;
-    std::cout << "<period> - headlight on/off" << std::endl;
-    std::cout << "enter - blow it up" << std::endl;
+    std::cout << "w: forward" << std::endl;
+    std::cout << "s: backward" << std::endl;
+    std::cout << "d: right" << std::endl;
+    std::cout << "a: left" << std::endl;
+    std::cout << "<up>: speed up" << std::endl;
+    std::cout << "<down>: slow down" << std::endl;
+    std::cout << "spacebar: fly up" << std::endl;
+    std::cout << "shift: fly down" << std::endl;
+    std::cout << "h: hide/show arms" << std::endl;
+    std::cout << "<period>: headlight on/off" << std::endl;
+    std::cout << "enter: - blow it up" << std::endl;
   }
   
 protected:
