@@ -8,6 +8,7 @@ uniform vec3 HeadlightDir;
 
 attribute float AOAccessibility;
 attribute vec4 Color;
+attribute vec3 TexCoords;
 
 varying vec3 VaryingNormal;
 varying vec3 VaryingLightDir;

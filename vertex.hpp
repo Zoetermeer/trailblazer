@@ -8,6 +8,8 @@ typedef struct vertex {
   glm::vec4 color;
   GLfloat ao_accessibility;
   glm::ivec3 voxel_coordinate;
+  GLuint tex_layer;
+  glm::vec3 tex_coordinate;
 } vertex_t;
 
 typedef struct vertex_spec {
@@ -16,6 +18,7 @@ typedef struct vertex_spec {
   bool use_color;
   bool use_ao;
   bool use_voxel_coordinates;
+  bool use_tex_coordinates;
 } vertex_spec_t;
 
 inline vertex_t new_vertex()

@@ -12,6 +12,7 @@ private:
   std::vector<GLfloat> m_norms;
   std::vector<GLuint> m_indices;
   std::vector<GLfloat> m_colors;
+  std::vector<GLfloat> m_texCoords;
   std::vector<GLfloat> m_aoAttribs;
   std::vector<GLfloat> m_vcAttribs;
   GLuint m_vaoId;
@@ -26,6 +27,7 @@ private:
   size_t m_indPtr;
   size_t m_colPtr;
   size_t m_vcPtr;
+  size_t m_tcPtr;
   
   size_t m_vertsSize;
   size_t m_normsSize;
@@ -33,6 +35,7 @@ private:
   size_t m_colorSize;
   size_t m_aoAttribsSize;
   size_t m_vcAttribsSize;
+  size_t m_tcSize;
   
   //Cache the largest index, in
   //case we need to combine with another vertex batch
@@ -48,13 +51,15 @@ public:
     m_aoPtr(NULL),
     m_indPtr(NULL),
     m_colPtr(NULL),
-    m_vcPtr(NULL), 
+    m_vcPtr(NULL),
+    m_tcPtr(NULL), 
     m_vertsSize(0),
     m_normsSize(0),
     m_indexSize(0),
     m_colorSize(0), 
     m_aoAttribsSize(0),
     m_vcAttribsSize(0),
+    m_tcSize(0), 
     m_maxIndex(0)
   {
     memset(&m_vertexSpec, 0, sizeof(vertex_spec_t));

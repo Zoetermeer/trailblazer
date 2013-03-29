@@ -56,6 +56,12 @@ void VertexBatch::add(vertex_t &vertex)
     m_colors.push_back(vertex.color.w);
   }
   
+  if (m_vertexSpec.use_tex_coordinates) {
+    m_texCoords.push_back(vertex.tex_coordinate.x);
+    m_texCoords.push_back(vertex.tex_coordinate.y);
+    m_texCoords.push_back(vertex.tex_coordinate.z);
+  }
+  
   if (m_vertexSpec.use_ao) {
     m_aoAttribs.push_back(vertex.ao_accessibility);
   }
@@ -116,13 +122,15 @@ void VertexBatch::end()
   m_aoAttribsSize = m_aoAttribs.size() * sizeof(GLfloat);
   m_vcAttribsSize = m_vcAttribs.size() * sizeof(GLfloat);
   m_colorSize = m_colors.size() * sizeof(GLfloat);
+  m_tcSize = m_texCoords.size() * sizeof(GLfloat);
   m_vertPtr = 0;
   m_normPtr = m_vertPtr + m_vertsSize;
   m_aoPtr = m_normPtr + m_normsSize;
   m_colPtr = m_aoPtr + m_aoAttribsSize;
   m_vcPtr = m_colPtr + m_colorSize;
+  m_tcPtr = m_vcPtr + m_vcAttribsSize;
   
-  const size_t bufSize = m_vertsSize + m_normsSize + m_aoAttribsSize + m_colorSize + m_vcAttribsSize;
+  const size_t bufSize = m_vertsSize + m_normsSize + m_aoAttribsSize + m_colorSize + m_vcAttribsSize + m_tcSize;
   glBufferData(GL_ARRAY_BUFFER, bufSize, NULL, GL_STATIC_DRAW);
   
   //Positions
@@ -150,6 +158,18 @@ void VertexBatch::end()
                           (const GLvoid*)m_aoPtr);
   }
   
+  if (m_vertexSpec.use_voxel_coordinates) {
+    GLfloat *vcs = m_vcAttribs.data();
+    glBufferSubData(GL_ARRAY_BUFFER, m_vcPtr, m_vcAttribsSize, vcs);
+    glEnableVertexAttribArray((GLuint)VertexAttrib::VoxelCoordinate);
+    glVertexAttribPointer((GLuint)VertexAttrib::VoxelCoordinate,
+                          3,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          0,
+                          (const GLvoid*)m_vcPtr);
+  }
+  
   if (m_vertexSpec.use_color) {
     GLfloat *colors = m_colors.data();
     glBufferSubData(GL_ARRAY_BUFFER, m_colPtr, m_colorSize, colors);
@@ -162,16 +182,16 @@ void VertexBatch::end()
                           (const GLvoid*)m_colPtr);
   }
   
-  if (m_vertexSpec.use_voxel_coordinates) {
-    GLfloat *vcs = m_vcAttribs.data();
-    glBufferSubData(GL_ARRAY_BUFFER, m_vcPtr, m_vcAttribsSize, vcs);
-    glEnableVertexAttribArray((GLuint)VertexAttrib::VoxelCoordinate);
-    glVertexAttribPointer((GLuint)VertexAttrib::VoxelCoordinate,
+  if (m_vertexSpec.use_tex_coordinates) {
+    GLfloat *tcs = m_texCoords.data();
+    glBufferSubData(GL_ARRAY_BUFFER, m_tcPtr, m_tcSize, tcs);
+    glEnableVertexAttribArray((GLuint)VertexAttrib::TextureCoordinate);
+    glVertexAttribPointer((GLuint)VertexAttrib::TextureCoordinate,
                           3,
                           GL_FLOAT,
                           GL_FALSE,
                           0,
-                          (const GLvoid*)m_vcPtr);
+                          (const GLvoid*)m_tcPtr);
   }
   
   //Vertex element indices
@@ -191,6 +211,7 @@ void VertexBatch::end()
   m_colors.clear();
   m_aoAttribs.clear();
   m_vcAttribs.clear();
+  m_texCoords.clear();
 }
 
 void VertexBatch::draw(GLenum drawMode)

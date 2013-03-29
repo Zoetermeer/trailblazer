@@ -64,6 +64,7 @@ void PolyChunk::generateData()
   spec.use_ao = true;
   spec.use_color = true;
   spec.use_voxel_coordinates = true;
+  spec.use_tex_coordinates = true;
   vb->begin();
   
   //Do the naive thing first (vertex repetition without indexing)
@@ -91,9 +92,13 @@ void PolyChunk::generateData()
       v2.normal = vertexNormal(2, quadNorm, i, j);
       v3.normal = vertexNormal(3, quadNorm, i, j);
       v4.normal = vertexNormal(4, quadNorm, i, j);
-      
-      glm::vec4 color = containsPlayer() ? GL::RED : GL::color(0, 100, 0);
-      v1.color = v2.color = v3.color = v4.color = color;
+      v1.tex_layer = v2.tex_layer = v3.tex_layer = v4.tex_layer = 0;
+      v1.tex_coordinate = glm::vec3(0.0, 0.0, 0.0);
+      v2.tex_coordinate = glm::vec3(0.0, 1.0, 0.0);
+      v3.tex_coordinate = glm::vec3(1.0, 0.0, 0.0);
+      v4.tex_coordinate = glm::vec3(1.0, 1.0, 0.0);
+
+      v1.color = v2.color = v3.color = v4.color = GL::color(85, 107, 47);
       v1.ao_accessibility = v2.ao_accessibility = v3.ao_accessibility = v4.ao_accessibility = 1.f;
       v1.voxel_coordinate = v2.voxel_coordinate = v3.voxel_coordinate = v4.voxel_coordinate = vc;
       

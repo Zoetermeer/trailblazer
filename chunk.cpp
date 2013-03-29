@@ -103,9 +103,10 @@ GLfloat Chunk::heightAt(int x, int z)
 void Chunk::generateData()
 {
   auto mountain = new noise::module::RidgedMulti();
-  mountain->SetOctaveCount(9);
+  mountain->SetOctaveCount(20);
   mountain->SetFrequency(0.2);
   auto baseFlat = new noise::module::Billow();
+  baseFlat->SetOctaveCount(20);
   auto flatTerrain = new noise::module::ScaleBias();
   flatTerrain->SetSourceModule(0, *baseFlat);
   flatTerrain->SetScale(0.125);
@@ -129,32 +130,6 @@ void Chunk::generateData()
   m_modules.push_back(baseFlat);
   m_modules.push_back(flatTerrain);
   m_modules.push_back(terrainType);
-  
-//  auto perlin = new noise::module::Perlin();
-//  perlin->SetOctaveCount(10);
-//  perlin->SetPersistence(0.5);
-//  perlin->SetFrequency(1.0);
-//  //perlin->SetOctaveCount(3);
-//  //perlin->SetFrequency(0.03);
-//  //perlin->SetPersistence(0.25);
-//  
-//  auto billow = new noise::module::Billow();
-//  billow->SetOctaveCount(1);
-//  
-//  auto mountains = new noise::module::RidgedMulti();
-//  mountains->SetOctaveCount(8);
-//  
-//  auto terrainType = new noise::module::Perlin();
-//  auto selector = new noise::module::Select();
-//  m_noiseModule = perlin;
-//  selector->SetSourceModule(0, *perlin);
-//  selector->SetSourceModule(1, *billow);
-//  selector->SetControlModule(*terrainType);
-//
-//  m_modules.push_back(perlin);
-//  m_modules.push_back(billow);
-//  m_modules.push_back(terrainType);
-//  m_modules.push_back(selector);
 }
 
 void Chunk::generateBuffers()

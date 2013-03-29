@@ -24,6 +24,7 @@ enum class VertexAttrib {
   None,
   Color, 
   AOAccessibility,
+  TextureCoordinate,
   VoxelCoordinate
 };
 
