@@ -21,5 +21,9 @@ void main()
   }
   
   //gl_FragColor = mix(VertexColor, SkyColor, a) * VaryingAccessibility;
-  gl_FragColor = texture2D(Texture, VaryingTexCoords.st);
+  vec4 color = mix(VertexColor, SkyColor, a) * VaryingAccessibility;
+  vec4 texColor = texture2D(Texture, VaryingTexCoords.st);
+  
+  gl_FragColor = mix(color, texColor, 0.5);
+  //gl_FragColor = texture2D(Texture, VaryingTexCoords.st);
 }
