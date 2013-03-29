@@ -14,12 +14,14 @@ uniform float Time;
 attribute float AOAccessibility;
 attribute vec4 Color;
 attribute vec3 VoxelCoordinate;
+attribute vec3 TexCoords;
 
 varying vec3 VaryingNormal;
 varying vec3 VaryingLightDir;
 varying vec3 VaryingHeadlightDir;
 varying float VaryingAccessibility;
 varying vec4 VertexColor;
+varying vec3 VaryingTexCoords;
 
 const vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
 const vec4 WHITE = vec4(1.0, 1.0, 1.0, 1.0);
@@ -44,6 +46,8 @@ bool isEven(float f)
 
 void main()
 {
+  VaryingTexCoords = TexCoords;
+  
   //Animate, if necessary
   vec3 vtx = gl_Vertex.xyz / gl_Vertex.w;
   if (Animating) {

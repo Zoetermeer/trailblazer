@@ -77,7 +77,7 @@ void OpenGLApp::run(int winSizeX, int winSizeY, const char *windowTitle)
   glfwSetMouseButtonCallback(OpenGLApp::handleMouseButtonEvent);
   
   //Must be done after opening the window (otherwise no GL context)
-  Env e(m_shaders);
+  Env e(m_shaders, m_textures);
   init(e);
   
   double t, updateLast = 0.0, drawLast = 0.0;
@@ -96,7 +96,7 @@ void OpenGLApp::run(int winSizeX, int winSizeY, const char *windowTitle)
     if (ddelt >= m_msBetweenDraw) {
       double fps = 1.0 / (t - drawLast);
       drawLast = t;
-      Env env(m_shaders);
+      Env env(m_shaders, m_textures);
       env.getStats().fps = fps;
       draw(env);
     }

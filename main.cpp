@@ -69,6 +69,19 @@ private:
     }
   }
   
+  void initTextures(Env &env)
+  {
+    TextureSet &textures = env.getTextures();
+    try {
+      textures.add(TextureType::Stone, PixmapFormat::TGA, "textures/stone.tga");
+    } catch (std::exception *ex) {
+      std::cout << ex->what() << std::endl;
+      delete ex;
+      exit(1);
+      return;
+    }
+  }
+  
   void displayInstructions()
   {
     std::cout << "INSTRUCTIONS:" << std::endl;
@@ -93,6 +106,7 @@ protected:
   {
     OpenGLApp::init(env);
     this->initShaders(env);
+    this->initTextures(env);
     
     glEnable(GL_DEPTH_TEST);
     

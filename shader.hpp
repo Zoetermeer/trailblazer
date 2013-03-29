@@ -99,6 +99,11 @@ public:
   {
     glUniform1i(m_loc, (GLint)b);
   }
+  
+  inline void operator=(GLint i)
+  {
+    glUniform1i(m_loc, i);
+  }
 };
 
 class Shader {

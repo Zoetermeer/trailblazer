@@ -160,6 +160,7 @@ void VoxelAOShaderProgram::bindAttributes()
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::AOAccessibility, "AOAccessibility");
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::Color, "Color");
   glBindAttribLocation(getId(), (GLuint)VertexAttrib::VoxelCoordinate, "VoxelCoordinate");
+  glBindAttribLocation(getId(), (GLuint)VertexAttrib::TextureCoordinate, "TexCoords");
 }
 
 void ShaderSet::add(ShaderType type, const char *vShader, const char *fShader)
@@ -287,6 +288,7 @@ void ShaderSet::prepareHemisphereAO(Env &env,
   sh.uniform("GroundColor") = groundColor;
   sh.uniform("Animating") = animating;
   sh.uniform("Time") = animationTime;
+  sh.uniform("Texture") = 0;
 }
 
 

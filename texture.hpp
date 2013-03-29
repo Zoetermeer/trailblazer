@@ -2,10 +2,15 @@
 #define TEXTURE_H
 
 #include "common.hpp"
+#include <map>
 
 enum class PixmapFormat {
   TGA,
   BMP
+};
+
+enum class TextureType {
+  Stone
 };
 
 class Texture {
@@ -36,12 +41,16 @@ public:
 };
 
 class TextureSet {
+private:
+  std::map<TextureType, Texture*> m_textures;
+  
 public:
   TextureSet();
   ~TextureSet();
   
 public:
-  void add(Texture *texture);
+  void add(TextureType type, PixmapFormat format, const char *fileName);
+  void use(TextureType type);
 };
 
 #endif

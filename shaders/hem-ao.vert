@@ -15,6 +15,7 @@ varying vec3 VaryingLightDir;
 varying vec3 VaryingHeadlightDir;
 varying float VaryingAccessibility;
 varying vec4 VertexColor;
+varying vec4 VaryingTexCoords;
 
 void main()
 {

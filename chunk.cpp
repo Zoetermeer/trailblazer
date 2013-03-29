@@ -4,6 +4,7 @@
 #include "GL.hpp"
 #include "sky.hpp"
 #include "units.hpp"
+#include "texture.hpp"
 #include <noise.h>
 #include <chrono>
 
@@ -198,11 +199,13 @@ void Chunk::draw(Env &env,
   
   MatrixStack &mv = env.getMV();
   ShaderSet &shaders = env.getShaders();
+  TextureSet &textures = env.getTextures();
   GLfloat offset = VOXELS_PER_CHUNK * Units::voxelToGl(1);
   mv.pushMatrix();
   {
     mv.translate(m_chunkIndex.x * offset, 0.f, m_chunkIndex.z * offset);
     glm::vec4 groundColor = m_containsPlayer ? glm::vec4(0.0f, 0.0f, 0.3f, 1.f) : GL::color(51, 102, 51);
+    textures.use(TextureType::Stone);
     shaders.prepareHemisphereAO(env,
                                 glm::vec4(.8f, .8f, .8f, 1.f),
                                 groundColor,

@@ -73,6 +73,32 @@ void Texture::use()
 }
 
 
+TextureSet::TextureSet()
+{
+  
+}
+
+TextureSet::~TextureSet()
+{
+  for (std::map<TextureType, Texture*>::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
+    delete it->second;
+  }
+}
+
+void TextureSet::add(TextureType type, PixmapFormat format, const char *fileName)
+{
+  Texture *t = new Texture(fileName, format, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE);
+  t->load();
+  m_textures[type] = t;
+}
+
+void TextureSet::use(TextureType type)
+{
+  Texture *t = m_textures[type];
+  t->use();
+}
+
+
 
 
 

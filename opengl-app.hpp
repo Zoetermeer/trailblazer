@@ -4,6 +4,7 @@
 #include "common.hpp"
 #include "env.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 
 class OpenGLApp {
 private:
@@ -14,6 +15,7 @@ private:
   glm::ivec2 m_windowSize;
   glm::ivec2 m_mousePos;
   ShaderSet m_shaders;
+  TextureSet m_textures;
   
   //GLFW wants callback functions for certain events,
   //so we need a way to handle these events statically but
