@@ -3,6 +3,7 @@
 
 #include <glut/glut.h>
 #include <stdlib.h>
+#include <OpenGL/gl.h>
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtx/vector_angle.hpp>

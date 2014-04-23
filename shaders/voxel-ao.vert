@@ -21,6 +21,7 @@ varying vec3 VaryingLightDir;
 varying vec3 VaryingHeadlightDir;
 varying float VaryingAccessibility;
 varying vec4 VertexColor;
+varying vec3 VaryingVoxelCoordinate;
 varying vec3 VaryingTexCoords;
 
 const vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
@@ -47,6 +48,7 @@ bool isEven(float f)
 void main()
 {
   VaryingTexCoords = TexCoords;
+  VaryingVoxelCoordinate = VoxelCoordinate;
   
   //Animate, if necessary
   vec3 vtx = gl_Vertex.xyz / gl_Vertex.w;

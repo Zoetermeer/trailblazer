@@ -10,6 +10,7 @@ varying vec3 VaryingHeadlightDir;
 varying float VaryingAccessibility;
 varying vec4 VertexColor;
 varying vec3 VaryingTexCoords;
+varying vec3 VaryingVoxelCoordinate;
 
 void main()
 {
@@ -22,7 +23,7 @@ void main()
   
   //gl_FragColor = mix(VertexColor, SkyColor, a) * VaryingAccessibility;
   vec4 color = mix(VertexColor, SkyColor, a) * VaryingAccessibility;
-  vec4 texColor = texture2D(Texture, VaryingTexCoords.st);
+  vec4 texColor = mix(texture2D(Texture, VaryingTexCoords.st), texture2D(Texture, VaryingVoxelCoordinate.xz / 5096.0), 0.2);
   
   gl_FragColor = mix(color, texColor, 0.5);
   //gl_FragColor = texture2D(Texture, VaryingTexCoords.st);

@@ -26,8 +26,14 @@ TEST(ChunkTests, WorldToChunkCoordsTest1) {
 
 TEST(ChunkTests, WorldToChunkCoordsTest2) {
   const GLfloat VOXEL_SIZE = Units::voxelToGl(1);
-  glm::vec3 playerPos = glm::vec3(0.1, 0.0, -(VOXEL_SIZE * Units::chunkToVoxel(1) + (VOXEL_SIZE * .5)));
+  glm::vec3 playerPos = glm::vec3(0.1, 0.0, VOXEL_SIZE * Units::chunkToVoxel(1) + (VOXEL_SIZE * .5));
   EXPECT_EQ(glm::ivec3(0, 0, 1), Chunk::worldToChunkSpace(playerPos));
+}
+
+TEST(ChunkTests, WorldToChunkCoordsTest3) {
+  const GLfloat VOXEL_SIZE = Units::voxelToGl(1);
+  glm::vec3 playerPos = glm::vec3(0.1, 0.0, -(VOXEL_SIZE * Units::chunkToVoxel(1) + (VOXEL_SIZE * .5)));
+  EXPECT_EQ(glm::ivec3(0, 0, -1), Chunk::worldToChunkSpace(playerPos));
 }
 
 TEST(ChunkTests, BufferFinishClearsLoadQueue) {
