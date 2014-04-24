@@ -25,6 +25,9 @@
 #include "tests/units-tests.hpp"
 #endif
 
+using std::cout;
+using std::endl;
+
 const int DEFAULT_WIDTH = 1600;
 const int DEFAULT_HEIGHT = 1000;
 
@@ -33,7 +36,6 @@ private:
   Player m_player;
   Direction m_moveDir;
   FirstPersonCamera m_camera;
-  Sky *m_sky;
   
   bool m_hideArms;
   
@@ -62,7 +64,7 @@ private:
       shaders.add(new VoxelAOShaderProgram());
       CHECK_OPENGL_ERROR;
     } catch (std::exception *ex) {
-      std::cout << ex->what() << std::endl;
+      cout << ex->what() << endl;
       delete ex;
       exit(1);
       return;
@@ -75,7 +77,7 @@ private:
     try {
       textures.add(TextureType::Stone, PixmapFormat::TGA, "textures/stone.tga");
     } catch (std::exception *ex) {
-      std::cout << ex->what() << std::endl;
+      cout << ex->what() << endl;
       delete ex;
       exit(1);
       return;
@@ -84,19 +86,17 @@ private:
   
   void displayInstructions()
   {
-    std::cout << "INSTRUCTIONS:" << std::endl;
-    std::cout << "mouse - look around" << std::endl;
-    std::cout << "w: forward" << std::endl;
-    std::cout << "s: backward" << std::endl;
-    std::cout << "d: right" << std::endl;
-    std::cout << "a: left" << std::endl;
-    std::cout << "<up>: speed up" << std::endl;
-    std::cout << "<down>: slow down" << std::endl;
-    std::cout << "spacebar: fly up" << std::endl;
-    std::cout << "shift: fly down" << std::endl;
-    std::cout << "h: hide/show arms" << std::endl;
-    std::cout << "<period>: headlight on/off" << std::endl;
-    std::cout << "enter: - blow it up" << std::endl;
+    cout << "INSTRUCTIONS:" << endl;
+    cout << "mouse - look around" << endl;
+    cout << "w: forward" << endl;
+    cout << "s: backward" << endl;
+    cout << "d: right" << endl;
+    cout << "a: left" << endl;
+    cout << "<up>: speed up" << endl;
+    cout << "<down>: slow down" << endl;
+    cout << "spacebar: fly up" << endl;
+    cout << "shift: fly down" << endl;
+    cout << "enter: - blow it up" << endl;
   }
   
 protected:
@@ -120,18 +120,10 @@ protected:
     
     Sky::init();
     
-    //Generate the arm geometry
-    //m_rightArm.generateGeometry();
-    //m_leftArm.generateGeometry();
-    
     displayInstructions();
     
     //Generate the initial state of the world
     m_cbuffer.init();
-//    m_testChunk = new PolyChunk(0, 0, 0);
-//    m_testChunk->generateAsync();
-//    m_testChunk2 = new PolyChunk(1, 0, 0);
-//    m_testChunk2->generateAsync();
   }
   
   virtual void onMouseMove(const glm::ivec2 &oldPos, const glm::ivec2 &newPos)
@@ -177,13 +169,6 @@ protected:
   
   virtual void onKeyDown(int key)
   {
-    switch (key)
-    {
-        case 'h':
-        case 'H':
-          m_hideArms = !m_hideArms;
-          break;
-    }
     Events::keyDownEvent(key, false);
   }
   
@@ -230,11 +215,6 @@ protected:
       
       //Draw the terrain
       m_cbuffer.draw(env);
-//      if (m_testChunk->generateAsync())
-//        m_testChunk->draw(env, glm::vec4(0,0,0,0), glm::vec3(0,0,0), false, false, 0.f);
-//      
-//      if (m_testChunk2->generateAsync())
-//        m_testChunk2->draw(env, glm::vec4(0, 0, 0, 0), glm::vec3(0, 0, 0), false, false, 0.f);
       
       //Draw status text
       mv.pushMatrix();
@@ -281,12 +261,12 @@ protected:
       proj.popMatrix();
       mv.popMatrix();
     } catch (OpenGLException *ex) {
-      std::cout << "OpenGL Exception: " << ex->what() << std::endl;
+      cout << "OpenGL Exception: " << ex->what() << endl;
       delete ex;
       exit(1);
     }
     
-    this->swapBuffers();
+    swapBuffers();
   }
 };
 

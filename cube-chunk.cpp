@@ -299,7 +299,7 @@ void CubeChunk::generateData()
   glm::ivec3 index = getIndex();
   auto vb = new VertexBatch();
   setVertexBuffer(vb);
-  vertex_spec_t &spec = vb->getVertexSpec();
+  vertex_spec_t &spec = vb->vertexSpec();
   spec.indexed = true;
   spec.use_ao = true;
   spec.use_color = true;
@@ -347,7 +347,7 @@ void CubeChunk::generateData()
       GLfloat noise;
       MatrixStack pstack(stack);
       VertexBatch *pbatch = new VertexBatch();
-      pbatch->setVertexSpec(vb->getVertexSpec());
+      pbatch->vertexSpec() = vb->vertexSpec();
       pbatch->begin();
       unsigned ht;
       voxel_coord_type start = SEGMENT_SIZE * p;

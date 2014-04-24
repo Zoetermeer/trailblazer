@@ -6,15 +6,16 @@
 #include "shader.hpp"
 #include "vertex.hpp"
 
+using std::vector;
+
 class VertexBatch {
-private:
-  std::vector<GLfloat> m_verts;
-  std::vector<GLfloat> m_norms;
-  std::vector<GLuint> m_indices;
-  std::vector<GLfloat> m_colors;
-  std::vector<GLfloat> m_texCoords;
-  std::vector<GLfloat> m_aoAttribs;
-  std::vector<GLfloat> m_vcAttribs;
+  vector<GLfloat> m_verts;
+  vector<GLfloat> m_norms;
+  vector<GLuint> m_indices;
+  vector<GLfloat> m_colors;
+  vector<GLfloat> m_texCoords;
+  vector<GLfloat> m_aoAttribs;
+  vector<GLfloat> m_vcAttribs;
   GLuint m_vaoId;
   GLuint m_vboId;
   GLuint m_iboId;
@@ -78,14 +79,9 @@ public:
   }
   
 public:
-  vertex_spec_t &getVertexSpec()
+  vertex_spec_t &vertexSpec()
   {
     return m_vertexSpec;
-  }
-  
-  void setVertexSpec(vertex_spec_t &spec)
-  {
-    m_vertexSpec = spec;
   }
   
   GLuint getVaoId() const { return m_vaoId; }

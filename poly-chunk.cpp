@@ -59,7 +59,7 @@ void PolyChunk::generateData()
    */
   auto vb = new VertexBatch();
   setVertexBuffer(vb);
-  vertex_spec_t &spec = vb->getVertexSpec();
+  vertex_spec_t &spec(vb->vertexSpec());
   spec.indexed = true;
   spec.use_ao = true;
   spec.use_color = true;
