@@ -1,0 +1,5 @@
+Trailblazer is a rudimentary cut at procedural world-building a la Minecraft or Voxel Farm.  I initially wrote it for a graphics course I took as a graduate student; however, it ended up being as much an adventure in building an abstraction layer around the OpenGL API as it was in procedural terrain generation.  It's still in somewhat raw form -- someday I'd like to improve it, but my time as a graduate student is very limited.  
+
+The program uses a few third-party libraries, the (unmodified) sources of which are included in the source tree.  Note that the latest version of Clang will issue warnings when compiling this code.  
+
+To build, simply do 'make'.  I have not attempted to build/run this code on anything other than a Mac running the latest version of OS X (with an AMD Radeon HD 6750M graphics card), so it is likely not to build and/or work correctly on any other platform.
